@@ -70,22 +70,27 @@ export default function Apply() {
       return;
     }
     setSubmitting(true);
-    // Check duplicate email
-    const existing = await base44.entities.Applicant.filter({ email: form.email.trim().toLowerCase() });
-    if (existing.length > 0) {
-      setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
+    try {
+      // Check duplicate email
+      const existing = await base44.entities.Applicant.filter({ email: form.email.trim().toLowerCase() });
+      if (existing.length > 0) {
+        setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
+        setSubmitting(false);
+        return;
+      }
+      const applicant = await base44.entities.Applicant.create({
+        ...form,
+        email: form.email.trim().toLowerCase(),
+        status: 'Applied',
+        assessment_completed: false
+      });
+      setApplicantId(applicant.id);
+      setSubmitted(true);
+    } catch (err) {
+      setErrors({ submit: 'Something went wrong. Please check your connection and try again.' });
+    } finally {
       setSubmitting(false);
-      return;
     }
-    const applicant = await base44.entities.Applicant.create({
-      ...form,
-      email: form.email.trim().toLowerCase(),
-      status: 'Applied',
-      assessment_completed: false
-    });
-    setApplicantId(applicant.id);
-    setSubmitted(true);
-    setSubmitting(false);
   };
 
   if (submitted) {
@@ -208,6 +213,7 @@ export default function Apply() {
               {REFERRAL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </Field>
+          {errors.submit && <p className="text-[#D32F2F] text-sm font-medium text-center">{errors.submit}</p>}
           <button type="submit" disabled={submitting}
             className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md mt-4">
             {submitting ? 'Submitting...' : 'Submit Application →'}
