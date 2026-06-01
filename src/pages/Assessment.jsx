@@ -72,6 +72,8 @@ export default function Assessment() {
   const [selected, setSelected] = useState(-1);
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [result, setResult] = useState(null);
 
   // Prevent back navigation during test
@@ -90,39 +92,48 @@ export default function Assessment() {
   const submitAssessment = useCallback(async (finalAnswers) => {
     if (submitted) return;
     setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError(null);
 
-    let score = 0;
-    finalAnswers.forEach((a, i) => {
-      if (a === sessionQuestions[i].correct) score++;
-    });
+    try {
+      let score = 0;
+      finalAnswers.forEach((a, i) => {
+        if (a === sessionQuestions[i].correct) score++;
+      });
 
-    let status;
-    if (score >= 21) status = 'Interview Ready';
-    else if (score >= 16) status = 'Reserve List';
-    else status = 'Not Progressed';
+      let status;
+      if (score >= 21) status = 'Interview Ready';
+      else if (score >= 16) status = 'Reserve List';
+      else status = 'Not Progressed';
 
-    // Check for duplicate signature (up to 20 attempts handled at build time; log if duplicate)
-    let signatureNote = signature;
-    const existing = await base44.entities.Applicant.filter({ question_set_signature: signature });
-    if (existing.length > 0) {
-      signatureNote = signature + '__duplicate_allowed';
+      // Check for duplicate signature
+      let signatureNote = signature;
+      const existing = await base44.entities.Applicant.filter({ question_set_signature: signature });
+      if (existing.length > 0) {
+        signatureNote = signature + '__duplicate_allowed';
+      }
+
+      // Build option order map: { questionId: [optionTexts in order shown] }
+      const optionOrderMap = {};
+      sessionQuestions.forEach(q => { optionOrderMap[q.id] = q.options; });
+
+      await base44.entities.Applicant.update(applicantId, {
+        assessment_score: score,
+        assessment_answers: finalAnswers,
+        assessment_question_ids: sessionQuestions.map(q => q.id),
+        assessment_option_order: optionOrderMap,
+        assessment_completed: true,
+        question_set_signature: signatureNote,
+        status
+      });
+
+      setResult({ score, status });
+    } catch (err) {
+      setSubmitted(false);
+      setSubmitError('Submission failed. Please try again.');
+    } finally {
+      setSubmitting(false);
     }
-
-    // Build option order map: { questionId: [optionTexts in order shown] }
-    const optionOrderMap = {};
-    sessionQuestions.forEach(q => { optionOrderMap[q.id] = q.options; });
-
-    await base44.entities.Applicant.update(applicantId, {
-      assessment_score: score,
-      assessment_answers: finalAnswers,
-      assessment_question_ids: sessionQuestions.map(q => q.id),
-      assessment_option_order: optionOrderMap,
-      assessment_completed: true,
-      question_set_signature: signatureNote,
-      status
-    });
-
-    setResult({ score, status });
   }, [applicantId, submitted, sessionQuestions, signature]);
 
   // Timer
@@ -163,6 +174,16 @@ export default function Assessment() {
   const timerColor = timeLeft < 300 ? 'text-[#D32F2F]' : timeLeft < 600 ? 'text-[#F57C00]' : 'text-[#2D6A2F]';
 
   if (result) return <ResultScreen result={result} />;
+
+  if (!applicantId) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-[#D32F2F] font-semibold">Invalid assessment link. Please return to the application page.</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!started) {
     return (
@@ -235,9 +256,12 @@ export default function Assessment() {
             </button>
           ))}
         </div>
-        <button onClick={handleNext} disabled={selected === -1}
-          className="w-full mt-8 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
-          {currentQ === 24 ? 'Submit Assessment' : 'Next Question →'}
+        {submitError && (
+          <p className="mt-4 text-center text-[#D32F2F] text-sm font-medium">{submitError}</p>
+        )}
+        <button onClick={handleNext} disabled={selected === -1 || submitting}
+          className="w-full mt-4 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
+          {submitting ? 'Submitting...' : currentQ === 24 ? 'Submit Assessment' : 'Next Question →'}
         </button>
       </div>
     </div>
