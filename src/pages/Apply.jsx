@@ -71,23 +71,15 @@ export default function Apply() {
     }
     setSubmitting(true);
     try {
-      // Check duplicate email (may return empty if unauthenticated, that's fine)
-      let existing = [];
-      try {
-        existing = await base44.entities.Applicant.filter({ email: form.email.trim().toLowerCase() });
-      } catch (_) {}
-      if (existing.length > 0) {
+      const res = await base44.functions.invoke('submitApplication', {
+        ...form,
+        email: form.email.trim().toLowerCase()
+      });
+      if (res.data?.error === 'duplicate') {
         setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
-        setSubmitting(false);
         return;
       }
-      const applicant = await base44.entities.Applicant.create({
-        ...form,
-        email: form.email.trim().toLowerCase(),
-        status: 'Applied',
-        assessment_completed: false
-      });
-      setApplicantId(applicant.id);
+      setApplicantId(res.data.id);
       setSubmitted(true);
     } catch (err) {
       setErrors({ submit: 'Something went wrong. Please check your connection and try again.' });
