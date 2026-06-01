@@ -71,8 +71,11 @@ export default function Apply() {
     }
     setSubmitting(true);
     try {
-      // Check duplicate email
-      const existing = await base44.entities.Applicant.filter({ email: form.email.trim().toLowerCase() });
+      // Check duplicate email (may return empty if unauthenticated, that's fine)
+      let existing = [];
+      try {
+        existing = await base44.entities.Applicant.filter({ email: form.email.trim().toLowerCase() });
+      } catch (_) {}
       if (existing.length > 0) {
         setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
         setSubmitting(false);
