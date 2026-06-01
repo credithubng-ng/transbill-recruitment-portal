@@ -106,25 +106,13 @@ export default function Assessment() {
       else if (score >= 16) status = 'Reserve List';
       else status = 'Not Progressed';
 
-      // Check for duplicate signature
-      let signatureNote = signature;
-      const existing = await base44.entities.Applicant.filter({ question_set_signature: signature });
-      if (existing.length > 0) {
-        signatureNote = signature + '__duplicate_allowed';
-      }
-
-      // Build option order map: { questionId: [optionTexts in order shown] }
-      const optionOrderMap = {};
-      sessionQuestions.forEach(q => { optionOrderMap[q.id] = q.options; });
-
-      await base44.entities.Applicant.update(applicantId, {
-        assessment_score: score,
-        assessment_answers: finalAnswers,
-        assessment_question_ids: sessionQuestions.map(q => q.id),
-        assessment_option_order: optionOrderMap,
-        assessment_completed: true,
-        question_set_signature: signatureNote,
-        status
+      await base44.functions.invoke('submitAssessment', {
+        applicantId,
+        score,
+        status,
+        finalAnswers,
+        sessionQuestions,
+        signature,
       });
 
       setResult({ score, status });
