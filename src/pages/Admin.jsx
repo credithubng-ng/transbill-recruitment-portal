@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AdminLogin from './AdminLogin';
@@ -10,7 +10,21 @@ import ApplicantPanel from '../components/admin/ApplicantPanel';
 import { Download, LogOut } from 'lucide-react';
 
 export default function Admin() {
-  const [authenticated, setAuthenticated] = useState(sessionStorage.getItem('transbill_admin') === 'true');
+  const [authenticated, setAuthenticated] = useState(false);
+  const [verifying, setVerifying] = useState(true);
+
+  // Verify stored token server-side on every page load
+  useEffect(() => {
+    const token = sessionStorage.getItem('transbill_admin_token');
+    if (!token) { setVerifying(false); return; }
+    base44.functions.invoke('adminAuth', { action: 'verify', token })
+      .then(res => {
+        if (res.data?.valid) setAuthenticated(true);
+        else sessionStorage.removeItem('transbill_admin_token');
+      })
+      .catch(() => sessionStorage.removeItem('transbill_admin_token'))
+      .finally(() => setVerifying(false));
+  }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [filters, setFilters] = useState({
     search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all'
@@ -60,7 +74,7 @@ export default function Admin() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('transbill_admin');
+    sessionStorage.removeItem('transbill_admin_token');
     setAuthenticated(false);
   };
 
@@ -70,6 +84,12 @@ export default function Admin() {
     );
     setSelectedApplicant(updated);
   };
+
+  if (verifying) return (
+    <div className="fixed inset-0 flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin" />
+    </div>
+  );
 
   if (!authenticated) return <AdminLogin onLogin={() => setAuthenticated(true)} />;
 

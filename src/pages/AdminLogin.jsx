@@ -14,7 +14,7 @@ export default function AdminLogin({ onLogin }) {
     const res = await base44.functions.invoke('adminAuth', { password });
     setLoading(false);
     if (res.data?.success) {
-      sessionStorage.setItem('transbill_admin', 'true');
+      sessionStorage.setItem('transbill_admin_token', res.data.token);
       onLogin();
     } else {
       setError('Invalid password');
