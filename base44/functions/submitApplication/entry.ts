@@ -24,6 +24,15 @@ Deno.serve(async (req) => {
       assessment_completed: false
     });
 
+    // Send confirmation email
+    const firstName = (body.full_name || '').split(' ')[0] || 'Applicant';
+    await base44.asServiceRole.integrations.Core.SendEmail({
+      to: email,
+      from_name: 'Transbill Recruitment',
+      subject: 'Application Received – Transbill Solutions Limited',
+      body: `Dear ${firstName},\n\nThank you for applying to the Digital Marketing Associate role at Transbill Solutions Limited.\n\nYour application has been successfully received. The next step is to complete a short competency assessment. Please check the confirmation page for your assessment link, or contact us if you need assistance.\n\nWe will be in touch with further updates.\n\nWarm regards,\nTransbill Recruitment Team`
+    });
+
     return Response.json({ id: applicant.id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
