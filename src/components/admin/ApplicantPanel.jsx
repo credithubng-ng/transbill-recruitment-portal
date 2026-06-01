@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, CheckCircle2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import { QUESTIONS } from '../../lib/assessmentQuestions';
+
+// Build a lookup map from question ID to question object
+const Q_MAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
 
 const STATUS_OPTIONS = ['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'];
 
@@ -60,33 +63,51 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           {/* Assessment results */}
           {applicant.assessment_completed && (
             <Section title="Assessment Results">
-              <div className="bg-[#F8FAF8] rounded-lg p-4 mb-3">
-                <p className="text-sm text-[#7A7A8A]">Score</p>
+              <div className="bg-[#F8FAF8] rounded-lg p-4 mb-1">
+                <p className="text-xs text-[#7A7A8A]">Score</p>
                 <p className="text-2xl font-extrabold text-[#1A1A1A]">{applicant.assessment_score}/25 ({scorePercent}%)</p>
               </div>
+              {applicant.question_set_signature && (
+                <div className="mb-3">
+                  <p className="text-[10px] text-[#7A7A8A] font-medium">Question Set Signature</p>
+                  <p className="text-[10px] text-[#555555] break-all font-mono bg-[#F8FAF8] px-2 py-1 rounded">{applicant.question_set_signature}</p>
+                </div>
+              )}
               <div className="space-y-2">
-                {QUESTIONS.map((q, i) => {
-                  const answered = applicant.assessment_answers?.[i];
-                  const isCorrect = answered === q.correct;
+                {(applicant.assessment_question_ids || []).map((qId, i) => {
+                  const baseQ = Q_MAP[qId];
+                  if (!baseQ) return null;
+
+                  // Options as shown to this candidate (may be reordered)
+                  const shownOptions = applicant.assessment_option_order?.[qId] || baseQ.options;
+                  // Correct text from original question
+                  const correctText = baseQ.options[baseQ.correct];
+                  // What the candidate selected (index into shownOptions)
+                  const selectedIdx = applicant.assessment_answers?.[i];
+                  const selectedText = selectedIdx >= 0 ? shownOptions[selectedIdx] : null;
+                  const isCorrect = selectedText === correctText;
+
                   return (
                     <div key={i} className={`text-xs p-2.5 rounded-lg border ${isCorrect ? 'border-[#2D6A2F]/20 bg-[#EBF5EB]' : 'border-[#D32F2F]/20 bg-red-50'}`}>
                       <div className="flex items-start gap-2">
-                        <span className={`mt-0.5 ${isCorrect ? 'text-[#2D6A2F]' : 'text-[#D32F2F]'}`}>
+                        <span className={`mt-0.5 font-bold flex-shrink-0 ${isCorrect ? 'text-[#2D6A2F]' : 'text-[#D32F2F]'}`}>
                           {isCorrect ? '✓' : '✗'}
                         </span>
                         <div>
-                          <p className="font-medium text-[#1A1A1A]">Q{i + 1}. {q.question}</p>
-                          <p className="text-[#555555] mt-0.5">
-                            Answered: {answered >= 0 ? q.options[answered] : 'No answer'}
-                          </p>
+                          <p className="font-medium text-[#1A1A1A]">Q{i + 1}. {baseQ.question}</p>
+                          <p className="text-[#555555] mt-0.5">Candidate answered: <span className="font-medium">{selectedText || 'No answer'}</span></p>
                           {!isCorrect && (
-                            <p className="text-[#2D6A2F] mt-0.5">Correct: {q.options[q.correct]}</p>
+                            <p className="text-[#2D6A2F] mt-0.5">Correct answer: <span className="font-medium">{correctText}</span></p>
                           )}
                         </div>
                       </div>
                     </div>
                   );
                 })}
+                {/* Fallback for old records without question IDs */}
+                {!applicant.assessment_question_ids && applicant.assessment_answers && (
+                  <p className="text-xs text-[#7A7A8A] italic">Detailed question breakdown not available for this submission.</p>
+                )}
               </div>
             </Section>
           )}
