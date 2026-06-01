@@ -1,0 +1,150 @@
+{
+  "name": "Applicant",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Full legal name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "Male",
+        "Female",
+        "Prefer not to say"
+      ]
+    },
+    "state_of_origin": {
+      "type": "string"
+    },
+    "current_lga": {
+      "type": "string"
+    },
+    "lagos_resident": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ]
+    },
+    "education": {
+      "type": "string",
+      "enum": [
+        "SSCE",
+        "OND",
+        "HND",
+        "BSc",
+        "MSc",
+        "PhD",
+        "Professional Certification",
+        "Other"
+      ]
+    },
+    "years_experience": {
+      "type": "string",
+      "enum": [
+        "Less than 1 year",
+        "1\u20133 years",
+        "3\u20135 years",
+        "5+ years"
+      ]
+    },
+    "is_3mtt": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ]
+    },
+    "is_sail": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ]
+    },
+    "social_platforms": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Social media platforms managed professionally"
+    },
+    "affiliate_experience": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ]
+    },
+    "affiliate_experience_desc": {
+      "type": "string",
+      "description": "Description of affiliate/field experience"
+    },
+    "motivation": {
+      "type": "string",
+      "description": "Why they want this role"
+    },
+    "linkedin_url": {
+      "type": "string",
+      "description": "LinkedIn or portfolio link"
+    },
+    "referral_source": {
+      "type": "string"
+    },
+    "assessment_score": {
+      "type": "number",
+      "description": "Number of correct answers out of 25"
+    },
+    "assessment_answers": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Array of selected answer indices"
+    },
+    "assessment_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "Applied",
+        "Interview Ready",
+        "Reserve List",
+        "Not Progressed"
+      ],
+      "default": "Applied"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Notes from admin"
+    }
+  },
+  "required": [
+    "full_name",
+    "email",
+    "phone",
+    "gender",
+    "state_of_origin",
+    "current_lga",
+    "lagos_resident",
+    "education",
+    "years_experience",
+    "is_3mtt",
+    "is_sail",
+    "social_platforms",
+    "affiliate_experience",
+    "motivation",
+    "referral_source"
+  ]
+}

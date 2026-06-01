@@ -1,0 +1,63 @@
+import React from 'react';
+import { format } from 'date-fns';
+
+const statusBadge = (status) => {
+  const map = {
+    'Interview Ready': 'bg-[#2D6A2F] text-white',
+    'Reserve List': 'bg-[#F57C00] text-white',
+    'Not Progressed': 'bg-[#9E9E9E] text-white',
+    'Applied': 'bg-[#E2E8E2] text-[#555555]',
+  };
+  return map[status] || 'bg-[#E2E8E2] text-[#555555]';
+};
+
+export default function ApplicantTable({ applicants, onSelectApplicant }) {
+  return (
+    <div className="bg-white border border-[#E2E8E2] rounded-[14px] overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-[#F8FAF8] border-b border-[#E2E8E2]">
+              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A]">Full Name</th>
+              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden md:table-cell">Phone</th>
+              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Email</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">Lagos</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">3MTT</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">SAIL</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Score</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Status</th>
+              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {applicants.length === 0 && (
+              <tr><td colSpan={9} className="text-center py-12 text-[#7A7A8A]">No applicants found</td></tr>
+            )}
+            {applicants.map(a => (
+              <tr key={a.id} onClick={() => onSelectApplicant(a)}
+                className="border-b border-[#E2E8E2] hover:bg-[#F8FAF8] cursor-pointer transition-colors">
+                <td className="px-4 py-3 font-medium text-[#1A1A1A]">{a.full_name}</td>
+                <td className="px-4 py-3 text-[#555555] hidden md:table-cell">{a.phone}</td>
+                <td className="px-4 py-3 text-[#555555] hidden lg:table-cell">{a.email}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.lagos_resident === 'Yes' ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.is_3mtt === 'Yes' ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.is_sail === 'Yes' ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center font-bold">
+                  {a.assessment_completed ? `${Math.round((a.assessment_score / 25) * 100)}%` : '—'}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${statusBadge(a.status)}`}>
+                    {a.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-[#7A7A8A] text-xs hidden lg:table-cell">
+                  {a.created_date ? format(new Date(a.created_date), 'MMM d, yyyy') : '—'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
