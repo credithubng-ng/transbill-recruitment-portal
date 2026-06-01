@@ -5,7 +5,8 @@ import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
 import Footer from '../components/landing/Footer';
 import { NIGERIA_STATES } from '../lib/nigeriaStates';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Lock, Loader2 } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const SOCIAL_PLATFORMS = ['WhatsApp Business', 'Instagram', 'Facebook', 'TikTok', 'X (Twitter)', 'LinkedIn', 'YouTube', 'Others'];
 const EDUCATION_OPTIONS = ['SSCE', 'OND', 'HND', 'BSc', 'MSc', 'PhD', 'Professional Certification', 'Other'];
@@ -24,6 +25,14 @@ export default function Apply() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [applicantId, setApplicantId] = useState(null);
+  // Registration step after application
+  const [showRegister, setShowRegister] = useState(false);
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirm, setRegConfirm] = useState('');
+  const [regError, setRegError] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
 
   const wordCount = form.motivation.trim().split(/\s+/).filter(Boolean).length;
 
@@ -81,6 +90,7 @@ export default function Apply() {
       }
       setApplicantId(res.data.id);
       setSubmitted(true);
+      setShowRegister(true);
     } catch (err) {
       setErrors({ submit: 'Something went wrong. Please check your connection and try again.' });
     } finally {
@@ -88,28 +98,113 @@ export default function Apply() {
     }
   };
 
-  if (submitted) {
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    setRegError('');
+    if (regPassword !== regConfirm) { setRegError('Passwords do not match'); return; }
+    if (regPassword.length < 6) { setRegError('Password must be at least 6 characters'); return; }
+    setRegLoading(true);
+    try {
+      await base44.auth.register({ email: form.email.trim().toLowerCase(), password: regPassword });
+      setShowOtp(true);
+    } catch (err) {
+      setRegError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    setRegError('');
+    setRegLoading(true);
+    try {
+      const result = await base44.auth.verifyOtp({ email: form.email.trim().toLowerCase(), otpCode });
+      if (result?.access_token) {
+        base44.auth.setToken(result.access_token);
+      }
+      window.location.href = `/assessment?id=${applicantId}`;
+    } catch (err) {
+      setRegError(err.message || 'Invalid code. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setRegError('');
+    try { await base44.auth.resendOtp(form.email.trim().toLowerCase()); } catch {}
+  };
+
+  if (submitted && showRegister) {
     const firstName = form.full_name.split(' ')[0];
+
+    if (showOtp) {
+      return (
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-16">
+          <TransbillLogo />
+          <div className="w-full max-w-sm mt-10">
+            <div className="text-center mb-8">
+              <div className="w-14 h-14 rounded-full bg-[#EBF5EB] flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-7 h-7 text-[#2D6A2F]" />
+              </div>
+              <h2 className="font-extrabold text-xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Verify your email</h2>
+              <p className="text-[#7A7A8A] text-sm">We sent a 6-digit code to <strong>{form.email}</strong></p>
+            </div>
+            {regError && <p className="text-[#D32F2F] text-sm text-center mb-4 font-medium">{regError}</p>}
+            <div className="flex justify-center mb-6">
+              <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} autoFocus>
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <button onClick={handleVerifyOtp} disabled={regLoading || otpCode.length < 6}
+              className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
+              {regLoading ? 'Verifying...' : 'Verify & Start Assessment →'}
+            </button>
+            <p className="text-center text-sm text-[#7A7A8A] mt-4">
+              Didn't receive the code?{' '}
+              <button onClick={handleResendOtp} className="text-[#2D6A2F] font-medium hover:underline">Resend</button>
+            </p>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-16">
-        <div className="w-20 h-20 rounded-full bg-[#2D6A2F] flex items-center justify-center mb-6">
-          <CheckCircle2 className="w-10 h-10 text-white" />
+        <TransbillLogo />
+        <div className="w-full max-w-sm mt-10">
+          <div className="text-center mb-8">
+            <div className="w-14 h-14 rounded-full bg-[#2D6A2F] flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-7 h-7 text-white" />
+            </div>
+            <h2 className="font-extrabold text-xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Application Received, {firstName}!</h2>
+            <p className="text-[#7A7A8A] text-sm leading-relaxed">Create a password to save your progress and access your assessment results anytime.</p>
+          </div>
+          {regError && <p className="text-[#D32F2F] text-sm text-center mb-4 font-medium">{regError}</p>}
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Email</label>
+              <input className="form-input bg-[#F8FAF8] text-[#7A7A8A]" value={form.email} disabled />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Create a Password</label>
+              <input className="form-input" type="password" placeholder="Minimum 6 characters"
+                value={regPassword} onChange={e => setRegPassword(e.target.value)} required />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Confirm Password</label>
+              <input className="form-input" type="password" placeholder="Re-enter your password"
+                value={regConfirm} onChange={e => setRegConfirm(e.target.value)} required />
+            </div>
+            <button type="submit" disabled={regLoading}
+              className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md mt-2">
+              {regLoading ? 'Creating account...' : 'Create Account & Continue →'}
+            </button>
+          </form>
         </div>
-        <h1 className="font-extrabold text-2xl sm:text-3xl tracking-[-1px] text-[#1A1A1A] text-center mb-3">
-          Application Received, {firstName}!
-        </h1>
-        <p className="text-[#555555] text-center max-w-md text-[15px] leading-relaxed mb-8">
-          You will now complete a short competency assessment. This test has 25 questions and must be completed within 30 minutes. You cannot pause or go back. Make sure you are in a quiet place with a stable internet connection before you begin.
-        </p>
-        <button
-          onClick={() => navigate(`/assessment?id=${applicantId}`)}
-          className="bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base px-8 py-3.5 rounded-full transition-all shadow-md"
-        >
-          I'm Ready — Start the Assessment →
-        </button>
-        <p className="text-[#7A7A8A] text-xs text-center max-w-sm mt-5">
-          If you close this page before completing the test, your application will remain saved but you will need to re-enter your email to resume the assessment.
-        </p>
       </div>
     );
   }

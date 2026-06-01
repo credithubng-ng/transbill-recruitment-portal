@@ -5,6 +5,7 @@ import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
 import { QUESTIONS, CATEGORY_QUOTAS } from '../lib/assessmentQuestions';
 import { Clock } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
 
 const TOTAL_TIME = 30 * 60;
 
@@ -60,6 +61,7 @@ function makeSignature(questions) {
 
 export default function Assessment() {
   const navigate = useNavigate();
+  const { user, isLoadingAuth } = useAuth();
   const urlParams = new URLSearchParams(window.location.search);
   const applicantId = urlParams.get('id');
 
@@ -75,6 +77,13 @@ export default function Assessment() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [result, setResult] = useState(null);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoadingAuth && !user) {
+      window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+    }
+  }, [isLoadingAuth, user]);
 
   // Prevent back navigation during test
   useEffect(() => {
@@ -160,6 +169,14 @@ export default function Assessment() {
   };
 
   const timerColor = timeLeft < 300 ? 'text-[#D32F2F]' : timeLeft < 600 ? 'text-[#F57C00]' : 'text-[#2D6A2F]';
+
+  if (isLoadingAuth || !user) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (result) return <ResultScreen result={result} />;
 
