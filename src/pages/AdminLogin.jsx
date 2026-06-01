@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
 import TransbillLogo from '../components/TransbillLogo';
-
-const ADMIN_PASSWORD = 'TransbillHR2026';
+import { base44 } from '@/api/base44Client';
 
 export default function AdminLogin({ onLogin }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
+    setLoading(true);
+    setError('');
+    const res = await base44.functions.invoke('adminAuth', { password });
+    setLoading(false);
+    if (res.data?.success) {
       sessionStorage.setItem('transbill_admin', 'true');
       onLogin();
     } else {
@@ -35,8 +39,8 @@ export default function AdminLogin({ onLogin }) {
               className="w-full px-4 py-3 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm"
             />
             {error && <p className="text-[#D32F2F] text-xs font-medium">{error}</p>}
-            <button type="submit" className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold py-3 rounded-full transition-all">
-              Login
+            <button type="submit" disabled={loading} className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-60 text-white font-bold py-3 rounded-full transition-all">
+              {loading ? 'Verifying...' : 'Login'}
             </button>
           </form>
         </div>
