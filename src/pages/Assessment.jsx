@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
@@ -6,12 +6,39 @@ import ProgressIndicator from '../components/ProgressIndicator';
 import { QUESTIONS } from '../lib/assessmentQuestions';
 import { Clock } from 'lucide-react';
 
+// Fisher-Yates shuffle
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Returns questions with shuffled option order and updated correct index
+function buildShuffledQuestions(questions) {
+  const shuffledQs = shuffle(questions);
+  return shuffledQs.map(q => {
+    const correctText = q.options[q.correct];
+    const shuffledOptions = shuffle(q.options);
+    return {
+      ...q,
+      options: shuffledOptions,
+      correct: shuffledOptions.indexOf(correctText)
+    };
+  });
+}
+
 const TOTAL_TIME = 30 * 60; // 30 minutes in seconds
 
 export default function Assessment() {
   const navigate = useNavigate();
   const urlParams = new URLSearchParams(window.location.search);
   const applicantId = urlParams.get('id');
+
+  // Build shuffled questions once per session
+  const sessionQuestions = useMemo(() => buildShuffledQuestions(QUESTIONS), []);
 
   const [started, setStarted] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
@@ -39,7 +66,7 @@ export default function Assessment() {
     setSubmitted(true);
     let score = 0;
     finalAnswers.forEach((a, i) => {
-      if (a === QUESTIONS[i].correct) score++;
+      if (a === sessionQuestions[i].correct) score++;
     });
 
     let status;
@@ -126,7 +153,7 @@ export default function Assessment() {
     );
   }
 
-  const q = QUESTIONS[currentQ];
+  const q = sessionQuestions[currentQ];
   const progress = ((currentQ + 1) / 25) * 100;
 
   return (
