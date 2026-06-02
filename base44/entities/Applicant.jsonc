@@ -164,6 +164,9 @@
         "Awaiting Registration",
         "Registered on Transbill.ng",
         "Interview Scheduling",
+        "Interview Scheduled",
+        "Interview Outcome \u2013 Pass",
+        "Interview Outcome \u2013 Hold",
         "Final Hiring Decision",
         "Closed \u2013 Not Progressed"
       ]
@@ -196,6 +199,35 @@
       "default": false
     },
     "review_required_flag": {
+      "type": "boolean",
+      "default": false
+    },
+    "interview_scheduled_at": {
+      "type": "string",
+      "description": "ISO timestamp of the scheduled interview"
+    },
+    "interview_location": {
+      "type": "string",
+      "description": "Interview location or meeting link"
+    },
+    "interview_outcome": {
+      "type": "string",
+      "enum": [
+        "Pass",
+        "Fail",
+        "Hold"
+      ],
+      "description": "Outcome recorded by admin after interview"
+    },
+    "interview_outcome_notes": {
+      "type": "string",
+      "description": "Admin notes on interview outcome"
+    },
+    "interview_email_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "interview_outcome_email_sent": {
       "type": "boolean",
       "default": false
     }

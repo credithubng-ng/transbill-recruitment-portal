@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle, Clock } from 'lucide-react';
 import { QUESTIONS } from '../../lib/assessmentQuestions';
+import InterviewSection from './InterviewSection';
 
 // Build a lookup map from question ID to question object
 const Q_MAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
@@ -163,6 +164,9 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
               </div>
             </Section>
           )}
+
+          {/* Interview Section */}
+          <InterviewSection applicant={applicant} onUpdate={onUpdate} />
 
           {/* Admin notes */}
           <div>
