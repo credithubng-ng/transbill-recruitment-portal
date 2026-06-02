@@ -14,7 +14,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const nextUrl = new URLSearchParams(window.location.search).get('next') || '/';
+  const nextUrl = new URLSearchParams(window.location.search).get('next') || '/status';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,12 +38,12 @@ export default function Login() {
     <AuthLayout
       icon={LogIn}
       title="Welcome back"
-      subtitle="Log in to your account"
+      subtitle="Log in to check your application status"
       footer={
         <>
-          Don't have an account?{" "}
-          <Link to="/register" className="text-primary font-medium hover:underline">
-            Create one
+          Applied but no account?{" "}
+          <Link to="/apply" className="text-primary font-medium hover:underline">
+            Apply here
           </Link>
         </>
       }

@@ -215,8 +215,9 @@ export default function Apply() {
   return (
     <div className="min-h-screen bg-white">
       <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#E2E8E2]">
-        <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <TransbillLogo />
+          <a href="/login" className="text-sm text-[#2D6A2F] font-medium hover:underline">Already applied? Check status →</a>
         </div>
       </div>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">
