@@ -259,7 +259,7 @@
           }
         },
         {
-          "created_by_id": "{{user.id}}"
+          "data.email": "{{user.email}}"
         }
       ]
     },
@@ -271,7 +271,7 @@
           }
         },
         {
-          "created_by_id": "{{user.id}}"
+          "data.email": "{{user.email}}"
         }
       ]
     },
