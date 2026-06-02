@@ -27,7 +27,7 @@ export default function Admin() {
   }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [filters, setFilters] = useState({
-    search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all'
+    search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all'
   });
   const queryClient = useQueryClient();
 
@@ -50,6 +50,12 @@ export default function Admin() {
         if (filters.score === '84-100' && (pct < 84 || pct > 100)) return false;
         if (filters.score === '64-83' && (pct < 64 || pct > 83)) return false;
         if (filters.score === '0-63' && (pct < 0 || pct > 63)) return false;
+      }
+      if (filters.flags !== 'all') {
+        if (filters.flags === 'review' && !a.review_required_flag) return false;
+        if (filters.flags === 'inflation' && !a.experience_inflation_flag) return false;
+        if (filters.flags === 'rapid' && !a.rapid_completion_flag) return false;
+        if (filters.flags === 'duplicate' && !a.duplicate_signature_flag) return false;
       }
       return true;
     });

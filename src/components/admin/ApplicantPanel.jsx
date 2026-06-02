@@ -1,12 +1,19 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X } from 'lucide-react';
+import { X, AlertTriangle, Clock } from 'lucide-react';
 import { QUESTIONS } from '../../lib/assessmentQuestions';
 
 // Build a lookup map from question ID to question object
 const Q_MAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
 
 const STATUS_OPTIONS = ['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'];
+
+function formatTime(seconds) {
+  if (!seconds) return '—';
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}m ${s}s`;
+}
 
 export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
   const [notes, setNotes] = useState(applicant.admin_notes || '');
@@ -20,7 +27,16 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
     setSaving(false);
   };
 
-  const scorePercent = applicant.assessment_completed ? Math.round((applicant.assessment_score / 25) * 100) : null;
+  const scorePercent = applicant.assessment_completed
+    ? Math.round((applicant.assessment_score / 25) * 100)
+    : null;
+
+  const riskFlags = [
+    applicant.rapid_completion_flag && 'Rapid Completion (<7 min)',
+    applicant.very_rapid_completion_flag && 'Very Rapid Completion (<4 min)',
+    applicant.experience_inflation_flag && 'Experience Inflation Suspected',
+    applicant.duplicate_signature_flag && 'Duplicate Question Set',
+  ].filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -31,6 +47,21 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           <button onClick={onClose} className="text-[#7A7A8A] hover:text-[#1A1A1A]"><X className="w-5 h-5" /></button>
         </div>
         <div className="px-5 py-5 space-y-6">
+
+          {/* Risk Flags */}
+          {riskFlags.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-[10px] p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-red-700 font-bold text-xs mb-2">
+                <AlertTriangle className="w-4 h-4" /> Risk Flags
+              </div>
+              {riskFlags.map(f => (
+                <p key={f} className="text-xs text-red-600 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" /> {f}
+                </p>
+              ))}
+            </div>
+          )}
+
           {/* Status */}
           <div>
             <label className="text-xs font-semibold text-[#7A7A8A] mb-1 block">Status</label>
@@ -53,39 +84,60 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
             <InfoRow label="3MTT Graduate" value={applicant.is_3mtt} />
             <InfoRow label="SAIL Alumnus" value={applicant.is_sail} />
             <InfoRow label="Platforms" value={applicant.social_platforms?.join(', ')} />
-            <InfoRow label="Affiliate Experience" value={applicant.affiliate_experience} />
-            {applicant.affiliate_experience_desc && <InfoRow label="Experience Details" value={applicant.affiliate_experience_desc} />}
+            <InfoRow label="Affiliate Exp." value={applicant.affiliate_experience} />
+            {applicant.affiliate_experience_desc && <InfoRow label="Exp. Details" value={applicant.affiliate_experience_desc} />}
             <InfoRow label="Motivation" value={applicant.motivation} />
-            {applicant.linkedin_url && <InfoRow label="LinkedIn/Portfolio" value={applicant.linkedin_url} />}
+            {applicant.linkedin_url && <InfoRow label="LinkedIn" value={applicant.linkedin_url} />}
             <InfoRow label="Referral Source" value={applicant.referral_source} />
           </Section>
 
           {/* Assessment results */}
           {applicant.assessment_completed && (
             <Section title="Assessment Results">
-              <div className="bg-[#F8FAF8] rounded-lg p-4 mb-1">
-                <p className="text-xs text-[#7A7A8A]">Score</p>
-                <p className="text-2xl font-extrabold text-[#1A1A1A]">{applicant.assessment_score}/25 ({scorePercent}%)</p>
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="bg-[#F8FAF8] rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-[#7A7A8A]">Score</p>
+                  <p className="text-xl font-extrabold text-[#1A1A1A]">{applicant.assessment_score}/25</p>
+                  <p className="text-xs text-[#7A7A8A]">{scorePercent}%</p>
+                </div>
+                <div className="bg-[#F8FAF8] rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-[#7A7A8A]">Status</p>
+                  <p className="text-xs font-bold text-[#1A1A1A] leading-tight mt-1">{applicant.status}</p>
+                </div>
+                <div className="bg-[#F8FAF8] rounded-lg p-3 text-center">
+                  <p className="text-[10px] text-[#7A7A8A]">Time</p>
+                  <p className="text-sm font-bold text-[#1A1A1A] mt-1 flex items-center justify-center gap-1">
+                    <Clock className="w-3 h-3" />{formatTime(applicant.assessment_completion_time)}
+                  </p>
+                </div>
               </div>
+
               {applicant.question_set_signature && (
                 <div className="mb-3">
                   <p className="text-[10px] text-[#7A7A8A] font-medium">Question Set Signature</p>
                   <p className="text-[10px] text-[#555555] break-all font-mono bg-[#F8FAF8] px-2 py-1 rounded">{applicant.question_set_signature}</p>
                 </div>
               )}
+
               <div className="space-y-2">
                 {(applicant.assessment_question_ids || []).map((qId, i) => {
                   const baseQ = Q_MAP[qId];
                   if (!baseQ) return null;
 
-                  // Options as shown to this candidate (may be reordered)
-                  const shownOptions = applicant.assessment_option_order?.[qId] || baseQ.options;
-                  // Correct text from original question
-                  const correctText = baseQ.options[baseQ.correct];
-                  // What the candidate selected (index into shownOptions)
-                  const selectedIdx = applicant.assessment_answers?.[i];
-                  const selectedText = selectedIdx >= 0 ? shownOptions[selectedIdx] : null;
-                  const isCorrect = selectedText === correctText;
+                  // Options as shown to this candidate
+                  const shownOptionTexts = applicant.assessment_option_order?.[qId] || baseQ.options.map(o => o.text);
+                  // Correct answer key as recorded (post-shuffle)
+                  const correctKey = applicant.assessment_correct_answers?.[qId];
+                  // Candidate's selected key
+                  const selectedKey = applicant.assessment_answers?.[i];
+                  // Correct text (from original question)
+                  const correctText = correctKey
+                    ? shownOptionTexts[['A','B','C','D'].indexOf(correctKey)]
+                    : baseQ.options.find(o => o.key === baseQ.correctAnswer)?.text;
+                  const selectedText = selectedKey
+                    ? shownOptionTexts[['A','B','C','D'].indexOf(selectedKey)]
+                    : null;
+                  const isCorrect = selectedKey && selectedKey === correctKey;
 
                   return (
                     <div key={i} className={`text-xs p-2.5 rounded-lg border ${isCorrect ? 'border-[#2D6A2F]/20 bg-[#EBF5EB]' : 'border-[#D32F2F]/20 bg-red-50'}`}>
@@ -94,20 +146,20 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
                           {isCorrect ? '✓' : '✗'}
                         </span>
                         <div>
-                          <p className="font-medium text-[#1A1A1A]">Q{i + 1}. {baseQ.question}</p>
-                          <p className="text-[#555555] mt-0.5">Candidate answered: <span className="font-medium">{selectedText || 'No answer'}</span></p>
-                          {!isCorrect && (
-                            <p className="text-[#2D6A2F] mt-0.5">Correct answer: <span className="font-medium">{correctText}</span></p>
+                          <p className="font-medium text-[#1A1A1A]">Q{i + 1}. {baseQ.questionText}</p>
+                          <p className="text-[10px] text-[#7A7A8A] mt-0.5 capitalize">{baseQ.category} · {baseQ.difficulty}</p>
+                          <p className="text-[#555555] mt-0.5">Answered: <span className="font-medium">{selectedText || 'No answer'}</span></p>
+                          {!isCorrect && correctText && (
+                            <p className="text-[#2D6A2F] mt-0.5">Correct: <span className="font-medium">{correctText}</span></p>
+                          )}
+                          {baseQ.explanationForAdmin && (
+                            <p className="text-[#7A7A8A] mt-0.5 italic text-[10px]">{baseQ.explanationForAdmin}</p>
                           )}
                         </div>
                       </div>
                     </div>
                   );
                 })}
-                {/* Fallback for old records without question IDs */}
-                {!applicant.assessment_question_ids && applicant.assessment_answers && (
-                  <p className="text-xs text-[#7A7A8A] italic">Detailed question breakdown not available for this submission.</p>
-                )}
               </div>
             </Section>
           )}

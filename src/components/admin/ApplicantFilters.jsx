@@ -27,6 +27,8 @@ export default function ApplicantFilters({ filters, setFilters }) {
         options={[['all', 'All'], ['Yes', 'Yes'], ['No', 'No']]} />
       <FilterSelect label="Score" value={filters.score} onChange={v => handleChange('score', v)}
         options={[['all', 'All'], ['84-100', '84–100%'], ['64-83', '64–83%'], ['0-63', 'Below 64%']]} />
+      <FilterSelect label="⚠ Flags" value={filters.flags} onChange={v => handleChange('flags', v)}
+        options={[['all', 'All'], ['review', 'Review Required'], ['inflation', 'Exp. Inflation'], ['rapid', 'Rapid Completion'], ['duplicate', 'Dup. Signature']]} />
     </div>
   );
 }

@@ -99,9 +99,9 @@
     "assessment_answers": {
       "type": "array",
       "items": {
-        "type": "number"
+        "type": "string"
       },
-      "description": "Candidate's selected option index per question (in question order shown)"
+      "description": "Candidate's selected option key (A/B/C/D) per question in order shown"
     },
     "assessment_question_ids": {
       "type": "array",
@@ -114,13 +114,21 @@
       "type": "object",
       "description": "Map of questionId to array of option texts in the order shown"
     },
+    "assessment_correct_answers": {
+      "type": "object",
+      "description": "Map of questionId to correct answer key (A/B/C/D) as shown to candidate"
+    },
+    "assessment_completion_time": {
+      "type": "number",
+      "description": "Seconds taken to complete the assessment"
+    },
     "assessment_completed": {
       "type": "boolean",
       "default": false
     },
     "question_set_signature": {
       "type": "string",
-      "description": "Sorted question ID signature for uniqueness tracking"
+      "description": "Sorted question ID signature"
     },
     "status": {
       "type": "string",
@@ -134,6 +142,26 @@
     },
     "admin_notes": {
       "type": "string"
+    },
+    "rapid_completion_flag": {
+      "type": "boolean",
+      "default": false
+    },
+    "very_rapid_completion_flag": {
+      "type": "boolean",
+      "default": false
+    },
+    "experience_inflation_flag": {
+      "type": "boolean",
+      "default": false
+    },
+    "duplicate_signature_flag": {
+      "type": "boolean",
+      "default": false
+    },
+    "review_required_flag": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

@@ -125,7 +125,7 @@ export default function Apply() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = `/assessment?id=${applicantId}`;
+      window.location.href = `/assessment?id=${applicantId}&exp=${encodeURIComponent(form.years_experience)}`;
     } catch (err) {
       setRegError(err.message || 'Invalid code. Please try again.');
     } finally {

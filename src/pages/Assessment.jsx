@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
-import { QUESTIONS, CATEGORY_QUOTAS } from '../lib/assessmentQuestions';
+import { QUESTIONS, DIFFICULTY_MIX, CATEGORY_TARGETS } from '../lib/assessmentQuestions';
 import { Clock } from 'lucide-react';
 import { useAuth } from '@/lib/AuthContext';
 
@@ -19,60 +18,102 @@ function shuffle(arr) {
   return a;
 }
 
-// Pick n random items from array
 function pickRandom(arr, n) {
   return shuffle(arr).slice(0, n);
 }
 
-// Build a balanced 25-question set with shuffled options per question
-function buildQuestionSet() {
-  const byCategory = {};
+// Build adaptive 25-question set based on experience level
+function buildAdaptiveQuestionSet(yearsExperience) {
+  const mix = DIFFICULTY_MIX[yearsExperience] || DIFFICULTY_MIX['Less than 1 year'];
+
+  // Group questions by category + difficulty
+  const pool = {};
   for (const q of QUESTIONS) {
-    if (!byCategory[q.category]) byCategory[q.category] = [];
-    byCategory[q.category].push(q);
+    const key = `${q.category}__${q.difficulty}`;
+    if (!pool[key]) pool[key] = [];
+    pool[key].push(q);
   }
 
+  // Group all questions by difficulty
+  const byDifficulty = { medium: [], hard: [], advanced: [] };
+  for (const q of QUESTIONS) {
+    byDifficulty[q.difficulty]?.push(q);
+  }
+
+  // First pass: pick questions respecting CATEGORY_TARGETS and difficulty mix
+  // Try to balance categories within each difficulty tier
+  const categories = ['digital', 'affiliate', 'field', 'professionalism'];
   const selected = [];
-  for (const [cat, count] of Object.entries(CATEGORY_QUOTAS)) {
-    const pool = byCategory[cat] || [];
-    const picked = pickRandom(pool, Math.min(count, pool.length));
-    selected.push(...picked);
+  const difficultyQuotas = { ...mix };
+
+  // Iterate difficulty tiers
+  for (const diff of ['medium', 'hard', 'advanced']) {
+    let quota = difficultyQuotas[diff];
+    if (quota <= 0) continue;
+
+    // Distribute quota across categories proportionally
+    const catAlloc = {};
+    const total = Object.values(CATEGORY_TARGETS).reduce((a, b) => a + b, 0);
+    let remaining = quota;
+    categories.forEach((cat, i) => {
+      const share = i === categories.length - 1
+        ? remaining
+        : Math.round((CATEGORY_TARGETS[cat] / total) * quota);
+      catAlloc[cat] = share;
+      remaining -= share;
+    });
+
+    for (const cat of categories) {
+      const available = (pool[`${cat}__${diff}`] || []).filter(q => !selected.find(s => s.id === q.id));
+      const pick = pickRandom(available, catAlloc[cat]);
+      selected.push(...pick);
+    }
   }
 
-  // Shuffle the combined 25 questions
-  const shuffledSelected = shuffle(selected);
+  // If we don't have 25 yet (due to uneven pool), fill from remaining
+  if (selected.length < 25) {
+    const remaining = QUESTIONS.filter(q => !selected.find(s => s.id === q.id));
+    const extra = pickRandom(remaining, 25 - selected.length);
+    selected.push(...extra);
+  }
 
-  // Randomise option order per question, track new correct index
+  // Shuffle the combined questions
+  const shuffledSelected = shuffle(selected).slice(0, 25);
+
+  // Randomise option order per question
   return shuffledSelected.map(q => {
-    const correctText = q.options[q.correct];
+    const correctText = q.options.find(o => o.key === q.correctAnswer)?.text;
     const shuffledOptions = shuffle([...q.options]);
+    // Find new key for correct answer after shuffle
+    const newCorrectKey = shuffledOptions.find(o => o.text === correctText)?.key;
     return {
       ...q,
       options: shuffledOptions,
-      correct: shuffledOptions.indexOf(correctText)
+      correctAnswer: newCorrectKey,
+      _correctText: correctText,
     };
   });
 }
 
-// Signature = sorted question IDs joined
 function makeSignature(questions) {
   return [...questions.map(q => q.id)].sort((a, b) => a - b).join(',');
 }
 
 export default function Assessment() {
-  const navigate = useNavigate();
   const { user, isLoadingAuth } = useAuth();
   const urlParams = new URLSearchParams(window.location.search);
   const applicantId = urlParams.get('id');
+  const yearsExperience = urlParams.get('exp') || 'Less than 1 year';
 
-  const sessionQuestions = useMemo(() => buildQuestionSet(), []);
+  const sessionQuestions = useMemo(() => buildAdaptiveQuestionSet(decodeURIComponent(yearsExperience)), [yearsExperience]);
   const signature = useMemo(() => makeSignature(sessionQuestions), [sessionQuestions]);
 
   const [started, setStarted] = useState(false);
   const [currentQ, setCurrentQ] = useState(0);
-  const [answers, setAnswers] = useState(Array(25).fill(-1));
-  const [selected, setSelected] = useState(-1);
+  const [answers, setAnswers] = useState(Array(25).fill(null));
+  const [selected, setSelected] = useState(null);
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
+  const [startTime, setStartTime] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
@@ -105,9 +146,11 @@ export default function Assessment() {
     setSubmitError(null);
 
     try {
+      const completionTime = startTime ? Math.round((Date.now() - startTime) / 1000) : TOTAL_TIME;
+
       let score = 0;
       finalAnswers.forEach((a, i) => {
-        if (a === sessionQuestions[i].correct) score++;
+        if (a === sessionQuestions[i].correctAnswer) score++;
       });
 
       let status;
@@ -115,13 +158,21 @@ export default function Assessment() {
       else if (score >= 16) status = 'Reserve List';
       else status = 'Not Progressed';
 
+      // Build option order map: questionId -> array of option texts in shown order
+      const optionOrderMap = {};
+      sessionQuestions.forEach(q => {
+        optionOrderMap[q.id] = q.options.map(o => o.text);
+      });
+
       await base44.functions.invoke('submitAssessment', {
         applicantId,
         score,
         status,
-        finalAnswers,
+        finalAnswers,        // array of selected keys: ['A','B','C',...]
         sessionQuestions,
         signature,
+        completionTime,
+        yearsExperience: decodeURIComponent(yearsExperience),
       });
 
       setResult({ score, status });
@@ -131,7 +182,7 @@ export default function Assessment() {
     } finally {
       setSubmitting(false);
     }
-  }, [applicantId, submitted, sessionQuestions, signature]);
+  }, [applicantId, submitted, sessionQuestions, signature, startTime, yearsExperience]);
 
   // Timer
   useEffect(() => {
@@ -149,6 +200,11 @@ export default function Assessment() {
     return () => clearInterval(interval);
   }, [started, submitted, answers, submitAssessment]);
 
+  const handleStart = () => {
+    setStarted(true);
+    setStartTime(Date.now());
+  };
+
   const handleNext = () => {
     const newAnswers = [...answers];
     newAnswers[currentQ] = selected;
@@ -158,7 +214,7 @@ export default function Assessment() {
       submitAssessment(newAnswers);
     } else {
       setCurrentQ(currentQ + 1);
-      setSelected(-1);
+      setSelected(null);
     }
   };
 
@@ -191,6 +247,7 @@ export default function Assessment() {
   }
 
   if (!started) {
+    const expLabel = decodeURIComponent(yearsExperience);
     return (
       <div className="min-h-screen bg-white">
         <div className="border-b border-[#E2E8E2] px-4 py-3">
@@ -214,8 +271,11 @@ export default function Assessment() {
                 </li>
               ))}
             </ul>
-            <button onClick={() => setStarted(true)}
-              className="w-full mt-8 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
+            <p className="mt-4 text-xs text-[#7A7A8A] font-medium">
+              Questions adapted for: <span className="font-bold text-[#2D6A2F]">{expLabel}</span> experience
+            </p>
+            <button onClick={handleStart}
+              className="w-full mt-6 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
               Begin Assessment →
             </button>
           </div>
@@ -226,6 +286,12 @@ export default function Assessment() {
 
   const q = sessionQuestions[currentQ];
   const progress = ((currentQ + 1) / 25) * 100;
+  const catLabel = {
+    digital: 'Digital Marketing',
+    affiliate: 'Affiliate & Agent Activation',
+    field: 'Field Digital Marketing',
+    professionalism: 'Professionalism & Judgement',
+  }[q.category] || q.category;
 
   return (
     <div className="min-h-screen bg-white">
@@ -243,28 +309,28 @@ export default function Assessment() {
       </div>
 
       <div className="max-w-xl mx-auto px-4 py-8">
-        <p className="text-[#7A7A8A] text-sm font-medium mb-1 capitalize">{q.category.replace('affiliate', 'Affiliate Marketing').replace('digital', 'Digital Marketing').replace('field', 'Field Marketing').replace('professionalism', 'Professionalism')}</p>
+        <p className="text-[#7A7A8A] text-sm font-medium mb-1">{catLabel}</p>
         <p className="text-[#2D6A2F] font-bold text-sm mb-4">Question {currentQ + 1} of 25</p>
-        <h2 className="font-bold text-lg sm:text-xl text-[#1A1A1A] leading-snug mb-6">{q.question}</h2>
+        <h2 className="font-bold text-lg sm:text-xl text-[#1A1A1A] leading-snug mb-6">{q.questionText}</h2>
         <div className="space-y-3">
-          {q.options.map((opt, i) => (
-            <button key={i} onClick={() => setSelected(i)}
+          {q.options.map((opt) => (
+            <button key={opt.key} onClick={() => setSelected(opt.key)}
               className={`w-full text-left p-4 rounded-[14px] border-2 transition-all text-[15px] ${
-                selected === i ? 'border-[#2D6A2F] bg-[#EBF5EB] font-medium' : 'border-[#E2E8E2] bg-white hover:border-[#2D6A2F]/40'
+                selected === opt.key ? 'border-[#2D6A2F] bg-[#EBF5EB] font-medium' : 'border-[#E2E8E2] bg-white hover:border-[#2D6A2F]/40'
               }`}>
               <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-3 text-xs font-bold flex-shrink-0 ${
-                selected === i ? 'bg-[#2D6A2F] text-white' : 'bg-[#E2E8E2] text-[#7A7A8A]'
+                selected === opt.key ? 'bg-[#2D6A2F] text-white' : 'bg-[#E2E8E2] text-[#7A7A8A]'
               }`}>
-                {String.fromCharCode(65 + i)}
+                {opt.key}
               </span>
-              {opt}
+              {opt.text}
             </button>
           ))}
         </div>
         {submitError && (
           <p className="mt-4 text-center text-[#D32F2F] text-sm font-medium">{submitError}</p>
         )}
-        <button onClick={handleNext} disabled={selected === -1 || submitting}
+        <button onClick={handleNext} disabled={selected === null || submitting}
           className="w-full mt-4 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
           {submitting ? 'Submitting...' : currentQ === 24 ? 'Submit Assessment' : 'Next Question →'}
         </button>

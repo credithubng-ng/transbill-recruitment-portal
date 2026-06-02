@@ -26,6 +26,7 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">SAIL</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Score</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Status</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Flags</th>
               <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Date</th>
             </tr>
           </thead>
@@ -49,6 +50,9 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                   <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${statusBadge(a.status)}`}>
                     {a.status}
                   </span>
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {a.review_required_flag && <span title="Review Required" className="text-red-500 font-bold text-base">⚠</span>}
                 </td>
                 <td className="px-4 py-3 text-[#7A7A8A] text-xs hidden lg:table-cell">
                   {a.created_date ? format(new Date(a.created_date), 'MMM d, yyyy') : '—'}
