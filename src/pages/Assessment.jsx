@@ -341,18 +341,20 @@ export default function Assessment() {
 
 function ResultScreen({ result }) {
   const { status } = result;
+  const isPassing = status === 'Interview Ready' || status === 'Reserve List';
+
   const config = {
     'Interview Ready': {
       icon: '✅',
       bg: 'bg-[#2D6A2F]',
       heading: "Congratulations — You've Passed!",
-      body: 'You have successfully completed the Transbill competency assessment. Our recruitment team will contact you within 5 working days to schedule your interview. Please keep your phone reachable.'
+      body: 'You have successfully completed the Transbill competency assessment. The next step requires registration on Transbill.ng. Please complete registration within 7 days.'
     },
     'Reserve List': {
       icon: '🟡',
       bg: 'bg-[#F57C00]',
       heading: 'Assessment Completed.',
-      body: 'Thank you for completing the Transbill competency assessment. Your application is currently under review. We will be in touch if your profile meets our requirements for the current intake.'
+      body: 'Thank you for completing the Transbill competency assessment. You have successfully completed this stage. The next step requires registration on Transbill.ng. Please complete registration within 7 days.'
     },
     'Not Progressed': {
       icon: '⚪',
@@ -377,6 +379,19 @@ function ResultScreen({ result }) {
         </h1>
         <p className="text-[#555555] text-center max-w-md text-[15px] leading-relaxed">
           {config.body}
+        </p>
+        {isPassing && (
+          <a
+            href="https://transbill.ng"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base px-8 py-3.5 rounded-full transition-all shadow-md"
+          >
+            Register on Transbill.ng →
+          </a>
+        )}
+        <p className="mt-4 text-xs text-[#7A7A8A] text-center">
+          A confirmation email has been sent to your registered email address.
         </p>
       </div>
     </div>

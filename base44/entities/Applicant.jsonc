@@ -126,6 +126,18 @@
       "type": "boolean",
       "default": false
     },
+    "assessment_completed_at": {
+      "type": "string",
+      "description": "ISO timestamp when assessment was completed"
+    },
+    "assessment_email_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "assessment_email_sent_at": {
+      "type": "string",
+      "description": "ISO timestamp when outcome email was sent"
+    },
     "question_set_signature": {
       "type": "string",
       "description": "Sorted question ID signature"
@@ -139,6 +151,30 @@
         "Not Progressed"
       ],
       "default": "Applied"
+    },
+    "candidate_stage": {
+      "type": "string",
+      "enum": [
+        "Assessment Started",
+        "Assessment Completed",
+        "Interview Ready",
+        "Reserve List",
+        "Not Progressed",
+        "Email Sent",
+        "Awaiting Registration",
+        "Registered on Transbill.ng",
+        "Interview Scheduling",
+        "Final Hiring Decision",
+        "Closed \u2013 Not Progressed"
+      ]
+    },
+    "registration_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "registration_completed_at": {
+      "type": "string",
+      "description": "ISO timestamp when Transbill.ng registration was confirmed"
     },
     "admin_notes": {
       "type": "string"

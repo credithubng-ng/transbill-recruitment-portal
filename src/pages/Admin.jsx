@@ -27,7 +27,7 @@ export default function Admin() {
   }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [filters, setFilters] = useState({
-    search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all'
+    search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
   });
   const queryClient = useQueryClient();
 
@@ -57,16 +57,20 @@ export default function Admin() {
         if (filters.flags === 'rapid' && !a.rapid_completion_flag) return false;
         if (filters.flags === 'duplicate' && !a.duplicate_signature_flag) return false;
       }
+      if (filters.stage !== 'all' && a.candidate_stage !== filters.stage) return false;
       return true;
     });
   }, [applicants, filters]);
 
   const exportCSV = () => {
-    const headers = ['Full Name', 'Phone', 'Email', 'Lagos Resident', '3MTT Graduate', 'SAIL Alumni', 'Score %', 'Status', 'Gender', 'State', 'LGA', 'Education', 'Experience', 'Referral Source', 'Date Applied'];
+    const headers = ['Full Name', 'Phone', 'Email', 'Lagos Resident', '3MTT Graduate', 'SAIL Alumni', 'Score %', 'Status', 'Candidate Stage', 'Email Sent', 'Email Sent At', 'Registration Completed', 'Registration At', 'Gender', 'State', 'LGA', 'Education', 'Experience', 'Referral Source', 'Date Applied'];
     const rows = filtered.map(a => [
       a.full_name, a.phone, a.email, a.lagos_resident, a.is_3mtt, a.is_sail,
       a.assessment_completed ? Math.round((a.assessment_score / 25) * 100) : '',
-      a.status, a.gender, a.state_of_origin, a.current_lga, a.education,
+      a.status, a.candidate_stage || '',
+      a.assessment_email_sent ? 'Yes' : 'No', a.assessment_email_sent_at || '',
+      a.registration_completed ? 'Yes' : 'No', a.registration_completed_at || '',
+      a.gender, a.state_of_origin, a.current_lga, a.education,
       a.years_experience, a.referral_source, a.created_date || ''
     ]);
     const csv = [headers, ...rows].map(r => r.map(c => `"${(c ?? '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');

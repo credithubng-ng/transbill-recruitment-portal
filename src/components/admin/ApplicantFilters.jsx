@@ -29,6 +29,17 @@ export default function ApplicantFilters({ filters, setFilters }) {
         options={[['all', 'All'], ['84-100', '84–100%'], ['64-83', '64–83%'], ['0-63', 'Below 64%']]} />
       <FilterSelect label="⚠ Flags" value={filters.flags} onChange={v => handleChange('flags', v)}
         options={[['all', 'All'], ['review', 'Review Required'], ['inflation', 'Exp. Inflation'], ['rapid', 'Rapid Completion'], ['duplicate', 'Dup. Signature']]} />
+      <FilterSelect label="Stage" value={filters.stage} onChange={v => handleChange('stage', v)}
+        options={[
+          ['all', 'All Stages'],
+          ['Interview Ready', 'Interview Ready'],
+          ['Reserve List', 'Reserve List'],
+          ['Not Progressed', 'Not Progressed'],
+          ['Awaiting Registration', 'Awaiting Registration'],
+          ['Registered on Transbill.ng', 'Registered'],
+          ['Interview Scheduling', 'Interview Scheduling'],
+          ['Closed – Not Progressed', 'Closed'],
+        ]} />
     </div>
   );
 }
