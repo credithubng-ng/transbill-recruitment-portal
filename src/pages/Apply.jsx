@@ -95,7 +95,7 @@ export default function Apply() {
       setSubmitted(true);
       setShowRegister(true);
     } catch (err) {
-      setErrors({ submit: 'Something went wrong. Please check your connection and try again.' });
+      setErrors({ submit: `Something went wrong: ${err?.message || 'Please check your connection and try again.'}` });
     } finally {
       setSubmitting(false);
     }
