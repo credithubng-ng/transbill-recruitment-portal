@@ -24,48 +24,56 @@ Deno.serve(async (req) => {
       assessment_completed: false
     });
 
-    // Send confirmation email
+    // Send confirmation email (best-effort — don't block submission if it fails)
     const firstName = (body.full_name || '').split(' ')[0] || 'Applicant';
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to: email,
-      from_name: 'Transbill Recruitment',
-      subject: 'Application Received – Transbill Solutions Limited',
-      body: `Dear ${firstName},\n\nThank you for applying to the Digital Marketing Associate role at Transbill Solutions Limited.\n\nYour application has been successfully received. The next step is to complete a short competency assessment. Please check the confirmation page for your assessment link, or contact us if you need assistance.\n\nWe will be in touch with further updates.\n\nWarm regards,\nTransbill Recruitment Team`
-    });
+    try {
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: email,
+        from_name: 'Transbill Recruitment',
+        subject: 'Application Received – Transbill Solutions Limited',
+        body: `Dear ${firstName},\n\nThank you for applying to the Digital Marketing Associate role at Transbill Solutions Limited.\n\nYour application has been successfully received. The next step is to complete a short competency assessment. Please check the confirmation page for your assessment link, or contact us if you need assistance.\n\nWe will be in touch with further updates.\n\nWarm regards,\nTransbill Recruitment Team`
+      });
+    } catch (_emailErr) {
+      // Email failed silently — applicant record still created
+    }
 
-    // Append row to Google Sheet
-    const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlesheets');
-    const sheetId = '1YkPLYtvmNlycnqtEKqjFDK5DANEu4qO7GKHuCJjIGpA';
-    const row = [
-      new Date().toISOString(),
-      body.full_name || '',
-      email,
-      body.phone || '',
-      body.gender || '',
-      body.state_of_origin || '',
-      body.current_lga || '',
-      body.lagos_resident || '',
-      body.education || '',
-      body.years_experience || '',
-      body.is_3mtt || '',
-      body.is_sail || '',
-      (body.social_platforms || []).join(', '),
-      body.affiliate_experience || '',
-      body.motivation || '',
-      body.linkedin_url || '',
-      body.referral_source || '',
-    ];
-    await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ values: [row] }),
-      }
-    );
+    // Append row to Google Sheet (best-effort)
+    try {
+      const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlesheets');
+      const sheetId = '1YkPLYtvmNlycnqtEKqjFDK5DANEu4qO7GKHuCJjIGpA';
+      const row = [
+        new Date().toISOString(),
+        body.full_name || '',
+        email,
+        body.phone || '',
+        body.gender || '',
+        body.state_of_origin || '',
+        body.current_lga || '',
+        body.lagos_resident || '',
+        body.education || '',
+        body.years_experience || '',
+        body.is_3mtt || '',
+        body.is_sail || '',
+        (body.social_platforms || []).join(', '),
+        body.affiliate_experience || '',
+        body.motivation || '',
+        body.linkedin_url || '',
+        body.referral_source || '',
+      ];
+      await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1!A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ values: [row] }),
+        }
+      );
+    } catch (_sheetErr) {
+      // Sheet write failed silently — applicant record still created
+    }
 
     return Response.json({ id: applicant.id });
   } catch (error) {
