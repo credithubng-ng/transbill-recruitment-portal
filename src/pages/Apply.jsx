@@ -15,6 +15,9 @@ const REFERRAL_OPTIONS = ['SAIL Alumni Network', '3MTT Community', 'Social Media
 
 export default function Apply() {
   const navigate = useNavigate();
+
+  React.useEffect(() => { window.scrollTo(0, 0); }, []);
+
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', gender: '', state_of_origin: '', current_lga: '',
     lagos_resident: '', education: '', years_experience: '', is_3mtt: '', is_sail: '',
