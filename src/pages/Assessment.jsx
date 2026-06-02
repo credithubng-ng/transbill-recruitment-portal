@@ -80,19 +80,8 @@ function buildAdaptiveQuestionSet(yearsExperience) {
   // Shuffle the combined questions
   const shuffledSelected = shuffle(selected).slice(0, 25);
 
-  // Randomise option order per question
-  return shuffledSelected.map(q => {
-    const correctText = q.options.find(o => o.key === q.correctAnswer)?.text;
-    const shuffledOptions = shuffle([...q.options]);
-    // Find new key for correct answer after shuffle
-    const newCorrectKey = shuffledOptions.find(o => o.text === correctText)?.key;
-    return {
-      ...q,
-      options: shuffledOptions,
-      correctAnswer: newCorrectKey,
-      _correctText: correctText,
-    };
-  });
+  // Options always shown in fixed A/B/C/D order — no shuffling
+  return shuffledSelected.map(q => ({ ...q }));
 }
 
 function makeSignature(questions) {
