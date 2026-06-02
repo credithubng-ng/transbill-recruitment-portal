@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Append row to Google Sheet (best-effort)
     try {
       const { accessToken } = await base44.asServiceRole.connectors.getConnection('googlesheets');
-      const sheetId = '1YkPLYtvmNlycnqtEKqjFDK5DANEu4qO7GKHuCJjIGpA';
+      const sheetId = Deno.env.get('GOOGLE_SHEET_ID');
       const row = [
         new Date().toISOString(),
         body.full_name || '',
