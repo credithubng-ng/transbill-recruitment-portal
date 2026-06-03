@@ -31,7 +31,7 @@ export default function Admin() {
   });
   const queryClient = useQueryClient();
 
-  const { data: applicants = [], isLoading } = useQuery({
+  const { data: applicants = [], isLoading, isError } = useQuery({
     queryKey: ['applicants'],
     queryFn: () => base44.entities.Applicant.list('-created_date', 500),
     enabled: authenticated,
@@ -125,11 +125,17 @@ export default function Admin() {
           </button>
         </div>
 
+        {isError && (
+          <div className="bg-red-50 border border-red-300 text-red-700 rounded-lg px-4 py-3 text-sm font-medium">
+            Unable to load applicant data. Please refresh the page or check your connection.
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-4 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin" />
           </div>
-        ) : (
+        ) : !isError && (
           <>
             <StatsCards applicants={applicants} />
             <ApplicantFilters filters={filters} setFilters={setFilters} />
