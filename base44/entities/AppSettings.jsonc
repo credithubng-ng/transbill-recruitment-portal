@@ -1,0 +1,42 @@
+{
+  "name": "AppSettings",
+  "type": "object",
+  "properties": {
+    "settings_id": {
+      "type": "string",
+      "description": "Unique identifier, always 'main'"
+    },
+    "interview_ready_min": {
+      "type": "number",
+      "default": 21
+    },
+    "reserve_list_min": {
+      "type": "number",
+      "default": 16
+    },
+    "rapid_minutes": {
+      "type": "number",
+      "default": 7
+    },
+    "very_rapid_minutes": {
+      "type": "number",
+      "default": 4
+    },
+    "inflation_3_5_pct": {
+      "type": "number",
+      "default": 60
+    },
+    "inflation_5plus_pct": {
+      "type": "number",
+      "default": 70
+    },
+    "reserve_list_custom_email": {
+      "type": "boolean",
+      "default": false
+    },
+    "reserve_list_email_body": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

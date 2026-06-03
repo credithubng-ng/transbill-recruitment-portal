@@ -137,6 +137,13 @@ export default function Assessment() {
     try {
       const completionTime = startTime ? Math.round((Date.now() - startTime) / 1000) : TOTAL_TIME;
 
+      // Load saved thresholds (best-effort)
+      let thresholds = null;
+      try {
+        const records = await base44.entities.AppSettings.list();
+        if (records?.length > 0) thresholds = records[0];
+      } catch (_) {}
+
       const res = await base44.functions.invoke('submitAssessment', {
         applicantId,
         finalAnswers,
@@ -144,6 +151,7 @@ export default function Assessment() {
         signature,
         completionTime,
         yearsExperience: decodeURIComponent(yearsExperience),
+        thresholds,
       });
 
       setResult({ score: res.data.score, status: res.data.status });

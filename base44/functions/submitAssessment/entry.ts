@@ -12,12 +12,21 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const {
       applicantId, finalAnswers, sessionQuestions,
-      signature, completionTime, yearsExperience
+      signature, completionTime, yearsExperience,
+      thresholds
     } = await req.json();
 
     if (!applicantId) {
       return Response.json({ error: 'applicantId is required' }, { status: 400 });
     }
+
+    // Use passed thresholds or fall back to defaults
+    const interviewReadyMin = thresholds?.interview_ready_min ?? 21;
+    const reserveListMin = thresholds?.reserve_list_min ?? 16;
+    const rapidMinutes = thresholds?.rapid_minutes ?? 7;
+    const veryRapidMinutes = thresholds?.very_rapid_minutes ?? 4;
+    const inflation35Pct = thresholds?.inflation_3_5_pct ?? 60;
+    const inflation5Pct = thresholds?.inflation_5plus_pct ?? 70;
 
     // Calculate score server-side — never trust browser-sent score
     let score = 0;
@@ -26,8 +35,8 @@ Deno.serve(async (req) => {
     });
 
     let status;
-    if (score >= 21) status = 'Interview Ready';
-    else if (score >= 16) status = 'Reserve List';
+    if (score >= interviewReadyMin) status = 'Interview Ready';
+    else if (score >= reserveListMin) status = 'Reserve List';
     else status = 'Not Progressed';
 
     // Fetch applicant for email/name
@@ -57,12 +66,12 @@ Deno.serve(async (req) => {
     });
 
     // Risk flags
-    const rapid_completion_flag = completionTime !== undefined && completionTime < 7 * 60;
-    const very_rapid_completion_flag = completionTime !== undefined && completionTime < 4 * 60;
+    const rapid_completion_flag = completionTime !== undefined && completionTime < rapidMinutes * 60;
+    const very_rapid_completion_flag = completionTime !== undefined && completionTime < veryRapidMinutes * 60;
     const scorePercent = (score / 25) * 100;
     let experience_inflation_flag = false;
-    if (yearsExperience === '3–5 years' && scorePercent < 60) experience_inflation_flag = true;
-    if (yearsExperience === '5+ years' && scorePercent < 70) experience_inflation_flag = true;
+    if (yearsExperience === '3–5 years' && scorePercent < inflation35Pct) experience_inflation_flag = true;
+    if (yearsExperience === '5+ years' && scorePercent < inflation5Pct) experience_inflation_flag = true;
     const review_required_flag = rapid_completion_flag || experience_inflation_flag || duplicateFlag;
 
     // Determine candidate_stage and email content

@@ -7,7 +7,8 @@ import StatsCards from '../components/admin/StatsCards';
 import ApplicantFilters from '../components/admin/ApplicantFilters';
 import ApplicantTable from '../components/admin/ApplicantTable';
 import ApplicantPanel from '../components/admin/ApplicantPanel';
-import { Download, LogOut } from 'lucide-react';
+import SettingsPanel from '../components/admin/SettingsPanel';
+import { Download, LogOut, Settings } from 'lucide-react';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -26,6 +27,8 @@ export default function Admin() {
       .finally(() => setVerifying(false));
   }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [settingsRecord, setSettingsRecord] = useState(null);
   const [filters, setFilters] = useState({
     search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
   });
@@ -36,6 +39,14 @@ export default function Admin() {
     queryFn: () => base44.entities.Applicant.list('-created_date', 10000),
     enabled: authenticated,
   });
+
+  // Load settings when authenticated
+  useEffect(() => {
+    if (!authenticated) return;
+    base44.entities.AppSettings.list().then(records => {
+      if (records?.length > 0) setSettingsRecord(records[0]);
+    }).catch(() => {});
+  }, [authenticated]);
 
   const filtered = useMemo(() => {
     return applicants.filter(a => {
@@ -121,9 +132,14 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="font-extrabold text-2xl tracking-[-0.5px] text-[#1A1A1A]">Recruitment Dashboard</h1>
-          <button onClick={exportCSV} className="bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-semibold text-sm px-5 py-2.5 rounded-full flex items-center gap-2 transition-all">
-            <Download className="w-4 h-4" /> Export to CSV
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowSettings(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
+              <Settings className="w-4 h-4" /> Settings
+            </button>
+            <button onClick={exportCSV} className="bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-semibold text-sm px-5 py-2.5 rounded-full flex items-center gap-2 transition-all">
+              <Download className="w-4 h-4" /> Export to CSV
+            </button>
+          </div>
         </div>
 
         {applicants.length >= 9500 && (
@@ -156,6 +172,17 @@ export default function Admin() {
           applicant={selectedApplicant}
           onClose={() => setSelectedApplicant(null)}
           onUpdate={handleApplicantUpdate}
+        />
+      )}
+
+      {showSettings && (
+        <SettingsPanel
+          onClose={() => setShowSettings(false)}
+          applicants={applicants}
+          settingsRecord={settingsRecord}
+          onSettingsSaved={(saved) => {
+            setSettingsRecord(prev => ({ ...prev, ...saved }));
+          }}
         />
       )}
     </div>
