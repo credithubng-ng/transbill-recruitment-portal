@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
+import InterviewSlotPicker from '../components/status/InterviewSlotPicker';
 import { CheckCircle2, Clock, XCircle, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
 
 const STAGE_CONFIG = {
@@ -176,6 +177,24 @@ export default function ApplicantStatus() {
                     <p className="text-sm text-[#7A7A8A]">Assessment completed</p>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Interview Slot Picker */}
+            {applicant.candidate_stage === 'Interview Scheduling' && !applicant.interview_scheduled_at && (
+              <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-6">
+                <p className="text-xs font-semibold text-[#7A7A8A] uppercase tracking-wide mb-3">Book Your Interview</p>
+                <InterviewSlotPicker
+                  applicant={applicant}
+                  onBooked={(slot_datetime, location) => {
+                    setApplicant(prev => ({
+                      ...prev,
+                      interview_scheduled_at: slot_datetime,
+                      interview_location: location,
+                      candidate_stage: 'Interview Scheduled',
+                    }));
+                  }}
+                />
               </div>
             )}
 

@@ -1,0 +1,25 @@
+{
+  "name": "InterviewSlot",
+  "type": "object",
+  "properties": {
+    "slot_datetime": {
+      "type": "string",
+      "description": "ISO datetime of the interview slot (Africa/Lagos timezone)"
+    },
+    "location": {
+      "type": "string",
+      "description": "Interview location or meeting link"
+    },
+    "is_booked": {
+      "type": "boolean",
+      "default": false
+    },
+    "booked_by_applicant_id": {
+      "type": "string",
+      "description": "Applicant ID who booked this slot"
+    }
+  },
+  "required": [
+    "slot_datetime"
+  ]
+}

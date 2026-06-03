@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
+import SlotManager from './SlotManager';
 
 const DEFAULTS = {
   interview_ready_min: 21,
@@ -234,6 +235,11 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
               </button>
             )}
           </div>
+
+          {/* SECTION 5 — INTERVIEW SLOTS */}
+          <Section title="Interview Slots">
+            <SlotManager />
+          </Section>
 
           {/* SAVE */}
           <div className="space-y-3 pt-2 border-t border-[#E2E8E2]">
