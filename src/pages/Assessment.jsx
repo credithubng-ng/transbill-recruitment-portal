@@ -137,34 +137,16 @@ export default function Assessment() {
     try {
       const completionTime = startTime ? Math.round((Date.now() - startTime) / 1000) : TOTAL_TIME;
 
-      let score = 0;
-      finalAnswers.forEach((a, i) => {
-        if (a === sessionQuestions[i].correctAnswer) score++;
-      });
-
-      let status;
-      if (score >= 21) status = 'Interview Ready';
-      else if (score >= 16) status = 'Reserve List';
-      else status = 'Not Progressed';
-
-      // Build option order map: questionId -> array of option texts in shown order
-      const optionOrderMap = {};
-      sessionQuestions.forEach(q => {
-        optionOrderMap[q.id] = q.options.map(o => o.text);
-      });
-
-      await base44.functions.invoke('submitAssessment', {
+      const res = await base44.functions.invoke('submitAssessment', {
         applicantId,
-        score,
-        status,
-        finalAnswers,        // array of selected keys: ['A','B','C',...]
+        finalAnswers,
         sessionQuestions,
         signature,
         completionTime,
         yearsExperience: decodeURIComponent(yearsExperience),
       });
 
-      setResult({ score, status });
+      setResult({ score: res.data.score, status: res.data.status });
     } catch (err) {
       setSubmitted(false);
       setSubmitError('Submission failed. Please try again.');

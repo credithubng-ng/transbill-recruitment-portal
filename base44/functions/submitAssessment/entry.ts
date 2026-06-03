@@ -11,13 +11,24 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const {
-      applicantId, score, status, finalAnswers, sessionQuestions,
+      applicantId, finalAnswers, sessionQuestions,
       signature, completionTime, yearsExperience
     } = await req.json();
 
     if (!applicantId) {
       return Response.json({ error: 'applicantId is required' }, { status: 400 });
     }
+
+    // Calculate score server-side — never trust browser-sent score
+    let score = 0;
+    finalAnswers.forEach((answer, i) => {
+      if (answer === sessionQuestions[i]?.correctAnswer) score++;
+    });
+
+    let status;
+    if (score >= 21) status = 'Interview Ready';
+    else if (score >= 16) status = 'Reserve List';
+    else status = 'Not Progressed';
 
     // Fetch applicant for email/name
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
@@ -150,7 +161,7 @@ ${COMPANY_NAME}`;
       registration_completed: false,
     });
 
-    return Response.json({ success: true });
+    return Response.json({ success: true, score, status });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
