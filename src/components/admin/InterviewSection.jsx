@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Calendar, CheckCircle2, XCircle, PauseCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, CheckCircle2, XCircle, PauseCircle, ChevronDown, ChevronUp, Link2, RefreshCw, Video, RotateCcw } from 'lucide-react';
 
 export default function InterviewSection({ applicant, onUpdate }) {
   const [showSchedule, setShowSchedule] = useState(false);
@@ -85,9 +85,99 @@ export default function InterviewSection({ applicant, onUpdate }) {
     Hold: 'text-[#B45309] bg-amber-50 border-amber-200'
   };
 
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+  const [resetting, setResetting] = useState(false);
+
+  const appDomain = window.location.origin;
+
+  const handleResendBookingLink = async () => {
+    setResending(true);
+    setResendMsg('');
+    try {
+      await base44.functions.invoke('resendBookingLink', { applicantId: applicant.id, appDomain });
+      setResendMsg('New booking link sent!');
+      onUpdate({
+        ...applicant,
+        booking_used: false,
+        booking_link_sent_at: new Date().toISOString(),
+        candidate_stage: 'Interview Scheduling',
+      });
+    } catch {
+      setResendMsg('Failed to resend. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  const handleResetBooking = async () => {
+    if (!confirm('Reset this booking? The slot will become available again and the candidate will need a new link.')) return;
+    setResetting(true);
+    try {
+      await base44.asServiceRole.entities.Applicant.update(applicant.id, {
+        booking_used: false,
+        interview_scheduled_at: null,
+        interview_meet_link: null,
+        interview_interviewer_id: null,
+        interview_booked_at: null,
+        candidate_stage: 'Interview Scheduling',
+      });
+      onUpdate({
+        ...applicant,
+        booking_used: false,
+        interview_scheduled_at: null,
+        interview_meet_link: null,
+        interview_interviewer_id: null,
+        interview_booked_at: null,
+        candidate_stage: 'Interview Scheduling',
+      });
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <h3 className="font-bold text-sm text-[#1A1A1A] border-b border-[#E2E8E2] pb-2">Interview</h3>
+
+      {/* Booking link info */}
+      {applicant.booking_token && (
+        <div className="bg-[#F8FAF8] rounded-[10px] p-3 text-xs space-y-2">
+          <div className="flex items-center gap-1.5 font-semibold text-[#555555]">
+            <Link2 className="w-3.5 h-3.5" /> Booking Link
+          </div>
+          {applicant.booking_link_sent_at && (
+            <p className="text-[#7A7A8A]">Sent: {formatDateTime(applicant.booking_link_sent_at)}</p>
+          )}
+          {applicant.booking_used ? (
+            <div className="space-y-1">
+              <p className="text-[#2D6A2F] font-semibold flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> Interview Booked</p>
+              {applicant.interview_booked_at && <p className="text-[#7A7A8A]">Booked at: {formatDateTime(applicant.interview_booked_at)}</p>}
+              {applicant.interview_meet_link && (
+                <a href={applicant.interview_meet_link} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[#2D6A2F] font-bold underline">
+                  <Video className="w-3 h-3" /> Join Google Meet
+                </a>
+              )}
+              <button onClick={handleResetBooking} disabled={resetting}
+                className="flex items-center gap-1.5 text-xs text-[#D32F2F] hover:text-[#B71C1C] font-semibold mt-1 disabled:opacity-50">
+                <RotateCcw className="w-3 h-3" /> {resetting ? 'Resetting...' : 'Reset Booking'}
+              </button>
+            </div>
+          ) : applicant.booking_token_expires_at && new Date(applicant.booking_token_expires_at) < new Date() ? (
+            <p className="text-amber-600 font-semibold">Link expired</p>
+          ) : (
+            <p className="text-[#7A7A8A]">Awaiting booking</p>
+          )}
+          <div className="pt-1">
+            <button onClick={handleResendBookingLink} disabled={resending}
+              className="flex items-center gap-1.5 text-xs text-[#3A7D3C] hover:text-[#2D6A2F] font-semibold disabled:opacity-50">
+              <RefreshCw className="w-3 h-3" /> {resending ? 'Sending...' : 'Resend Booking Link'}
+            </button>
+            {resendMsg && <p className={`text-xs mt-1 font-medium ${resendMsg.includes('!') ? 'text-[#2D6A2F]' : 'text-[#D32F2F]'}`}>{resendMsg}</p>}
+          </div>
+        </div>
+      )}
 
       {/* Current state summary */}
       {applicant.interview_scheduled_at && (

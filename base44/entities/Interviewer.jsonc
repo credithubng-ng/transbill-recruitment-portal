@@ -1,0 +1,64 @@
+{
+  "name": "Interviewer",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string",
+      "description": "Interviewer's full name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Interviewer's email address"
+    },
+    "google_meet_email": {
+      "type": "string",
+      "description": "Google account email used for Meet links"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this interviewer is accepting bookings"
+    },
+    "working_days": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday"
+        ]
+      },
+      "description": "Days this interviewer is available"
+    },
+    "available_from": {
+      "type": "string",
+      "default": "09:00",
+      "description": "Start time HH:MM"
+    },
+    "available_to": {
+      "type": "string",
+      "default": "17:30",
+      "description": "End time HH:MM"
+    },
+    "blocked_dates": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of blocked date strings YYYY-MM-DD"
+    },
+    "daily_capacity": {
+      "type": "number",
+      "default": 12,
+      "description": "Max interviews per day"
+    }
+  },
+  "required": [
+    "full_name",
+    "email"
+  ]
+}

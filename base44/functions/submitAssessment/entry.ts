@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 const NEXT_STEP_URL = 'https://transbill.ng';
+const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://your-app-domain';
 const SUCCESS_EMAIL_SUBJECT = 'Assessment Successful – Next Step';
 const FAIL_EMAIL_SUBJECT = 'Assessment Update';
 const REGISTRATION_DEADLINE_DAYS = 7;
@@ -82,33 +83,41 @@ Deno.serve(async (req) => {
     let assessment_email_sent = false;
     let assessment_email_sent_at = null;
 
+    // Generate booking token for passing candidates
+    let booking_token = null;
+    let booking_token_expires_at = null;
+    let bookingUrl = null;
+    if (status === 'Interview Ready' || status === 'Reserve List') {
+      booking_token = crypto.randomUUID().replace(/-/g, '');
+      booking_token_expires_at = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      bookingUrl = `${APP_DOMAIN}/book-interview?token=${booking_token}`;
+    }
+
     if (status === 'Interview Ready' || status === 'Reserve List') {
       candidate_stage = 'Email Sent';
       emailSubject = SUCCESS_EMAIL_SUBJECT;
-      emailBody = `Hello ${firstName},
+      emailBody = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1A1A1A;">
+  <div style="background:#3A7D3C;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:22px;">Congratulations, ${firstName}! 🎉</h1>
+  </div>
+  <div style="background:#F8FAF8;padding:28px;border-radius:0 0 12px 12px;">
+    <p style="font-size:16px;">Thank you for participating in the Transbill Digital Marketing Assessment.</p>
+    <p>We are pleased to inform you that you have successfully passed this stage.</p>
 
-Thank you for participating in the Transbill Digital Marketing Assessment.
+    <div style="background:#EBF5EB;border-radius:10px;padding:20px;margin:20px 0;text-align:center;">
+      <p style="font-weight:bold;font-size:16px;color:#2D6A2F;margin:0 0 12px;">Next Step: Book Your Interview</p>
+      <p style="margin:0 0 16px;font-size:14px;color:#555555;">Please click below to select your interview date and time. All interviews are 30 minutes via Google Meet.</p>
+      <a href="${bookingUrl}" style="background:#3A7D3C;color:white;padding:14px 32px;border-radius:30px;text-decoration:none;font-weight:bold;font-size:16px;display:inline-block;">
+        Book Your Interview Slot
+      </a>
+      <p style="margin:12px 0 0;font-size:12px;color:#E65100;"><strong>⏰ This link expires in 7 days.</strong> Book early to secure your preferred time.</p>
+    </div>
 
-We are pleased to inform you that you have successfully completed this stage.
-
-The next step requires registration on Transbill.ng.
-
-Registration Link:
-${NEXT_STEP_URL}
-
-Complete registration within ${REGISTRATION_DEADLINE_DAYS} days.
-
-Please note:
-• Registration is mandatory
-• Registration does not guarantee final selection
-• Additional screening and interviews may follow
-
-Support:
-${SUPPORT_EMAIL}
-
-Regards
-Recruitment Team
-${COMPANY_NAME}`;
+    <p style="font-size:13px;color:#555555;">Questions? Contact us at <a href="mailto:recruitment@transbill.ng">recruitment@transbill.ng</a></p>
+    <p style="font-size:13px;color:#7A7A8A;">Regards,<br><strong>Recruitment Team</strong><br>Transbill</p>
+  </div>
+</div>`;
     } else {
       candidate_stage = 'Closed – Not Progressed';
       emailSubject = FAIL_EMAIL_SUBJECT;
@@ -141,7 +150,7 @@ ${COMPANY_NAME}`;
         assessment_email_sent_at = now;
         // After email sent, update stage for passing candidates
         if (status === 'Interview Ready' || status === 'Reserve List') {
-          candidate_stage = 'Awaiting Registration';
+          candidate_stage = 'Interview Scheduling';
         }
       } catch (emailErr) {
         console.error('Email send failed:', emailErr.message);
@@ -168,6 +177,12 @@ ${COMPANY_NAME}`;
       assessment_email_sent_at,
       candidate_stage,
       registration_completed: false,
+      ...(booking_token ? {
+        booking_token,
+        booking_token_expires_at,
+        booking_used: false,
+        booking_link_sent_at: assessment_email_sent ? now : null,
+      } : {}),
     });
 
     return Response.json({ success: true, score, status });

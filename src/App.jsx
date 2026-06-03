@@ -11,6 +11,8 @@ import Apply from '@/pages/Apply';
 import Assessment from '@/pages/Assessment';
 import Admin from '@/pages/Admin';
 import ApplicantStatus from '@/pages/ApplicantStatus';
+import BookInterview from '@/pages/BookInterview';
+import ScheduleView from '@/pages/ScheduleView';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -39,6 +41,8 @@ const AuthenticatedApp = () => {
       <Route path="/assessment" element={<Assessment />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/status" element={<ApplicantStatus />} />
+      <Route path="/book-interview" element={<BookInterview />} />
+      <Route path="/schedule" element={<ScheduleView onBack={() => window.history.back()} />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { format } from 'date-fns';
+import BookingStatusBadge from './BookingStatusBadge';
 
 const statusBadge = (status) => {
   const map = {
@@ -27,6 +28,7 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Score</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Status</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Flags</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden md:table-cell">Booking</th>
               <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Date</th>
             </tr>
           </thead>
@@ -53,6 +55,9 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                 </td>
                 <td className="px-4 py-3 text-center">
                   {a.review_required_flag && <span title="Review Required" className="text-red-500 font-bold text-base">⚠</span>}
+                </td>
+                <td className="px-4 py-3 text-center hidden md:table-cell">
+                  <BookingStatusBadge applicant={a} />
                 </td>
                 <td className="px-4 py-3 text-[#7A7A8A] text-xs hidden lg:table-cell">
                   {a.created_date ? format(new Date(a.created_date), 'MMM d, yyyy') : '—'}

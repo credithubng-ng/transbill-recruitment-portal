@@ -8,7 +8,8 @@ import ApplicantFilters from '../components/admin/ApplicantFilters';
 import ApplicantTable from '../components/admin/ApplicantTable';
 import ApplicantPanel from '../components/admin/ApplicantPanel';
 import SettingsPanel from '../components/admin/SettingsPanel';
-import { Download, LogOut, Settings } from 'lucide-react';
+import ScheduleView from './ScheduleView';
+import { Download, LogOut, Settings, CalendarDays } from 'lucide-react';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -28,6 +29,7 @@ export default function Admin() {
   }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
   const [settingsRecord, setSettingsRecord] = useState(null);
   const [filters, setFilters] = useState({
     search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
@@ -116,6 +118,8 @@ export default function Admin() {
 
   if (!authenticated) return <AdminLogin onLogin={() => setAuthenticated(true)} />;
 
+  if (showSchedule) return <ScheduleView onBack={() => setShowSchedule(false)} />;
+
   return (
     <div className="min-h-screen bg-[#F8FAF8]">
       <div className="sticky top-0 z-40 bg-white border-b border-[#E2E8E2]">
@@ -134,6 +138,9 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <h1 className="font-extrabold text-2xl tracking-[-0.5px] text-[#1A1A1A]">Recruitment Dashboard</h1>
           <div className="flex items-center gap-2">
+            <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
+              <CalendarDays className="w-4 h-4" /> Schedule
+            </button>
             <button onClick={() => setShowSettings(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <Settings className="w-4 h-4" /> Settings
             </button>
