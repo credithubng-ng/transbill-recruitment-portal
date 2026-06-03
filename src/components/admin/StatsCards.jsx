@@ -15,7 +15,7 @@ export default function StatsCards({ applicants }) {
   const expTiers = ['Less than 1 year', '1–3 years', '3–5 years', '5+ years'];
   const avgByExp = expTiers.map(tier => {
     const group = applicants.filter(a => a.assessment_completed && a.years_experience === tier);
-    const avg = group.length ? Math.round(group.reduce((s, a) => s + (a.assessment_score || 0), 0) / group.length * 4) : null;
+    const avg = group.length ? Math.round(group.reduce((s, a) => s + (a.assessment_score || 0), 0) / group.length / 25 * 100) : null;
     return { tier, avg, count: group.length };
   });
 
@@ -34,12 +34,12 @@ export default function StatsCards({ applicants }) {
 
       {/* Avg score by experience tier */}
       <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
-        <p className="text-xs font-bold text-[#7A7A8A] mb-3">Average Score by Experience Tier (out of 25)</p>
+        <p className="text-xs font-bold text-[#7A7A8A] mb-3">Average Score by Experience Tier</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {avgByExp.map(({ tier, avg, count }) => (
             <div key={tier} className="text-center">
               <p className="text-xs text-[#7A7A8A] mb-1 leading-tight">{tier}</p>
-              <p className="text-xl font-extrabold text-[#1A1A1A]">{avg !== null ? avg + '/25' : '—'}</p>
+              <p className="text-xl font-extrabold text-[#1A1A1A]">{avg !== null ? avg + '%' : '—'}</p>
               <p className="text-[10px] text-[#7A7A8A]">{count} assessed</p>
             </div>
           ))}
