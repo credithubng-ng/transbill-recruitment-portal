@@ -42,6 +42,9 @@ Deno.serve(async (req) => {
     const locationLine = slot.location
       ? `<p style="margin: 6px 0;"><strong>Location / Meeting Link:</strong> ${slot.location}</p>`
       : '';
+    const interviewerLine = slot.interviewer
+      ? `<p style="margin: 6px 0;"><strong>Interviewer:</strong> ${slot.interviewer}</p>`
+      : '';
 
     const emailBody = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1A1A;">
@@ -56,6 +59,7 @@ Deno.serve(async (req) => {
       <h3 style="margin: 0 0 12px; color: #2D6A2F; font-size: 15px;">Interview Details</h3>
       <p style="margin: 6px 0;"><strong>Date:</strong> ${dateStr}</p>
       <p style="margin: 6px 0;"><strong>Time:</strong> ${timeStr} (WAT)</p>
+      ${interviewerLine}
       ${locationLine}
     </div>
     <p>Please ensure you are available at the scheduled time. If you need to make changes, contact us at support@transbill.ng.</p>

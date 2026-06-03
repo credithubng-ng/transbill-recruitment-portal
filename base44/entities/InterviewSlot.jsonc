@@ -4,11 +4,15 @@
   "properties": {
     "slot_datetime": {
       "type": "string",
-      "description": "ISO datetime of the interview slot (Africa/Lagos timezone)"
+      "description": "ISO datetime of the interview slot"
     },
     "location": {
       "type": "string",
       "description": "Interview location or meeting link"
+    },
+    "interviewer": {
+      "type": "string",
+      "description": "Name of the interviewer assigned to this slot"
     },
     "is_booked": {
       "type": "boolean",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Calendar, MapPin, CheckCircle2, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, User, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function InterviewSlotPicker({ applicant, onBooked }) {
   const [slots, setSlots] = useState([]);
@@ -72,6 +72,11 @@ export default function InterviewSlotPicker({ applicant, onBooked }) {
                 : <Calendar className="w-4 h-4 text-[#7A7A8A] flex-shrink-0" />}
               <span className="text-sm font-semibold text-[#1A1A1A]">{format(slot.slot_datetime)}</span>
             </div>
+            {slot.interviewer && (
+              <div className="flex items-center gap-1.5 mt-1 ml-6 text-xs text-[#555555]">
+                <User className="w-3 h-3" /> {slot.interviewer}
+              </div>
+            )}
             {slot.location && (
               <div className="flex items-center gap-1.5 mt-1 ml-6 text-xs text-[#7A7A8A]">
                 <MapPin className="w-3 h-3" /> {slot.location}
