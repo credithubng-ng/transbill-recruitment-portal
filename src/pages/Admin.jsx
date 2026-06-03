@@ -84,6 +84,7 @@ export default function Admin() {
   };
 
   const handleLogout = () => {
+    if (!confirm('Are you sure you want to log out?')) return;
     sessionStorage.removeItem('transbill_admin_token');
     setAuthenticated(false);
   };
