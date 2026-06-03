@@ -33,7 +33,7 @@ export default function Admin() {
 
   const { data: applicants = [], isLoading, isError } = useQuery({
     queryKey: ['applicants'],
-    queryFn: () => base44.entities.Applicant.list('-created_date', 500),
+    queryFn: () => base44.entities.Applicant.list('-created_date', 10000),
     enabled: authenticated,
   });
 
@@ -124,6 +124,12 @@ export default function Admin() {
             <Download className="w-4 h-4" /> Export to CSV
           </button>
         </div>
+
+        {applicants.length >= 9500 && (
+          <div className="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-4 py-3 text-sm font-medium">
+            ⚠ You are approaching the display limit (9,500+ records loaded). Export to CSV to access the full dataset.
+          </div>
+        )}
 
         {isError && (
           <div className="bg-red-50 border border-red-300 text-red-700 rounded-lg px-4 py-3 text-sm font-medium">
