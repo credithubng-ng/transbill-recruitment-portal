@@ -56,6 +56,7 @@ export default function Admin() {
       if (filters.lagos !== 'all' && a.lagos_resident !== filters.lagos) return false;
       if (filters.threeMTT !== 'all' && a.is_3mtt !== filters.threeMTT) return false;
       if (filters.sail !== 'all' && a.is_sail !== filters.sail) return false;
+      if (filters.score !== 'all' && !a.assessment_completed) return false;
       if (filters.score !== 'all') {
         const pct = a.assessment_completed ? Math.round((a.assessment_score / 25) * 100) : -1;
         if (filters.score === '84-100' && (pct < 84 || pct > 100)) return false;
