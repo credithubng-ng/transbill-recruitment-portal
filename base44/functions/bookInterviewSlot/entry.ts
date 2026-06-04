@@ -4,22 +4,46 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    const { slotId, token } = await req.json();
-    if (!slotId || !token) {
-      return Response.json({ error: 'slotId and token are required' }, { status: 400 });
+    const { slotId, token, applicantId: bodyApplicantId } = await req.json();
+    if (!slotId) {
+      return Response.json({ error: 'slotId is required' }, { status: 400 });
     }
 
-    // Validate booking token — same logic as validateBookingToken
-    const matches = await base44.asServiceRole.entities.Applicant.filter({ booking_token: token });
-    if (!matches || matches.length === 0) {
-      return Response.json({ error: 'Invalid booking token' }, { status: 403 });
-    }
-    const applicant = matches[0];
-    if (applicant.booking_used) {
-      return Response.json({ error: 'This booking link has already been used' }, { status: 403 });
-    }
-    if (!applicant.booking_token_expires_at || new Date(applicant.booking_token_expires_at) < new Date()) {
-      return Response.json({ error: 'This booking link has expired' }, { status: 403 });
+    let applicant;
+
+    if (token) {
+      // Token-based flow (email link)
+      const matches = await base44.asServiceRole.entities.Applicant.filter({ booking_token: token });
+      if (!matches || matches.length === 0) {
+        return Response.json({ error: 'Invalid booking token' }, { status: 403 });
+      }
+      applicant = matches[0];
+      if (applicant.booking_used) {
+        return Response.json({ error: 'This booking link has already been used' }, { status: 403 });
+      }
+      if (!applicant.booking_token_expires_at || new Date(applicant.booking_token_expires_at) < new Date()) {
+        return Response.json({ error: 'This booking link has expired' }, { status: 403 });
+      }
+    } else {
+      // Auth-based flow (status page — logged-in candidate)
+      const user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      // Find applicant by authenticated user's email
+      const matches = await base44.asServiceRole.entities.Applicant.filter({ email: user.email });
+      if (!matches || matches.length === 0) {
+        return Response.json({ error: 'No application found for this account' }, { status: 403 });
+      }
+      applicant = matches[0];
+      // Verify the passed applicantId matches (safety check)
+      if (bodyApplicantId && applicant.id !== bodyApplicantId) {
+        return Response.json({ error: 'Applicant ID mismatch' }, { status: 403 });
+      }
+      // Only allow passing candidates to book
+      if (!['Interview Ready', 'Reserve List'].includes(applicant.status) && !['Interview Scheduling', 'Email Sent', 'Interview Ready', 'Reserve List'].includes(applicant.candidate_stage)) {
+        return Response.json({ error: 'You are not eligible to book an interview slot' }, { status: 403 });
+      }
     }
 
     // Check slot exists and is still available
@@ -43,7 +67,7 @@ Deno.serve(async (req) => {
     // Mark slot as booked
     await base44.asServiceRole.entities.InterviewSlot.update(slotId, {
       is_booked: true,
-      booked_by_applicant_id: applicantId,
+      booked_by_applicant_id: applicant.id,
     });
 
     // Format date/time strings for email
@@ -83,7 +107,7 @@ Deno.serve(async (req) => {
         attendees,
         conferenceData: {
           createRequest: {
-            requestId: `transbill-${applicantId}-${slotId}`,
+            requestId: `transbill-${applicant.id}-${slotId}`,
             conferenceSolutionKey: { type: 'hangoutsMeet' },
           },
         },
@@ -157,7 +181,7 @@ Deno.serve(async (req) => {
     });
 
     // Update applicant record
-    await base44.asServiceRole.entities.Applicant.update(applicantId, {
+    await base44.asServiceRole.entities.Applicant.update(applicant.id, {
       interview_scheduled_at: slot.slot_datetime,
       interview_location: meetLink || slot.location || '',
       interview_meet_link: meetLink,

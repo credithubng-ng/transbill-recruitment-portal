@@ -37,7 +37,7 @@ export default function InterviewSlotPicker({ applicant, onBooked }) {
       applicantId: applicant.id,
     });
     if (res.data?.success) {
-      onBooked(res.data.slot_datetime, res.data.location);
+      onBooked(res.data.slot_datetime, res.data.meet_link || res.data.location || '');
     } else {
       setError(res.data?.error || 'Booking failed. Please try again.');
       setBooking(false);
