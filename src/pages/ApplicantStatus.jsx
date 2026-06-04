@@ -207,17 +207,7 @@ export default function ApplicantStatus() {
               </div>
             )}
 
-            {/* Next Steps – Registration (only for explicitly registration stages) */}
-            {stage === 'Awaiting Registration' && (
-              <div className="bg-[#FFF8E1] border border-[#FFE082] rounded-[14px] p-5">
-                <p className="font-bold text-[#1A1A1A] mb-1">Next Step</p>
-                <p className="text-sm text-[#555555] mb-4">Please complete your registration on Transbill.ng to proceed to the next stage.</p>
-                <a href="https://transbill.ng" target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
-                  Register on Transbill.ng <ChevronRight className="w-4 h-4" />
-                </a>
-              </div>
-            )}
+
 
             {/* Next Steps – Interview scheduling prompt */}
             {(stage === 'Interview Scheduling' || stage === 'Email Sent' || stage === 'Interview Ready' || stage === 'Reserve List') && !applicant.interview_scheduled_at && (
