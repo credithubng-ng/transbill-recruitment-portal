@@ -95,7 +95,12 @@ export default function Apply() {
       setSubmitted(true);
       setShowRegister(true);
     } catch (err) {
-      setErrors({ submit: `Something went wrong: ${err?.message || 'Please check your connection and try again.'}` });
+      const msg = err?.response?.data?.error || err?.message || '';
+      if (msg === 'duplicate' || err?.response?.status === 409) {
+        setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
+      } else {
+        setErrors({ submit: `Something went wrong: ${msg || 'Please check your connection and try again.'}` });
+      }
     } finally {
       setSubmitting(false);
     }
