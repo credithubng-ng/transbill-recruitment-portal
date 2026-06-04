@@ -181,8 +181,8 @@ export default function ApplicantStatus() {
               </div>
             )}
 
-            {/* Interview Slot Picker */}
-            {applicant.candidate_stage === 'Interview Scheduling' && !applicant.interview_scheduled_at && (
+            {/* Interview Slot Picker – show for all passing candidates who haven't scheduled yet */}
+            {['Interview Scheduling', 'Interview Ready', 'Reserve List', 'Email Sent'].includes(stage) && !applicant.interview_scheduled_at && (
               <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-6">
                 <p className="text-xs font-semibold text-[#7A7A8A] uppercase tracking-wide mb-3">Book Your Interview</p>
                 <InterviewSlotPicker
@@ -210,13 +210,7 @@ export default function ApplicantStatus() {
 
 
 
-            {/* Next Steps – Interview scheduling prompt */}
-            {(stage === 'Interview Scheduling' || stage === 'Email Sent' || stage === 'Interview Ready' || stage === 'Reserve List') && !applicant.interview_scheduled_at && (
-              <div className="bg-[#FFF8E1] border border-[#FFE082] rounded-[14px] p-5">
-                <p className="font-bold text-[#1A1A1A] mb-1">Next Step: Book Your Interview</p>
-                <p className="text-sm text-[#555555]">Check your email for the interview booking link, or visit the booking page directly using the link sent to you.</p>
-              </div>
-            )}
+
           </>
         )}
       </div>
