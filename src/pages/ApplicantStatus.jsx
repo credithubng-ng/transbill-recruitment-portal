@@ -27,11 +27,13 @@ const STEPS = [
   { key: 'decision', label: 'Final Decision' },
 ];
 
-function getActiveStep(stage, status) {
+function getActiveStep(stage, status, assessmentCompleted) {
   if (!stage && !status) return 0;
   if (['Closed – Not Progressed', 'Final Hiring Decision', 'Interview Outcome – Pass', 'Interview Outcome – Hold'].includes(stage)) return 3;
   if (['Interview Scheduling', 'Interview Scheduled'].includes(stage)) return 2;
   if (['Assessment Started', 'Assessment Completed', 'Email Sent', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(stage)) return 1;
+  // Fallback: if assessment is completed but stage is unrecognised (e.g. legacy value), still show step 1
+  if (assessmentCompleted) return 1;
   return 0;
 }
 
@@ -75,7 +77,7 @@ export default function ApplicantStatus() {
   const stage = applicant?.candidate_stage;
   const stageConfig = STAGE_CONFIG[stage] || { color: 'text-[#7A7A8A]', bg: 'bg-[#F8FAF8]', icon: Clock, label: stage || 'Application Received' };
   const StageIcon = stageConfig.icon;
-  const activeStep = getActiveStep(stage, applicant?.status);
+  const activeStep = getActiveStep(stage, applicant?.status, applicant?.assessment_completed);
 
   const scorePercent = applicant?.assessment_completed
     ? Math.round((applicant.assessment_score / 25) * 100)
