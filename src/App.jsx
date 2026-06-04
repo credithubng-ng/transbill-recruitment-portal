@@ -13,6 +13,7 @@ import Admin from '@/pages/Admin';
 import ApplicantStatus from '@/pages/ApplicantStatus';
 import BookInterview from '@/pages/BookInterview';
 import ScheduleView from '@/pages/ScheduleView';
+import Login from '@/pages/Login';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -35,6 +36,7 @@ const AuthenticatedApp = () => {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/apply" element={<Apply />} />
       <Route path="/assessment" element={<Assessment />} />
       <Route path="/admin" element={<Admin />} />
