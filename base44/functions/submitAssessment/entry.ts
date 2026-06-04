@@ -121,21 +121,22 @@ Deno.serve(async (req) => {
     } else {
       candidate_stage = 'Closed – Not Progressed';
       emailSubject = FAIL_EMAIL_SUBJECT;
-      emailBody = `Hello ${firstName},
-
-Thank you for taking part in the Transbill Digital Marketing Assessment.
-
-Following review of this assessment stage, you will not be progressing further at this time.
-
-We appreciate your effort and interest.
-
-This outcome applies only to the present assessment and does not prevent future applications.
-
-We wish you success.
-
-Regards
-Recruitment Team
-${COMPANY_NAME}`;
+      emailBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1A1A;">
+  <div style="background: #2D6A2F; padding: 24px 32px; border-radius: 12px 12px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 20px;">Assessment Outcome</h1>
+    <p style="color: #c8e6c9; margin: 6px 0 0; font-size: 13px;">Transbill Digital Marketing Recruitment</p>
+  </div>
+  <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
+    <p style="font-size: 16px;">Dear <strong>${firstName}</strong>,</p>
+    <p style="line-height: 1.6;">Thank you for taking the time to complete the Transbill Digital Marketing Assessment. We appreciate your interest in joining our team.</p>
+    <p style="line-height: 1.6;">After careful review of your assessment results, we regret to inform you that you have not met the required threshold to progress to the next stage of this recruitment exercise.</p>
+    <p style="line-height: 1.6;">This decision is based solely on your performance in this assessment and does not reflect your overall abilities or potential. We encourage you to keep developing your skills and to consider applying again in the future.</p>
+    <p style="line-height: 1.6;">We wish you the very best in your career journey.</p>
+    <p style="margin-top: 28px; font-size: 13px; color: #555555;">If you have any questions, please contact us at <a href="mailto:recruitment@transbill.ng" style="color: #2D6A2F;">recruitment@transbill.ng</a>.</p>
+    <p style="margin-top: 16px; font-size: 13px;">Kind regards,<br/><strong>The Transbill Recruitment Team</strong></p>
+  </div>
+</div>`;
     }
 
     // Send email (wrapped so it never blocks the record update)
