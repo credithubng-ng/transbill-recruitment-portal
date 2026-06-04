@@ -3,18 +3,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { slotId, applicantId } = await req.json();
-    if (!slotId || !applicantId) {
-      return Response.json({ error: 'slotId and applicantId are required' }, { status: 400 });
+    const { slotId, token } = await req.json();
+    if (!slotId || !token) {
+      return Response.json({ error: 'slotId and token are required' }, { status: 400 });
     }
 
-    // Verify applicant belongs to this user
-    const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
-    if (!applicant || applicant.email !== user.email) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    // Validate booking token — same logic as validateBookingToken
+    const matches = await base44.asServiceRole.entities.Applicant.filter({ booking_token: token });
+    if (!matches || matches.length === 0) {
+      return Response.json({ error: 'Invalid booking token' }, { status: 403 });
+    }
+    const applicant = matches[0];
+    if (applicant.booking_used) {
+      return Response.json({ error: 'This booking link has already been used' }, { status: 403 });
+    }
+    if (!applicant.booking_token_expires_at || new Date(applicant.booking_token_expires_at) < new Date()) {
+      return Response.json({ error: 'This booking link has expired' }, { status: 403 });
     }
 
     // Check slot exists and is still available
