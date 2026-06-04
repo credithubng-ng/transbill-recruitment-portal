@@ -11,8 +11,7 @@ const STAGE_CONFIG = {
   'Reserve List': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: AlertCircle, label: 'Reserve List' },
   'Not Progressed': { color: 'text-[#9E9E9E]', bg: 'bg-[#F5F5F5]', icon: XCircle, label: 'Not Progressed' },
   'Email Sent': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: CheckCircle2, label: 'Outcome Email Sent' },
-  'Awaiting Registration': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: Clock, label: 'Awaiting Registration' },
-  'Registered on Transbill.ng': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'Registered on Transbill.ng' },
+
   'Interview Scheduling': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: Clock, label: 'Interview Being Scheduled' },
   'Interview Scheduled': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'Interview Scheduled' },
   'Interview Outcome – Pass': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'Interview Passed' },
@@ -32,7 +31,7 @@ function getActiveStep(stage, status) {
   if (!stage && !status) return 0;
   if (['Closed – Not Progressed', 'Final Hiring Decision', 'Interview Outcome – Pass', 'Interview Outcome – Hold'].includes(stage)) return 3;
   if (['Interview Scheduling', 'Interview Scheduled'].includes(stage)) return 2;
-  if (['Assessment Started', 'Assessment Completed', 'Email Sent', 'Awaiting Registration', 'Registered on Transbill.ng', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(stage)) return 1;
+  if (['Assessment Started', 'Assessment Completed', 'Email Sent', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(stage)) return 1;
   return 0;
 }
 

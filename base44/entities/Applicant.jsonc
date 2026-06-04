@@ -161,8 +161,6 @@
         "Reserve List",
         "Not Progressed",
         "Email Sent",
-        "Awaiting Registration",
-        "Registered on Transbill.ng",
         "Interview Scheduling",
         "Interview Scheduled",
         "Interview Outcome \u2013 Pass",
@@ -170,14 +168,6 @@
         "Final Hiring Decision",
         "Closed \u2013 Not Progressed"
       ]
-    },
-    "registration_completed": {
-      "type": "boolean",
-      "default": false
-    },
-    "registration_completed_at": {
-      "type": "string",
-      "description": "ISO timestamp when Transbill.ng registration was confirmed"
     },
     "admin_notes": {
       "type": "string"
