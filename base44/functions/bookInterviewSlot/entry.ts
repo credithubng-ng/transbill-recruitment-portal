@@ -22,6 +22,19 @@ Deno.serve(async (req) => {
     if (!slot) return Response.json({ error: 'Slot not found' }, { status: 404 });
     if (slot.is_booked) return Response.json({ error: 'Slot already booked' }, { status: 409 });
 
+    // Optimistic lock: reject if another booking is in-flight (within 60s)
+    if (slot.pending_lock) {
+      const lockAge = Date.now() - new Date(slot.pending_lock).getTime();
+      if (lockAge < 60_000) {
+        return Response.json({ error: 'This slot was just taken — please choose another time.' }, { status: 409 });
+      }
+    }
+
+    // Claim the slot with a pending lock before any async work
+    await base44.asServiceRole.entities.InterviewSlot.update(slotId, {
+      pending_lock: new Date().toISOString(),
+    });
+
     // Mark slot as booked
     await base44.asServiceRole.entities.InterviewSlot.update(slotId, {
       is_booked: true,

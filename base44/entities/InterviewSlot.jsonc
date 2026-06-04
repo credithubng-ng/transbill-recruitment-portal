@@ -21,6 +21,10 @@
     "booked_by_applicant_id": {
       "type": "string",
       "description": "Applicant ID who booked this slot"
+    },
+    "pending_lock": {
+      "type": "string",
+      "description": "ISO timestamp set when a booking is in-flight; cleared once booked"
     }
   },
   "required": [
