@@ -19,7 +19,7 @@ export default function Apply() {
   React.useEffect(() => { window.scrollTo(0, 0); }, []);
 
   const [form, setForm] = useState({
-    full_name: '', email: '', phone: '', gender: '', state_of_origin: '', current_lga: '',
+    full_name: '', email: '', phone: '', gender: '', date_of_birth: '', state_of_origin: '', current_lga: '',
     lagos_resident: '', education: '', years_experience: '', is_3mtt: '', is_sail: '',
     social_platforms: [], affiliate_experience: '', affiliate_experience_desc: '',
     motivation: '', linkedin_url: '', referral_source: ''
@@ -59,6 +59,17 @@ export default function Apply() {
     if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Valid email required';
     if (!form.phone.trim()) errs.phone = 'Required';
     if (!form.gender) errs.gender = 'Required';
+    if (!form.date_of_birth) {
+      errs.date_of_birth = 'Required';
+    } else {
+      const dob = new Date(form.date_of_birth);
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      if (age > 30) errs.date_of_birth = 'You must be 30 years old or younger to apply.';
+      if (age < 16) errs.date_of_birth = 'You must be at least 16 years old to apply.';
+    }
     if (!form.state_of_origin) errs.state_of_origin = 'Required';
     if (!form.current_lga.trim()) errs.current_lga = 'Required';
     if (!form.lagos_resident) errs.lagos_resident = 'Required';
@@ -232,6 +243,17 @@ export default function Apply() {
         </h1>
         <p className="text-[#7A7A8A] text-center text-sm mb-8">Complete all required fields. This takes about 5 minutes.</p>
 
+        {/* NIN Notice Banner */}
+        <div className="bg-[#FFF3E0] border-2 border-[#FF8F00] rounded-[12px] p-4 flex gap-3">
+          <span className="text-2xl flex-shrink-0">⚠️</span>
+          <div>
+            <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & NIN Verification Notice</p>
+            <p className="text-[#5D3F00] text-sm leading-relaxed">
+              This role is open to candidates aged <strong>30 years and below only</strong>. Your <strong>National Identification Number (NIN)</strong> will be required to verify your age before any successful candidate can be formally engaged. Ensure the date of birth you provide matches your NIN record.
+            </p>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <Field label="Full Legal Name" error={errors.full_name}>
             <input className="form-input" value={form.full_name} onChange={e => handleChange('full_name', e.target.value)} placeholder="Enter your full name" />
@@ -244,6 +266,22 @@ export default function Apply() {
           </Field>
           <Field label="Gender" error={errors.gender}>
             <RadioGroup options={['Male', 'Female', 'Prefer not to say']} value={form.gender} onChange={v => handleChange('gender', v)} />
+          </Field>
+          <Field label="Date of Birth" error={errors.date_of_birth}>
+            <input className="form-input" type="date" value={form.date_of_birth}
+              onChange={e => handleChange('date_of_birth', e.target.value)}
+              max={new Date(new Date().setFullYear(new Date().getFullYear() - 16)).toISOString().split('T')[0]}
+              min={new Date(new Date().setFullYear(new Date().getFullYear() - 30)).toISOString().split('T')[0]}
+            />
+            {form.date_of_birth && (() => {
+              const dob = new Date(form.date_of_birth);
+              const today = new Date();
+              let age = today.getFullYear() - dob.getFullYear();
+              const m = today.getMonth() - dob.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+              if (age >= 16 && age <= 30) return <p className="text-[#2D6A2F] text-xs mt-1 font-medium">Age: {age} years ✓</p>;
+              return null;
+            })()}
           </Field>
           <Field label="State of Origin" error={errors.state_of_origin}>
             <select className="form-input" value={form.state_of_origin} onChange={e => handleChange('state_of_origin', e.target.value)}>

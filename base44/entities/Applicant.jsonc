@@ -19,6 +19,10 @@
         "Prefer not to say"
       ]
     },
+    "date_of_birth": {
+      "type": "string",
+      "description": "Date of birth in YYYY-MM-DD format"
+    },
     "state_of_origin": {
       "type": "string"
     },
@@ -227,6 +231,7 @@
     "email",
     "phone",
     "gender",
+    "date_of_birth",
     "state_of_origin",
     "current_lga",
     "lagos_resident",
