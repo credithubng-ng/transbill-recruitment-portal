@@ -1,29 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
-async function verifyAdminToken(token, secret) {
-  if (!token) return false;
-  const dotIndex = token.lastIndexOf('.');
-  if (dotIndex === -1) return false;
-  const payload = token.substring(0, dotIndex);
-  const sig = token.substring(dotIndex + 1);
-  const exp = parseInt(payload.split(':')[1], 10);
-  if (!exp || Date.now() > exp) return false;
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-  const expected = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return sig === expected;
-}
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const adminPassword = Deno.env.get('ADMIN_PASSWORD');
-    const { applicantId, interview_scheduled_at, interview_location, adminToken } = await req.json();
-
-    if (!adminPassword || !await verifyAdminToken(adminToken, adminPassword)) {
+    const user = await base44.auth.me();
+    if (user?.role !== 'admin') {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const { applicantId, interview_scheduled_at, interview_location } = await req.json();
 
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
     if (!applicant) {

@@ -20,8 +20,6 @@ export default function InterviewSection({ applicant, onUpdate }) {
   const [recording, setRecording] = useState(false);
   const [outcomeError, setOutcomeError] = useState('');
 
-  const adminToken = sessionStorage.getItem('transbill_admin_token');
-
   const handleSchedule = async () => {
     setSchedError('');
     if (!schedDate) { setSchedError('Please select a date and time'); return; }
@@ -30,8 +28,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
       await base44.functions.invoke('scheduleInterview', {
         applicantId: applicant.id,
         interview_scheduled_at: new Date(schedDate).toISOString(),
-        interview_location: schedLocation,
-        adminToken
+        interview_location: schedLocation
       });
       onUpdate({
         ...applicant,
@@ -56,8 +53,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
       const res = await base44.functions.invoke('recordInterviewOutcome', {
         applicantId: applicant.id,
         outcome,
-        notes: outcomeNotes,
-        adminToken
+        notes: outcomeNotes
       });
       onUpdate({
         ...applicant,
