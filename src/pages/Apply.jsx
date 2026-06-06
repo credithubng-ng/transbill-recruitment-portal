@@ -249,7 +249,7 @@ export default function Apply() {
           <div>
             <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & NIN Verification Notice</p>
             <p className="text-[#5D3F00] text-sm leading-relaxed">
-              This role is open to candidates aged <strong>30 years and below only</strong>. Your <strong>National Identification Number (NIN)</strong> and <strong>3MTT Fellow Identity Card</strong> will be required to verify your eligibility before any successful candidate can be formally engaged. Ensure the date of birth you provide matches your NIN record.
+              This role is open to candidates aged <strong>30 years and below only</strong>. Your <strong>National Identification Number (NIN)</strong> will be required to verify your age before any successful candidate can be formally engaged. Ensure the date of birth you provide matches your NIN record.
             </p>
           </div>
         </div>
