@@ -20,7 +20,7 @@ export default function Apply() {
 
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', gender: '', date_of_birth: '', state_of_origin: '', current_lga: '',
-    lagos_resident: '', education: '', years_experience: '', is_3mtt: '', is_sail: '',
+    lagos_resident: '', education: '', years_experience: '', is_3mtt: '', has_3mtt_id_card: '', is_sail: '',
     social_platforms: [], affiliate_experience: '', affiliate_experience_desc: '',
     motivation: '', linkedin_url: '', referral_source: ''
   });
@@ -76,6 +76,7 @@ export default function Apply() {
     if (!form.education) errs.education = 'Required';
     if (!form.years_experience) errs.years_experience = 'Required';
     if (!form.is_3mtt) errs.is_3mtt = 'Required';
+    if (form.is_3mtt === 'Yes' && !form.has_3mtt_id_card) errs.has_3mtt_id_card = 'Please indicate whether you have your 3MTT Fellow ID Card';
     if (!form.is_sail) errs.is_sail = 'Required';
     if (form.social_platforms.length === 0) errs.social_platforms = 'Select at least one';
     if (!form.affiliate_experience) errs.affiliate_experience = 'Required';
@@ -312,6 +313,21 @@ export default function Apply() {
           <Field label="Have you completed a 3MTT Digital Marketing programme?" error={errors.is_3mtt}>
             <RadioGroup options={['Yes', 'No']} value={form.is_3mtt} onChange={v => handleChange('is_3mtt', v)} />
           </Field>
+          {form.is_3mtt === 'Yes' && (
+            <Field label="Do you have your 3MTT Fellow Identity Card?" error={errors.has_3mtt_id_card}>
+              <RadioGroup options={['Yes', 'No']} value={form.has_3mtt_id_card} onChange={v => handleChange('has_3mtt_id_card', v)} />
+              {form.has_3mtt_id_card === 'Yes' && (
+                <div className="mt-2 bg-[#EBF5EB] border border-[#A5C8A6] rounded-lg p-3 text-sm text-[#1A3D1B]">
+                  ✅ Your 3MTT Fellow Identity Card will be required for verification at the final engagement stage.
+                </div>
+              )}
+              {form.has_3mtt_id_card === 'No' && (
+                <div className="mt-2 bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-3 text-sm text-[#5D3F00]">
+                  ⚠️ You will need to obtain your 3MTT Fellow Identity Card before final engagement. Please ensure you have it ready.
+                </div>
+              )}
+            </Field>
+          )}
           <Field label="Are you a SAIL Innovation Lab alumnus?" error={errors.is_sail}>
             <RadioGroup options={['Yes', 'No']} value={form.is_sail} onChange={v => handleChange('is_sail', v)} />
           </Field>
