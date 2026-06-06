@@ -65,6 +65,14 @@
         "No"
       ]
     },
+    "has_3mtt_id_card": {
+      "type": "string",
+      "enum": [
+        "Yes",
+        "No"
+      ],
+      "description": "Whether the candidate has their 3MTT Fellow Identity Card"
+    },
     "is_sail": {
       "type": "string",
       "enum": [
@@ -231,7 +239,6 @@
     "email",
     "phone",
     "gender",
-    "date_of_birth",
     "state_of_origin",
     "current_lga",
     "lagos_resident",
