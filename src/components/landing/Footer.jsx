@@ -1,77 +1,58 @@
 import React from 'react';
 import TransbillLogo from '../TransbillLogo';
 
+const FirstBankLogo = () => (
+  <div className="flex items-center gap-2">
+    <svg width="48" height="44" viewBox="0 0 120 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Yellow parallelogram background */}
+      <polygon points="60,5 115,5 115,95 60,95" fill="#E0AD0F" />
+      {/* Elephant body */}
+      <ellipse cx="88" cy="58" rx="18" ry="22" fill="#02306A" />
+      {/* Head */}
+      <ellipse cx="88" cy="30" rx="14" ry="13" fill="#02306A" />
+      {/* Trunk */}
+      <path d="M78 38 Q65 55 70 72 Q72 78 68 80" stroke="#02306A" strokeWidth="7" fill="none" strokeLinecap="round" />
+      {/* Ear */}
+      <ellipse cx="76" cy="32" rx="9" ry="11" fill="#E0AD0F" />
+      <ellipse cx="77" cy="32" rx="6" ry="8" fill="#02306A" />
+      {/* Legs */}
+      <rect x="74" y="76" width="8" height="18" rx="3" fill="#02306A" />
+      <rect x="86" y="76" width="8" height="18" rx="3" fill="#02306A" />
+      <rect x="98" y="76" width="8" height="18" rx="3" fill="#02306A" />
+      {/* Tail */}
+      <path d="M106 55 Q118 50 115 60" stroke="#02306A" strokeWidth="3" fill="none" strokeLinecap="round" />
+    </svg>
+    <div>
+      <p className="font-black text-[#02306A] text-xl leading-none" style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>FirstBank</p>
+      <p className="text-[#02306A] text-[10px] font-semibold leading-none mt-0.5" style={{ fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>Since 1894</p>
+    </div>
+  </div>
+);
+
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-[#E2E8E2]">
       {/* Partners strip */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <p className="text-center text-xs text-[#7A7A8A] uppercase tracking-widest font-semibold mb-8">In Partnership with</p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-10 sm:gap-16 flex-wrap">
 
+          {/* Transbill */}
+          <TransbillLogo />
+
+          <div className="w-px h-10 bg-[#E2E8E2] hidden sm:block" />
+
           {/* FirstBank */}
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-[10px] text-[#7A7A8A] uppercase tracking-widest font-semibold">In Partnership with</p>
-            <img
-              src="https://www.firstbanknigeria.com/wp-content/uploads/2022/08/firstbank-logo.png"
-              alt="First Bank of Nigeria"
-              className="h-12 object-contain"
-              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-            />
-            <div style={{display:'none'}} className="items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-[#003087] flex items-center justify-center">
-                <span className="text-white font-black text-xs">FB</span>
-              </div>
-              <div>
-                <p className="font-extrabold text-[#003087] text-base leading-tight">FirstBank</p>
-                <p className="text-[10px] text-[#555555]">Since 1894</p>
-              </div>
-            </div>
-            <p className="text-[10px] text-[#7A7A8A]">First Bank of Nigeria Limited</p>
-          </div>
+          <FirstBankLogo />
 
-          <div className="w-px h-12 bg-[#E2E8E2] hidden sm:block" />
-
-          {/* 3MTT */}
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-[10px] text-[#7A7A8A] uppercase tracking-widest font-semibold">Supported by</p>
-            <img
-              src="https://3mtt.nitda.gov.ng/wp-content/uploads/2023/11/3mtt-logo.png"
-              alt="3MTT - Three Million Tech Talent"
-              className="h-12 object-contain"
-              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-            />
-            <div style={{display:'none'}} className="items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-[#1A5276] flex items-center justify-center">
-                <span className="text-white font-black text-xs">3M</span>
-              </div>
-              <div>
-                <p className="font-extrabold text-[#1A5276] text-sm leading-tight">3MTT</p>
-                <p className="text-[9px] text-[#555555]">THREE MILLION TECH TALENT</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="w-px h-12 bg-[#E2E8E2] hidden sm:block" />
+          <div className="w-px h-10 bg-[#E2E8E2] hidden sm:block" />
 
           {/* LSETF */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="h-4" />
-            <img
-              src="https://lsetf.ng/content/img/lsetf-logo.png"
-              alt="LSETF - Lagos State Employment Trust Fund"
-              className="h-12 object-contain"
-              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-            />
-            <div style={{display:'none'}} className="items-center gap-2">
-              <div className="w-10 h-10 rounded-full bg-[#006400] flex items-center justify-center">
-                <span className="text-white font-black text-xs">LS</span>
-              </div>
-              <div>
-                <p className="font-extrabold text-[#006400] text-sm leading-tight">LSETF</p>
-                <p className="text-[9px] text-[#555555]">LAGOS STATE EMPLOYMENT TRUST FUND</p>
-              </div>
-            </div>
-          </div>
+          <img
+            src="https://media.base44.com/images/public/6a1d7f35df3abaff93c10cec/1c9561eb5_lsetf_logo_extracted.png"
+            alt="LSETF - Lagos State Employment Trust Fund"
+            className="h-12 object-contain"
+          />
 
         </div>
       </div>
