@@ -40,8 +40,8 @@ export default function HeroSection() {
           <div className="relative flex-shrink-0 w-full lg:w-[480px]">
             <div className="relative rounded-2xl overflow-hidden" style={{ aspectRatio: '4/3' }}>
               <img
-                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=900&q=80"
-                alt="Digital marketing professionals"
+                src="https://images.unsplash.com/photo-1573497161161-c3e73707e25c?w=900&q=80"
+                alt="Nigerian digital marketing professionals"
                 className="w-full h-full object-cover"
               />
               {/* Green swoosh overlay bottom-right */}
