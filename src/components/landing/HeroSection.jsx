@@ -1,59 +1,132 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Briefcase, GraduationCap, Rocket, TrendingUp } from 'lucide-react';
 
-const stats = [
-  { label: '₦150,000 / Month', filled: true },
-  { label: 'Hybrid Lagos', filled: false },
-  { label: '50 Openings', filled: false },
-  { label: '12-Month Contract', filled: false },
-  { label: 'Performance Bonus', filled: false },
+const highlights = [
+  { icon: Briefcase, label: '12-Month Employment Opportunity' },
+  { icon: GraduationCap, label: '2-Weeks Hybrid Training (Ikeja, Lagos)' },
+  { icon: Rocket, label: 'Immediate Deployment After Training' },
+  { icon: TrendingUp, label: 'Career Growth Opportunities' },
 ];
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #FFFFFF 0%, #EBF5EB 100%)' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
-          <div className="flex-1 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 border border-[#2D6A2F] text-[#2D6A2F] bg-white px-4 py-1.5 rounded-full text-sm font-medium mb-6">
-              📢 Open to All Qualified Candidates — Nigeria
+    <section className="relative overflow-hidden bg-white">
+      {/* Main hero */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-0">
+        <div className="flex flex-col lg:flex-row items-stretch gap-0 lg:gap-10">
+
+          {/* Left: text content */}
+          <div className="flex-1 flex flex-col justify-center py-8 lg:py-16 text-left">
+            <div className="inline-flex items-center gap-2 text-[#2D6A2F] font-black text-sm uppercase tracking-widest mb-4">
+              <span className="w-8 h-0.5 bg-[#2D6A2F]" />
+              Now Recruiting
             </div>
-            <h1 className="font-black text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.08] tracking-[-1.5px] text-[#1A1A1A] mb-5">
-              Become A{' '}
-              <span className="text-[#2D6A2F]">Digital Marketing</span>{' '}
-              Associate
+            <h1 className="font-black text-[2.6rem] sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-[-2px] text-[#1A1A1A] mb-2">
+              Digital<br />
+              Marketing &amp;{' '}
+              <span className="text-[#2D6A2F]">Growth<br />Associates</span>
             </h1>
-            <p className="text-[#333333] text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8">
-              Join Transbill Solutions Limited — Nigeria's CBN-licensed PSS Super-Agent — and drive the activation of Affiliate Bankers opening SME accounts across 1,000+ markets nationwide.
+            <div className="w-10 h-1 bg-[#2D6A2F] rounded-full my-5" />
+            <p className="text-[#333333] text-base sm:text-[17px] leading-relaxed max-w-md mb-8">
+              Join a <strong>Nationwide SME Growth Initiative</strong> — drive the activation of Affiliate Bankers opening SME accounts across Nigeria's most active markets.
             </p>
+            <div className="flex flex-wrap gap-3 mb-8">
+              <span className="bg-[#2D6A2F] text-white font-bold text-sm px-5 py-2 rounded-full">₦150,000 / Month</span>
+              <span className="border border-[#E2E8E2] text-[#333333] font-semibold text-sm px-5 py-2 rounded-full bg-white">50 Openings</span>
+              <span className="border border-[#E2E8E2] text-[#333333] font-semibold text-sm px-5 py-2 rounded-full bg-white">12-Month Contract</span>
+            </div>
             <Link
               to="/apply"
-              className="inline-block bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base px-8 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base px-8 py-3.5 rounded-full transition-all shadow-md hover:shadow-lg w-fit"
             >
-              Start Your Application Now →
+              Apply Now →
             </Link>
-            <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 mt-8">
-              {stats.map((s) => (
-                <span
-                  key={s.label}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all ${
-                    s.filled
-                      ? 'bg-[#2D6A2F] text-white border-[#2D6A2F]'
-                      : 'bg-white text-[#333333] border-[#E2E8E2]'
-                  }`}
-                >
-                  {s.label}
-                </span>
-              ))}
-            </div>
+            <p className="text-xs text-[#7A7A8A] mt-3">
+              🌐 jobs.transbill.ng &nbsp;·&nbsp; Open to all qualified candidates — Nigeria
+            </p>
           </div>
-          <div className="flex-shrink-0">
-            <div className="w-56 h-56 sm:w-64 sm:h-64 rounded-full bg-[#E8E4F5] flex flex-col items-center justify-center text-center p-6 shadow-inner">
-              <span className="text-3xl sm:text-4xl font-black text-[#2D6A2F] tracking-tight">₦150k</span>
-              <span className="text-sm font-semibold text-[#333333] mt-1">Monthly Salary</span>
-              <span className="text-xs text-[#555555] mt-0.5">+ Performance Bonus</span>
-              <div className="w-10 h-px bg-[#2D6A2F]/30 my-2" />
-              <span className="text-sm font-bold text-[#2D6A2F]">50 Open Positions</span>
+
+          {/* Right: photo */}
+          <div className="flex-shrink-0 lg:w-[480px] relative flex items-end justify-center">
+            {/* Green swoosh bg */}
+            <div
+              className="absolute bottom-0 right-0 w-full h-4/5 rounded-tl-[60px]"
+              style={{ background: 'linear-gradient(160deg, #EBF5EB 0%, #2D6A2F 100%)' }}
+            />
+            <img
+              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=700&q=80&fit=crop&crop=faces"
+              alt="Digital Marketing Associates"
+              className="relative z-10 w-full max-w-[420px] object-cover object-top rounded-tl-[50px] shadow-2xl"
+              style={{ maxHeight: '520px' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 4-icon highlights bar */}
+      <div className="border-t border-[#E2E8E2] bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {highlights.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex flex-col items-center text-center gap-2">
+                <div className="w-12 h-12 rounded-full border-2 border-[#2D6A2F] flex items-center justify-center">
+                  <Icon className="w-5 h-5 text-[#2D6A2F]" />
+                </div>
+                <p className="text-xs font-bold text-[#1A1A1A] leading-tight uppercase tracking-wide">{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Sponsors bar */}
+      <div className="border-t border-[#E2E8E2] bg-[#F8FAF8] py-5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14">
+            {/* In Partnership with FirstBank */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-[10px] text-[#7A7A8A] uppercase tracking-widest font-medium">In Partnership with</p>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#FFD700] flex items-center justify-center text-[10px] font-black text-[#002B5C]">1st</div>
+                <div>
+                  <p className="font-black text-[#002B5C] text-sm leading-none">FirstBank</p>
+                  <p className="text-[10px] text-[#7A7A8A]">Since 1894</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-[#333333] font-medium">First Bank of Nigeria Limited</p>
+            </div>
+
+            <div className="w-px h-10 bg-[#E2E8E2] hidden sm:block" />
+
+            {/* Supported by 3MTT */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-[10px] text-[#7A7A8A] uppercase tracking-widest font-medium">Supported by</p>
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-[#1A3D1B] flex items-center justify-center">
+                  <span className="text-white font-black text-[11px]">3M</span>
+                </div>
+                <div>
+                  <p className="font-black text-[#1A3D1B] text-base leading-none tracking-tight">3MTT</p>
+                  <p className="text-[10px] text-[#555555] leading-tight">Three Million<br/>Tech Talent</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-px h-10 bg-[#E2E8E2] hidden sm:block" />
+
+            {/* LSETF */}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-[10px] text-[#7A7A8A] uppercase tracking-widest font-medium">&nbsp;</p>
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-[#006400] flex items-center justify-center overflow-hidden border-2 border-[#006400]">
+                  <span className="text-white font-black text-[9px] text-center leading-tight">LS</span>
+                </div>
+                <div>
+                  <p className="font-black text-[#006400] text-base leading-none tracking-tight">LSETF</p>
+                  <p className="text-[10px] text-[#555555] leading-tight">Lagos State Employment<br/>Trust Fund</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
