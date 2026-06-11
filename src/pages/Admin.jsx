@@ -38,7 +38,11 @@ export default function Admin() {
 
   const { data: applicants = [], isLoading, isError } = useQuery({
     queryKey: ['applicants'],
-    queryFn: () => base44.entities.Applicant.list('-created_date', 10000),
+    queryFn: async () => {
+      const token = sessionStorage.getItem('transbill_admin_token');
+      const res = await base44.functions.invoke('adminGetApplicants', { token });
+      return res.data?.applicants || [];
+    },
     enabled: authenticated,
   });
 
