@@ -1,32 +1,34 @@
 import { createClient } from 'npm:@base44/sdk@0.8.31';
 
-const ADMIN_SECRET = Deno.env.get('ADMIN_PASSWORD') || '';
 const APP_ID = Deno.env.get('BASE44_APP_ID') || '';
 
-async function hmac(secret, data) {
+async function hmac(data, secret) {
+  const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
-    'raw', new TextEncoder().encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    'raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
-  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
   return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function verifyToken(token) {
+async function verifyToken(token, secret) {
   if (!token) return false;
-  const parts = token.split('.');
-  if (parts.length !== 3) return false;
-  const [ts, exp, sig] = parts;
-  if (Date.now() > parseInt(exp)) return false;
-  const expected = await hmac(ADMIN_SECRET, `${ts}.${exp}`);
+  const dotIndex = token.lastIndexOf('.');
+  if (dotIndex === -1) return false;
+  const payload = token.substring(0, dotIndex);
+  const sig = token.substring(dotIndex + 1);
+  const exp = parseInt(payload.split(':')[1], 10);
+  if (!exp || Date.now() > exp) return false;
+  const expected = await hmac(payload, secret);
   return sig === expected;
 }
 
 Deno.serve(async (req) => {
   try {
     const { token } = await req.json();
+    const adminPassword = Deno.env.get('ADMIN_PASSWORD');
 
-    const valid = await verifyToken(token);
+    const valid = await verifyToken(token, adminPassword);
     if (!valid) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
