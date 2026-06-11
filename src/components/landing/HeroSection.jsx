@@ -42,7 +42,7 @@ export default function HeroSection() {
           <div className="flex-1 flex justify-center lg:justify-end relative">
             <div className="relative w-full max-w-sm lg:max-w-md">
               <img
-                src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=700&q=80"
+                src="https://media.base44.com/images/public/6a1d7f35df3abaff93c10cec/6de1d5dd8_Image11-06-2026at0431.jpg"
                 alt="Digital Marketing Associates"
                 className="w-full h-[340px] sm:h-[420px] object-cover rounded-[20px] shadow-xl"
               />
