@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { adminApi } from '@/lib/adminApi';
+import { base44 } from '@/api/base44Client';
 import { Plus, Trash2, Check, X, Edit2 } from 'lucide-react';
 
 const DAY_OPTIONS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -36,7 +36,7 @@ function InterviewerCard({ interviewer, onUpdate, onDelete, weekBookingCount }) 
 
   const handleSave = async () => {
     setSaving(true);
-    await adminApi.update('Interviewer', interviewer.id, form);
+    await base44.entities.Interviewer.update(interviewer.id, form);
     onUpdate({ ...interviewer, ...form });
     setSaving(false);
     setEditing(false);
@@ -44,7 +44,7 @@ function InterviewerCard({ interviewer, onUpdate, onDelete, weekBookingCount }) 
 
   const handleToggleActive = async () => {
     const updated = { ...interviewer, is_active: !interviewer.is_active };
-    await adminApi.update('Interviewer', interviewer.id, { is_active: !interviewer.is_active });
+    await base44.entities.Interviewer.update(interviewer.id, { is_active: !interviewer.is_active });
     onUpdate(updated);
   };
 
@@ -172,14 +172,33 @@ export default function InterviewerManager() {
   const [weekBookings, setWeekBookings] = useState({});
 
   useEffect(() => {
-    adminApi.list('Interviewer').then((ivs) => {
+    Promise.all([
+      base44.entities.Interviewer.list(),
+      base44.entities.Applicant.filter({ booking_used: true }),
+    ]).then(([ivs, bookedApplicants]) => {
       setInterviewers(ivs || []);
 
+      // Count bookings this week per interviewer
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 7);
+
+      const counts = {};
+      bookedApplicants.forEach(a => {
+        if (!a.interview_scheduled_at || !a.interview_interviewer_id) return;
+        const d = new Date(a.interview_scheduled_at);
+        if (d >= weekStart && d < weekEnd) {
+          counts[a.interview_interviewer_id] = (counts[a.interview_interviewer_id] || 0) + 1;
+        }
+      });
+      setWeekBookings(counts);
     }).finally(() => setLoading(false));
   }, []);
 
   const handleAdd = async () => {
-    const created = await adminApi.create('Interviewer', {
+    const created = await base44.entities.Interviewer.create({
       full_name: 'New Interviewer — click edit to update',
       email: 'interviewer@transbill.ng',
       is_active: true,
@@ -194,7 +213,7 @@ export default function InterviewerManager() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this interviewer?')) return;
-    await adminApi.delete('Interviewer', id);
+    await base44.entities.Interviewer.delete(id);
     setInterviewers(prev => prev.filter(iv => iv.id !== id));
   };
 

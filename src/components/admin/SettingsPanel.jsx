@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { adminApi } from '@/lib/adminApi';
+import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import SlotManager from './SlotManager';
 import InterviewerManager from './InterviewerManager';
-import AdminUsersPanel from './AdminUsersPanel';
 
 const DEFAULTS = {
   interview_ready_min: 21,
@@ -70,9 +69,9 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
     setSaving(true);
     try {
       if (settingsRecord?.id) {
-        await adminApi.update('AppSettings', settingsRecord.id, s);
+        await base44.entities.AppSettings.update(settingsRecord.id, s);
       } else {
-        await adminApi.create('AppSettings', { ...s, settings_id: 'main' });
+        await base44.entities.AppSettings.create({ ...s, settings_id: 'main' });
       }
       onSettingsSaved(s);
     } finally {
@@ -85,9 +84,9 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
     setSaving(true);
     try {
       if (settingsRecord?.id) {
-        await adminApi.update('AppSettings', settingsRecord.id, { ...DEFAULTS });
+        await base44.entities.AppSettings.update(settingsRecord.id, { ...DEFAULTS });
       } else {
-        await adminApi.create('AppSettings', { ...DEFAULTS, settings_id: 'main' });
+        await base44.entities.AppSettings.create({ ...DEFAULTS, settings_id: 'main' });
       }
       onSettingsSaved({ ...DEFAULTS });
     } finally {
@@ -140,7 +139,7 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
         candidate_stage = 'Closed \u2013 Not Progressed';
       }
 
-      await adminApi.update('Applicant', a.id, {
+      await base44.entities.Applicant.update(a.id, {
         status: newStatus,
         rapid_completion_flag,
         very_rapid_completion_flag,
@@ -246,11 +245,6 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
           {/* SECTION 6 — INTERVIEWERS */}
           <Section title="Interviewers">
             <InterviewerManager />
-          </Section>
-
-          {/* SECTION 7 — ADMIN USERS */}
-          <Section title="Admin Users">
-            <AdminUsersPanel />
           </Section>
 
           {/* SAVE */}

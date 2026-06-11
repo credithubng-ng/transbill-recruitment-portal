@@ -10,7 +10,6 @@ import ApplicantPanel from '../components/admin/ApplicantPanel';
 import SettingsPanel from '../components/admin/SettingsPanel';
 import ScheduleView from './ScheduleView';
 import { Download, LogOut, Settings, CalendarDays } from 'lucide-react';
-import { adminApi } from '@/lib/adminApi';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -39,18 +38,14 @@ export default function Admin() {
 
   const { data: applicants = [], isLoading, isError } = useQuery({
     queryKey: ['applicants'],
-    queryFn: async () => {
-      const token = sessionStorage.getItem('transbill_admin_token');
-      const res = await base44.functions.invoke('getApplicants', { token });
-      return res.data?.applicants || [];
-    },
+    queryFn: () => base44.entities.Applicant.list('-created_date', 10000),
     enabled: authenticated,
   });
 
   // Load settings when authenticated
   useEffect(() => {
     if (!authenticated) return;
-    adminApi.list('AppSettings').then(records => {
+    base44.entities.AppSettings.list().then(records => {
       if (records?.length > 0) setSettingsRecord(records[0]);
     }).catch(() => {});
   }, [authenticated]);

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { adminApi } from '@/lib/adminApi';
+import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle, Clock } from 'lucide-react';
 import { QUESTIONS } from '../../lib/assessmentQuestions';
 import InterviewSection from './InterviewSection';
@@ -23,7 +23,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
 
   const handleSave = async () => {
     setSaving(true);
-    await adminApi.update('Applicant', applicant.id, { admin_notes: notes, status });
+    await base44.entities.Applicant.update(applicant.id, { admin_notes: notes, status });
     onUpdate({ ...applicant, admin_notes: notes, status });
     setSaving(false);
   };
