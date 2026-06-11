@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { adminApi } from '@/lib/adminApi';
 import { X, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import SlotManager from './SlotManager';
@@ -70,9 +70,9 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
     setSaving(true);
     try {
       if (settingsRecord?.id) {
-        await base44.entities.AppSettings.update(settingsRecord.id, s);
+        await adminApi.update('AppSettings', settingsRecord.id, s);
       } else {
-        await base44.entities.AppSettings.create({ ...s, settings_id: 'main' });
+        await adminApi.create('AppSettings', { ...s, settings_id: 'main' });
       }
       onSettingsSaved(s);
     } finally {
@@ -85,9 +85,9 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
     setSaving(true);
     try {
       if (settingsRecord?.id) {
-        await base44.entities.AppSettings.update(settingsRecord.id, { ...DEFAULTS });
+        await adminApi.update('AppSettings', settingsRecord.id, { ...DEFAULTS });
       } else {
-        await base44.entities.AppSettings.create({ ...DEFAULTS, settings_id: 'main' });
+        await adminApi.create('AppSettings', { ...DEFAULTS, settings_id: 'main' });
       }
       onSettingsSaved({ ...DEFAULTS });
     } finally {
@@ -140,7 +140,7 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
         candidate_stage = 'Closed \u2013 Not Progressed';
       }
 
-      await base44.entities.Applicant.update(a.id, {
+      await adminApi.update('Applicant', a.id, {
         status: newStatus,
         rapid_completion_flag,
         very_rapid_completion_flag,

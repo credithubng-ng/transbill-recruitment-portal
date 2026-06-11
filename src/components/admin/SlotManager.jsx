@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { adminApi } from '@/lib/adminApi';
 import { Plus, Trash2, Calendar, MapPin, User, Zap, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 
 function formatSlot(iso) {
@@ -52,7 +53,7 @@ export default function SlotManager() {
   const [bulkAdding, setBulkAdding] = useState(false);
 
   const loadSlots = async () => {
-    const all = await base44.entities.InterviewSlot.list('slot_datetime', 1000);
+    const all = await adminApi.list('InterviewSlot');
     setSlots(all);
     setLoading(false);
   };
@@ -78,7 +79,7 @@ export default function SlotManager() {
     if (!newDate || !newTime) return;
     setAdding(true);
     const iso = new Date(`${newDate}T${newTime}:00`).toISOString();
-    await base44.entities.InterviewSlot.create({
+    await adminApi.create('InterviewSlot', {
       slot_datetime: iso, location: newLocation,
       interviewer: newInterviewer, is_booked: false,
     });
@@ -90,7 +91,9 @@ export default function SlotManager() {
   const handleAddBulk = async () => {
     if (!bulkPreview.length) return;
     setBulkAdding(true);
-    await base44.entities.InterviewSlot.bulkCreate(bulkPreview);
+    for (const slot of bulkPreview) {
+      await adminApi.create('InterviewSlot', slot);
+    }
     setBulkDate(''); setBulkFrom('09:00'); setBulkTo('17:00');
     setBulkInterval(30); setBulkInterviewers(''); setBulkLocation('');
     setBulkPreview([]);
@@ -100,7 +103,7 @@ export default function SlotManager() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this slot?')) return;
-    await base44.entities.InterviewSlot.delete(id);
+    await adminApi.delete('InterviewSlot', id);
     setSlots(s => s.filter(x => x.id !== id));
   };
 
