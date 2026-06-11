@@ -1,6 +1,4 @@
-import { createClient } from 'npm:@base44/sdk@0.8.31';
-
-const APP_ID = Deno.env.get('BASE44_APP_ID') || '';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 async function hmac(data, secret) {
   const encoder = new TextEncoder();
@@ -33,7 +31,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const base44 = createClient({ appId: APP_ID });
+    const base44 = createClientFromRequest(req);
     const applicants = await base44.asServiceRole.entities.Applicant.list('-created_date', 10000);
     return Response.json({ applicants });
   } catch (error) {
