@@ -29,7 +29,9 @@ export default function Footer() {
 
       {/* Bottom */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 text-center">
-        <TransbillLogo dark />
+        <div className="inline-block bg-white rounded-xl px-5 py-3">
+          <TransbillLogo />
+        </div>
         <p className="text-white/60 text-sm mt-3">
           © {new Date().getFullYear()} Transbill Solutions Limited. All rights reserved.
         </p>
