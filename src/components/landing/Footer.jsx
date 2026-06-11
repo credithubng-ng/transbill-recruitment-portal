@@ -4,7 +4,7 @@ import TransbillLogo from '../TransbillLogo';
 function FirstBankLogo() {
   return (
     <img
-      src="https://media.base44.com/images/public/6a1d7f35df3abaff93c10cec/360a2fc5d_ChatGPTImageJun11202604_13_19AM.png"
+      src="https://media.base44.com/images/public/6a1d7f35df3abaff93c10cec/cff5b9843_Image11-06-2026at04161.jpeg"
       alt="FirstBank Nigeria"
       className="h-10 w-auto object-contain"
     />
