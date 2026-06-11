@@ -35,7 +35,7 @@ export default function HeroSection() {
             >
               Apply Now →
             </Link>
-            <p className="text-[#7A7A8A] text-sm mt-3 font-medium">jobs.transbill.ng</p>
+
           </div>
 
           {/* Right hero image */}
