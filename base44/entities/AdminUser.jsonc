@@ -1,0 +1,53 @@
+{
+  "name": "AdminUser",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": "string",
+      "description": "Unique username for admin login"
+    },
+    "password_hash": {
+      "type": "string",
+      "description": "SHA-256 hashed password"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Full name of the admin user"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this admin can log in"
+    },
+    "last_login_at": {
+      "type": "string",
+      "description": "ISO timestamp of last login"
+    }
+  },
+  "required": [
+    "username",
+    "password_hash"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { X, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import SlotManager from './SlotManager';
 import InterviewerManager from './InterviewerManager';
+import AdminUsersPanel from './AdminUsersPanel';
 
 const DEFAULTS = {
   interview_ready_min: 21,
@@ -245,6 +246,11 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
           {/* SECTION 6 — INTERVIEWERS */}
           <Section title="Interviewers">
             <InterviewerManager />
+          </Section>
+
+          {/* SECTION 7 — ADMIN USERS */}
+          <Section title="Admin Users">
+            <AdminUsersPanel />
           </Section>
 
           {/* SAVE */}
