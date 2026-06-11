@@ -1,6 +1,7 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClient } from 'npm:@base44/sdk@0.8.31';
 
 const ADMIN_SECRET = Deno.env.get('ADMIN_PASSWORD') || '';
+const APP_ID = Deno.env.get('BASE44_APP_ID') || '';
 
 async function hmac(secret, data) {
   const key = await crypto.subtle.importKey(
@@ -23,7 +24,6 @@ async function verifyToken(token) {
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
     const { token } = await req.json();
 
     const valid = await verifyToken(token);
@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const base44 = createClient({ appId: APP_ID });
     const applicants = await base44.asServiceRole.entities.Applicant.list('-created_date', 10000);
     return Response.json({ applicants });
   } catch (error) {
