@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 async function hmac(data, secret) {
   const encoder = new TextEncoder();
@@ -23,12 +23,17 @@ async function verifyToken(token, secret) {
 
 Deno.serve(async (req) => {
   try {
-    const { token } = await req.json();
+    const body = await req.json();
+    const token = body.token;
     const adminPassword = Deno.env.get('ADMIN_PASSWORD');
+
+    if (!adminPassword) {
+      return Response.json({ error: 'Server configuration error: ADMIN_PASSWORD not set' }, { status: 500 });
+    }
 
     const valid = await verifyToken(token, adminPassword);
     if (!valid) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return Response.json({ error: 'Unauthorized: invalid or expired token' }, { status: 401 });
     }
 
     const base44 = createClientFromRequest(req);

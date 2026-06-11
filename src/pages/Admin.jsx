@@ -41,9 +41,11 @@ export default function Admin() {
     queryFn: async () => {
       const token = sessionStorage.getItem('transbill_admin_token');
       const res = await base44.functions.invoke('adminGetApplicants', { token });
+      if (res.data?.error) throw new Error(res.data.error);
       return res.data?.applicants || [];
     },
     enabled: authenticated,
+    retry: false,
   });
 
   // Load settings when authenticated
