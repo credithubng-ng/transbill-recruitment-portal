@@ -59,7 +59,7 @@ export default function BookInterview() {
     try {
       const res = await base44.functions.invoke('confirmInterviewBooking', {
         token,
-        slotDatetime: selectedSlot.datetime,
+        slotId: selectedSlot.slotId,
       });
       if (res.data?.success) {
         setBookingResult(res.data);
