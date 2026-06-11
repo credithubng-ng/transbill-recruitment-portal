@@ -327,13 +327,13 @@ function ResultScreen({ result }) {
       icon: '✅',
       bg: 'bg-[#2D6A2F]',
       heading: "Congratulations — You've Passed!",
-      body: 'You have successfully completed the Transbill competency assessment. The next step requires registration on Transbill.ng. Please complete registration within 7 days.'
+      body: 'You have successfully completed the Transbill competency assessment. The next step is to book your interview. Please schedule your slot within 7 days.'
     },
     'Reserve List': {
       icon: '🟡',
       bg: 'bg-[#F57C00]',
       heading: 'Assessment Completed.',
-      body: 'Thank you for completing the Transbill competency assessment. You have successfully completed this stage. The next step requires registration on Transbill.ng. Please complete registration within 7 days.'
+      body: 'Thank you for completing the Transbill competency assessment. You have successfully completed this stage. Please book your interview slot within 7 days.'
     },
     'Not Progressed': {
       icon: '⚪',
@@ -361,12 +361,10 @@ function ResultScreen({ result }) {
         </p>
         {isPassing && (
           <a
-            href="https://transbill.ng"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/book-interview"
             className="mt-6 inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base px-8 py-3.5 rounded-full transition-all shadow-md"
           >
-            Register on Transbill.ng →
+            Book Your Interview →
           </a>
         )}
         <p className="mt-4 text-xs text-[#7A7A8A] text-center">
