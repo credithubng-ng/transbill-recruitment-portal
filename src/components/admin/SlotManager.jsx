@@ -10,21 +10,27 @@ function formatSlot(iso) {
   });
 }
 
-// Generate ISO strings for all slots in the bulk config
-function generateBulkSlots({ date, fromTime, toTime, intervalMins, interviewers, location }) {
+// Generate ISO strings for all slots in the bulk config across a date range
+function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, interviewers, location }) {
   const slots = [];
   const [fH, fM] = fromTime.split(':').map(Number);
   const [tH, tM] = toTime.split(':').map(Number);
   const startMins = fH * 60 + fM;
   const endMins = tH * 60 + tM;
 
-  for (let mins = startMins; mins + intervalMins <= endMins; mins += intervalMins) {
-    const h = String(Math.floor(mins / 60)).padStart(2, '0');
-    const m = String(mins % 60).padStart(2, '0');
-    const iso = new Date(`${date}T${h}:${m}:00`).toISOString();
-    interviewers.forEach(interviewer => {
-      slots.push({ slot_datetime: iso, location, interviewer: interviewer.trim(), is_booked: false });
-    });
+  // Iterate each date in range
+  const start = new Date(dateFrom + 'T12:00:00');
+  const end = new Date(dateTo + 'T12:00:00');
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const dateStr = d.toISOString().slice(0, 10);
+    for (let mins = startMins; mins + intervalMins <= endMins; mins += intervalMins) {
+      const h = String(Math.floor(mins / 60)).padStart(2, '0');
+      const m = String(mins % 60).padStart(2, '0');
+      const iso = new Date(`${dateStr}T${h}:${m}:00`).toISOString();
+      interviewers.forEach(interviewer => {
+        slots.push({ slot_datetime: iso, location, interviewer: interviewer.trim(), is_booked: false });
+      });
+    }
   }
   return slots;
 }
@@ -42,7 +48,8 @@ export default function SlotManager() {
   const [adding, setAdding] = useState(false);
 
   // Bulk state
-  const [bulkDate, setBulkDate] = useState('');
+  const [bulkDateFrom, setBulkDateFrom] = useState('');
+  const [bulkDateTo, setBulkDateTo] = useState('');
   const [bulkFrom, setBulkFrom] = useState('09:00');
   const [bulkTo, setBulkTo] = useState('17:00');
   const [bulkInterval, setBulkInterval] = useState(30);
@@ -61,18 +68,19 @@ export default function SlotManager() {
 
   // Live preview for bulk
   useEffect(() => {
-    if (!bulkDate || !bulkFrom || !bulkTo || !bulkInterval || !bulkInterviewers.trim()) {
+    if (!bulkDateFrom || !bulkDateTo || !bulkFrom || !bulkTo || !bulkInterval || !bulkInterviewers.trim()) {
       setBulkPreview([]);
       return;
     }
+    if (bulkDateTo < bulkDateFrom) { setBulkPreview([]); return; }
     const interviewers = bulkInterviewers.split(',').map(s => s.trim()).filter(Boolean);
     if (!interviewers.length) { setBulkPreview([]); return; }
     const preview = generateBulkSlots({
-      date: bulkDate, fromTime: bulkFrom, toTime: bulkTo,
+      dateFrom: bulkDateFrom, dateTo: bulkDateTo, fromTime: bulkFrom, toTime: bulkTo,
       intervalMins: Number(bulkInterval), interviewers, location: bulkLocation
     });
     setBulkPreview(preview);
-  }, [bulkDate, bulkFrom, bulkTo, bulkInterval, bulkInterviewers, bulkLocation]);
+  }, [bulkDateFrom, bulkDateTo, bulkFrom, bulkTo, bulkInterval, bulkInterviewers, bulkLocation]);
 
   const handleAddSingle = async () => {
     if (!newDate || !newTime) return;
@@ -91,7 +99,7 @@ export default function SlotManager() {
     if (!bulkPreview.length) return;
     setBulkAdding(true);
     await base44.entities.InterviewSlot.bulkCreate(bulkPreview);
-    setBulkDate(''); setBulkFrom('09:00'); setBulkTo('17:00');
+    setBulkDateFrom(''); setBulkDateTo(''); setBulkFrom('09:00'); setBulkTo('17:00');
     setBulkInterval(30); setBulkInterviewers(''); setBulkLocation('');
     setBulkPreview([]);
     await loadSlots();
@@ -156,11 +164,18 @@ export default function SlotManager() {
       {/* Bulk form */}
       {mode === 'bulk' && (
         <div className="bg-[#F8FAF8] rounded-[10px] p-4 space-y-3 border border-[#E2E8E2]">
-          <p className="text-xs text-[#7A7A8A]">Generate many slots at once across a time window. One slot per interviewer per time block.</p>
-          <div>
-            <label className="text-[10px] text-[#7A7A8A] font-medium">Date</label>
-            <input type="date" value={bulkDate} onChange={e => setBulkDate(e.target.value)}
-              className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
+          <p className="text-xs text-[#7A7A8A]">Generate many slots at once across a date range. One slot per interviewer per time block per day.</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-[10px] text-[#7A7A8A] font-medium">From Date</label>
+              <input type="date" value={bulkDateFrom} onChange={e => setBulkDateFrom(e.target.value)}
+                className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
+            </div>
+            <div>
+              <label className="text-[10px] text-[#7A7A8A] font-medium">To Date</label>
+              <input type="date" value={bulkDateTo} min={bulkDateFrom} onChange={e => setBulkDateTo(e.target.value)}
+                className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div>
