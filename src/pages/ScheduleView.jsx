@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore, startOfDay, endOfDay, addDays } from 'date-fns';
 import TransbillLogo from '../components/TransbillLogo';
+import SlotManager from '../components/admin/SlotManager';
 import { Video, CheckCircle2, XCircle, PauseCircle, LogOut, ArrowLeft, Filter } from 'lucide-react';
 
 const OUTCOME_STYLES = {
@@ -31,6 +32,7 @@ function getDateStrWAT(iso) {
 }
 
 export default function ScheduleView({ onBack }) {
+  const [tab, setTab] = useState('schedule'); // 'schedule' | 'slots'
   const [interviewers, setInterviewers] = useState([]);
   const [filterInterviewer, setFilterInterviewer] = useState('all');
   const [filterDateFrom, setFilterDateFrom] = useState('');
@@ -114,8 +116,23 @@ export default function ScheduleView({ onBack }) {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-        <h1 className="font-extrabold text-2xl text-[#1A1A1A]">Interview Schedule</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="font-extrabold text-2xl text-[#1A1A1A]">Interview Schedule</h1>
+          <div className="flex gap-2">
+            <button onClick={() => setTab('schedule')}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${tab === 'schedule' ? 'bg-[#2D6A2F] text-white' : 'bg-white border border-[#E2E8E2] text-[#7A7A8A]'}`}>
+              Booked Interviews
+            </button>
+            <button onClick={() => setTab('slots')}
+              className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${tab === 'slots' ? 'bg-[#2D6A2F] text-white' : 'bg-white border border-[#E2E8E2] text-[#7A7A8A]'}`}>
+              Manage Slots
+            </button>
+          </div>
+        </div>
 
+        {tab === 'slots' && <SlotManager />}
+
+        {tab === 'schedule' && <>
         {/* Filters */}
         <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-4 flex flex-wrap gap-3 items-end">
           <div>
@@ -151,10 +168,12 @@ export default function ScheduleView({ onBack }) {
         )}
 
         {grouped.map(([dateKey, group]) => (
+
           <div key={dateKey}>
             <h2 className="font-bold text-sm text-[#7A7A8A] uppercase tracking-wide mb-3">{group.label}</h2>
             <div className="space-y-3">
               {group.items.map(a => {
+
                 const iv = interviewerMap[a.interview_interviewer_id];
                 return (
                   <div key={a.id} className="bg-white rounded-[12px] border border-[#E2E8E2] p-4 flex flex-wrap items-center gap-4">
@@ -189,6 +208,7 @@ export default function ScheduleView({ onBack }) {
             </div>
           </div>
         ))}
+        </>}
       </div>
 
       {/* Record outcome modal */}
