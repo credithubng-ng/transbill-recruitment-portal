@@ -42,6 +42,13 @@ Deno.serve(async (req) => {
 
     // Fetch applicant for email/name
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
+    if (!applicant) return Response.json({ error: 'Applicant not found' }, { status: 404 });
+
+    // Block re-submission if already completed
+    if (applicant.assessment_completed === true) {
+      return Response.json({ error: 'Assessment already completed' }, { status: 409 });
+    }
+
     const firstName = applicant?.full_name?.split(' ')[0] || 'Candidate';
     const email = applicant?.email;
 

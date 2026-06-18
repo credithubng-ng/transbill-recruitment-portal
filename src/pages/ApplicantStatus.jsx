@@ -181,6 +181,20 @@ export default function ApplicantStatus() {
               </div>
             )}
 
+            {/* Continue Assessment – show if started but not completed */}
+            {applicant.assessment_completed === false && (!stage || stage === 'Assessment Started') && (
+              <div className="bg-[#FFF3E0] rounded-[14px] border border-[#FF8F00]/30 p-6 text-center">
+                <p className="font-bold text-[#BF360C] text-sm mb-1">Assessment Not Yet Completed</p>
+                <p className="text-[#5D3F00] text-sm mb-4">You started but didn't finish your assessment. You can retake it — your previous attempt will be replaced.</p>
+                <a
+                  href={`/assessment?id=${applicant.id}&exp=${encodeURIComponent(applicant.years_experience || 'Less than 1 year')}`}
+                  className="inline-flex items-center gap-2 bg-[#F57C00] hover:bg-[#E65100] text-white font-bold text-sm px-6 py-2.5 rounded-full transition-all"
+                >
+                  Continue Assessment →
+                </a>
+              </div>
+            )}
+
             {/* Interview Slot Picker – show for all passing candidates who haven't scheduled yet */}
             {['Interview Scheduling', 'Interview Ready', 'Reserve List', 'Email Sent'].includes(stage) && !applicant.interview_scheduled_at && (
               <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-6">
