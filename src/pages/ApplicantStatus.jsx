@@ -204,7 +204,19 @@ export default function ApplicantStatus() {
               <div className="bg-[#EBF5EB] rounded-[14px] border border-[#2D6A2F]/20 p-6">
                 <p className="text-xs font-semibold text-[#2D6A2F] uppercase tracking-wide mb-3">Interview Scheduled</p>
                 <Row label="Date & Time" value={new Date(applicant.interview_scheduled_at).toLocaleString('en-GB', { dateStyle: 'full', timeStyle: 'short' })} />
-                {applicant.interview_location && <Row label="Location" value={applicant.interview_location} />}
+                {applicant.interview_location && (
+                  applicant.interview_location.startsWith('http')
+                    ? (
+                      <div className="flex gap-2 items-center">
+                        <span className="text-xs font-medium text-[#7A7A8A] min-w-[120px]">Location:</span>
+                        <a href={applicant.interview_location} target="_blank" rel="noopener noreferrer"
+                          className="text-xs font-semibold text-white bg-[#2D6A2F] hover:bg-[#4A9A4D] px-4 py-1.5 rounded-full transition-all inline-flex items-center gap-1.5">
+                          Join Google Meet
+                        </a>
+                      </div>
+                    )
+                    : <Row label="Location" value={applicant.interview_location} />
+                )}
               </div>
             )}
 
