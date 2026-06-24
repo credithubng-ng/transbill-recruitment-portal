@@ -10,10 +10,6 @@ export default function StatsCards({ applicants }) {
   const experienceInflation = applicants.filter(a => a.experience_inflation_flag).length;
   const rapidCompletion = applicants.filter(a => a.rapid_completion_flag).length;
   const duplicateSignature = applicants.filter(a => a.duplicate_signature_flag).length;
-  // Interview Ready breakdown
-  const interviewReadyPending = applicants.filter(a => a.status === 'Interview Ready' && !a.interview_scheduled_at && !a.interview_outcome).length;
-  const interviewScheduled = applicants.filter(a => a.interview_scheduled_at && !a.interview_outcome).length;
-  const interviewDone = applicants.filter(a => a.interview_outcome).length;
   const interviewPass = applicants.filter(a => a.interview_outcome === 'Pass').length;
   const interviewFail = applicants.filter(a => a.interview_outcome === 'Fail').length;
   const interviewHold = applicants.filter(a => a.interview_outcome === 'Hold').length;
@@ -32,9 +28,6 @@ export default function StatsCards({ applicants }) {
         <StatCard label="Total Applications" value={total} />
         <StatCard label="Assessments Done" value={assessed} />
         <StatCard label="Interview Ready" value={interviewReady} color="bg-[#2D6A2F]" />
-        <StatCard label="Awaiting Booking" value={interviewReadyPending} />
-        <StatCard label="Interview Scheduled" value={interviewScheduled} color="bg-[#1565C0]" />
-        <StatCard label="Outcome Recorded" value={interviewDone} color="bg-[#6A1B9A]" />
         <StatCard label="Reserve List" value={reserveList} color="bg-[#F57C00]" />
         <StatCard label="Not Progressed" value={notProgressed} color="bg-[#9E9E9E]" />
         <StatCard label="⚠ Review Required" value={reviewRequired} color={reviewRequired > 0 ? "bg-[#D32F2F]" : undefined} />
@@ -43,23 +36,25 @@ export default function StatsCards({ applicants }) {
       </div>
 
       {/* Interview outcomes */}
-      <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
-        <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes</p>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="text-center bg-[#EBF5EB] rounded-[10px] p-3">
-            <p className="text-[10px] text-[#2D6A2F] font-semibold mb-1">✓ Pass</p>
-            <p className="text-2xl font-extrabold text-[#2D6A2F]">{interviewPass}</p>
-          </div>
-          <div className="text-center bg-red-50 rounded-[10px] p-3">
-            <p className="text-[10px] text-[#D32F2F] font-semibold mb-1">✗ Fail</p>
-            <p className="text-2xl font-extrabold text-[#D32F2F]">{interviewFail}</p>
-          </div>
-          <div className="text-center bg-amber-50 rounded-[10px] p-3">
-            <p className="text-[10px] text-amber-600 font-semibold mb-1">⏸ Hold</p>
-            <p className="text-2xl font-extrabold text-amber-600">{interviewHold}</p>
+      {(interviewPass + interviewFail + interviewHold) > 0 && (
+        <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
+          <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center bg-[#EBF5EB] rounded-[10px] p-3">
+              <p className="text-[10px] text-[#2D6A2F] font-semibold mb-1">✓ Pass</p>
+              <p className="text-2xl font-extrabold text-[#2D6A2F]">{interviewPass}</p>
+            </div>
+            <div className="text-center bg-red-50 rounded-[10px] p-3">
+              <p className="text-[10px] text-[#D32F2F] font-semibold mb-1">✗ Fail</p>
+              <p className="text-2xl font-extrabold text-[#D32F2F]">{interviewFail}</p>
+            </div>
+            <div className="text-center bg-amber-50 rounded-[10px] p-3">
+              <p className="text-[10px] text-amber-600 font-semibold mb-1">⏸ Hold</p>
+              <p className="text-2xl font-extrabold text-amber-600">{interviewHold}</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Avg score by experience tier */}
       <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
