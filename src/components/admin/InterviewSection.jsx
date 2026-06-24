@@ -57,16 +57,17 @@ export default function InterviewSection({ applicant, onUpdate }) {
         notes: outcomeNotes,
         token
       });
+      const stage = res?.data?.stage ?? res?.data;
       onUpdate({
         ...applicant,
         interview_outcome: outcome,
         interview_outcome_notes: outcomeNotes,
-        interview_outcome_email_sent: res.data?.stage !== 'Interview Scheduling',
-        candidate_stage: res.data?.stage
+        interview_outcome_email_sent: res?.data?.emailSent ?? false,
+        candidate_stage: typeof stage === 'string' ? stage : applicant.candidate_stage
       });
       setShowOutcome(false);
     } catch (err) {
-      setOutcomeError(err.message || 'Failed to record outcome');
+      setOutcomeError(err?.response?.data?.error || err.message || 'Failed to record outcome');
     } finally {
       setRecording(false);
     }
