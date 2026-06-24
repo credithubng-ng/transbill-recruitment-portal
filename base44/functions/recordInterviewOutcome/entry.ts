@@ -1,15 +1,29 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+async function verifyToken(token, secret) {
+  if (!token) return false;
+  const dotIndex = token.lastIndexOf('.');
+  if (dotIndex === -1) return false;
+  const payload = token.substring(0, dotIndex);
+  const sig = token.substring(dotIndex + 1);
+  const exp = parseInt(payload.split(':')[1], 10);
+  if (!exp || Date.now() > exp) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  const expected = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return sig === expected;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    // Auth check — allow real admin users or any authenticated session (admin page uses custom token auth)
-    const isAuthed = await base44.auth.isAuthenticated();
-    if (!isAuthed) {
+    const { applicantId, outcome, notes, token } = await req.json();
+    const adminPassword = Deno.env.get('ADMIN_PASSWORD');
+    const valid = await verifyToken(token, adminPassword);
+    if (!valid) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
-
-    const { applicantId, outcome, notes } = await req.json();
 
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
     if (!applicant) {

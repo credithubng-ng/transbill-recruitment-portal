@@ -50,10 +50,12 @@ export default function InterviewSection({ applicant, onUpdate }) {
     if (!outcome) { setOutcomeError('Please select an outcome'); return; }
     setRecording(true);
     try {
+      const token = sessionStorage.getItem('transbill_admin_token');
       const res = await base44.functions.invoke('recordInterviewOutcome', {
         applicantId: applicant.id,
         outcome,
-        notes: outcomeNotes
+        notes: outcomeNotes,
+        token
       });
       onUpdate({
         ...applicant,
