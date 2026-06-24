@@ -43,25 +43,23 @@ export default function StatsCards({ applicants }) {
       </div>
 
       {/* Interview outcomes */}
-      {(interviewPass + interviewFail + interviewHold) > 0 && (
-        <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
-          <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center bg-[#EBF5EB] rounded-[10px] p-3">
-              <p className="text-[10px] text-[#2D6A2F] font-semibold mb-1">✓ Pass</p>
-              <p className="text-2xl font-extrabold text-[#2D6A2F]">{interviewPass}</p>
-            </div>
-            <div className="text-center bg-red-50 rounded-[10px] p-3">
-              <p className="text-[10px] text-[#D32F2F] font-semibold mb-1">✗ Fail</p>
-              <p className="text-2xl font-extrabold text-[#D32F2F]">{interviewFail}</p>
-            </div>
-            <div className="text-center bg-amber-50 rounded-[10px] p-3">
-              <p className="text-[10px] text-amber-600 font-semibold mb-1">⏸ Hold</p>
-              <p className="text-2xl font-extrabold text-amber-600">{interviewHold}</p>
-            </div>
+      <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
+        <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes</p>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center bg-[#EBF5EB] rounded-[10px] p-3">
+            <p className="text-[10px] text-[#2D6A2F] font-semibold mb-1">✓ Pass</p>
+            <p className="text-2xl font-extrabold text-[#2D6A2F]">{interviewPass}</p>
+          </div>
+          <div className="text-center bg-red-50 rounded-[10px] p-3">
+            <p className="text-[10px] text-[#D32F2F] font-semibold mb-1">✗ Fail</p>
+            <p className="text-2xl font-extrabold text-[#D32F2F]">{interviewFail}</p>
+          </div>
+          <div className="text-center bg-amber-50 rounded-[10px] p-3">
+            <p className="text-[10px] text-amber-600 font-semibold mb-1">⏸ Hold</p>
+            <p className="text-2xl font-extrabold text-amber-600">{interviewHold}</p>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Avg score by experience tier */}
       <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
