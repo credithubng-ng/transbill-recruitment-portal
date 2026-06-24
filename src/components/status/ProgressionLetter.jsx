@@ -84,14 +84,24 @@ export default function ProgressionLetter({ name }) {
             registration immediately:
           </p>
           <a
-            href="https://3mtt.nitda.gov.ng"
+            href="https://app.3mtt.training/apply"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 mt-2 text-[#2D6A2F] font-bold text-sm hover:underline"
           >
             Apply to 3MTT and generate your Fellow ID Number immediately →
           </a>
-          <p className="text-[#555555] mt-3">Kindly send the requested information by replying to this email.</p>
+          <p className="text-[#555555] mt-3">
+            Please submit the requested information using the form below:
+          </p>
+          <a
+            href="https://forms.gle/sLPig2kEgazVKE9r8"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 mt-2 bg-[#2D6A2F] hover:bg-[#4A9A4D] text-white font-bold text-sm px-4 py-2 rounded-full transition-all"
+          >
+            Submit Required Information →
+          </a>
         </div>
 
         <p>
