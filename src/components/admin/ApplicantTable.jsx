@@ -2,14 +2,26 @@ import React from 'react';
 import { format } from 'date-fns';
 import BookingStatusBadge from './BookingStatusBadge';
 
-const statusBadge = (status) => {
+const deriveDisplayStatus = (a) => {
+  const stage = a.candidate_stage;
+  const outcome = a.interview_outcome;
+
+  if (outcome === 'Pass') return { label: 'Interview – Pass', style: 'bg-[#2D6A2F] text-white' };
+  if (outcome === 'Fail') return { label: 'Interview – Fail', style: 'bg-[#D32F2F] text-white' };
+  if (outcome === 'Hold') return { label: 'Interview – Hold', style: 'bg-amber-500 text-white' };
+
+  if (stage === 'Interview Scheduled') return { label: 'Interview Booked', style: 'bg-blue-600 text-white' };
+  if (stage === 'Interview Scheduling') return { label: 'Booking Pending', style: 'bg-blue-200 text-blue-800' };
+  if (stage === 'Final Hiring Decision') return { label: 'Final Decision', style: 'bg-purple-600 text-white' };
+  if (stage === 'Closed – Not Progressed') return { label: 'Closed', style: 'bg-[#9E9E9E] text-white' };
+
   const map = {
-    'Interview Ready': 'bg-[#2D6A2F] text-white',
-    'Reserve List': 'bg-[#F57C00] text-white',
-    'Not Progressed': 'bg-[#9E9E9E] text-white',
-    'Applied': 'bg-[#E2E8E2] text-[#555555]',
+    'Interview Ready': { label: 'Interview Ready', style: 'bg-[#2D6A2F] text-white' },
+    'Reserve List': { label: 'Reserve List', style: 'bg-[#F57C00] text-white' },
+    'Not Progressed': { label: 'Not Progressed', style: 'bg-[#9E9E9E] text-white' },
+    'Applied': { label: 'Applied', style: 'bg-[#E2E8E2] text-[#555555]' },
   };
-  return map[status] || 'bg-[#E2E8E2] text-[#555555]';
+  return map[a.status] || { label: a.status || 'Applied', style: 'bg-[#E2E8E2] text-[#555555]' };
 };
 
 export default function ApplicantTable({ applicants, onSelectApplicant }) {
@@ -49,9 +61,9 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                   {a.assessment_completed ? `${Math.round((a.assessment_score / 25) * 100)}%` : '—'}
                 </td>
                 <td className="px-4 py-3 text-center">
-                  <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${statusBadge(a.status)}`}>
-                    {a.status}
-                  </span>
+                 {(() => { const d = deriveDisplayStatus(a); return (
+                   <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${d.style}`}>{d.label}</span>
+                 ); })()}
                 </td>
                 <td className="px-4 py-3 text-center">
                   {a.review_required_flag && <span title="Review Required" className="text-red-500 font-bold text-base">⚠</span>}
