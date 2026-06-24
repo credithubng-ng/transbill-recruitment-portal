@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
 import InterviewSlotPicker from '../components/status/InterviewSlotPicker';
 import { CheckCircle2, Clock, XCircle, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
+import ProgressionLetter from '../components/status/ProgressionLetter';
 
 const STAGE_CONFIG = {
   'Assessment Started': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: Clock, label: 'Assessment In Progress' },
@@ -198,6 +199,16 @@ export default function ApplicantStatus() {
                 >
                   {stage === 'Assessment Started' ? 'Continue Assessment →' : 'Start Assessment →'}
                 </a>
+              </div>
+            )}
+
+            {/* Progression Letter – show for Interview Pass candidates */}
+            {applicant.interview_outcome === 'Pass' && (
+              <div>
+                <p className="text-xs font-semibold text-[#2D6A2F] uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4" /> Official Letter — Final Selection Stage
+                </p>
+                <ProgressionLetter name={applicant.full_name} />
               </div>
             )}
 

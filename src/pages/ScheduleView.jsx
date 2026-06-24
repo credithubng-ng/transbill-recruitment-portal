@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore, startOfDay, endOfDay, addDays } from 'date-fns';
 import TransbillLogo from '../components/TransbillLogo';
 import SlotManager from '../components/admin/SlotManager';
-import { Video, CheckCircle2, XCircle, PauseCircle, LogOut, ArrowLeft, Filter } from 'lucide-react';
+import { Video, CheckCircle2, XCircle, PauseCircle, LogOut, ArrowLeft, Filter, Mail } from 'lucide-react';
 
 const OUTCOME_STYLES = {
   Pass: 'bg-[#EBF5EB] text-[#2D6A2F] border-[#2D6A2F]/20',
@@ -40,6 +40,8 @@ export default function ScheduleView({ onBack }) {
   const [recordingOutcome, setRecordingOutcome] = useState(null);
   const [outcomeData, setOutcomeData] = useState({ outcome: '', notes: '' });
   const [saving, setSaving] = useState(false);
+  const [sendingLetters, setSendingLetters] = useState(false);
+  const [letterResult, setLetterResult] = useState(null);
 
   useEffect(() => {
     base44.entities.Interviewer.list().then(setInterviewers).catch(() => {});
@@ -101,6 +103,20 @@ export default function ScheduleView({ onBack }) {
     }
   };
 
+  const handleSendProgressionLetters = async () => {
+    if (!confirm('Send the Progression to Final Selection Stage letter to all interview-passed candidates who haven\'t received it yet?')) return;
+    setSendingLetters(true);
+    setLetterResult(null);
+    try {
+      const res = await base44.functions.invoke('sendProgressionLetter', {});
+      setLetterResult(res.data);
+    } catch (e) {
+      setLetterResult({ error: e.message });
+    } finally {
+      setSendingLetters(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8FAF8]">
       <div className="sticky top-0 z-40 bg-white border-b border-[#E2E8E2]">
@@ -118,7 +134,7 @@ export default function ScheduleView({ onBack }) {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="font-extrabold text-2xl text-[#1A1A1A]">Interview Schedule</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button onClick={() => setTab('schedule')}
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${tab === 'schedule' ? 'bg-[#2D6A2F] text-white' : 'bg-white border border-[#E2E8E2] text-[#7A7A8A]'}`}>
               Booked Interviews
@@ -127,8 +143,25 @@ export default function ScheduleView({ onBack }) {
               className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${tab === 'slots' ? 'bg-[#2D6A2F] text-white' : 'bg-white border border-[#E2E8E2] text-[#7A7A8A]'}`}>
               Manage Slots
             </button>
+            <button onClick={handleSendProgressionLetters} disabled={sendingLetters}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-bold bg-[#1565C0] text-white hover:bg-[#1976D2] disabled:opacity-50 transition-all">
+              <Mail className="w-3.5 h-3.5" />
+              {sendingLetters ? 'Sending…' : 'Send Progression Letters'}
+            </button>
           </div>
         </div>
+
+        {/* Letter send result */}
+        {letterResult && (
+          <div className={`rounded-[10px] p-4 text-sm font-medium ${letterResult.error ? 'bg-red-50 border border-red-200 text-[#D32F2F]' : 'bg-[#EBF5EB] border border-[#2D6A2F]/20 text-[#2D6A2F]'}`}>
+            {letterResult.error
+              ? `Error: ${letterResult.error}`
+              : letterResult.total === 0
+                ? 'All eligible candidates have already received the progression letter.'
+                : `✓ Progression letter sent to ${letterResult.sent} candidate${letterResult.sent !== 1 ? 's' : ''}${letterResult.failed > 0 ? ` (${letterResult.failed} failed)` : ''}.`
+            }
+          </div>
+        )}
 
         {tab === 'slots' && <SlotManager />}
 
