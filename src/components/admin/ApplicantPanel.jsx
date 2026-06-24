@@ -26,6 +26,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
     await base44.entities.Applicant.update(applicant.id, { admin_notes: notes, status });
     onUpdate({ ...applicant, admin_notes: notes, status });
     setSaving(false);
+    onClose();
   };
 
   const scorePercent = applicant.assessment_completed
