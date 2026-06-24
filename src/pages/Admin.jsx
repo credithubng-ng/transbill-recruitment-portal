@@ -32,7 +32,7 @@ export default function Admin() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [settingsRecord, setSettingsRecord] = useState(null);
   const [filters, setFilters] = useState({
-    search: '', status: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
+    search: '', status: 'all', displayStatus: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
   });
   const queryClient = useQueryClient();
 
@@ -78,6 +78,16 @@ export default function Admin() {
         if (filters.flags === 'duplicate' && !a.duplicate_signature_flag) return false;
       }
       if (filters.stage !== 'all' && a.candidate_stage !== filters.stage) return false;
+      if (filters.displayStatus !== 'all') {
+        const ds = filters.displayStatus;
+        if (ds === 'outcome_pass' && a.interview_outcome !== 'Pass') return false;
+        if (ds === 'outcome_fail' && a.interview_outcome !== 'Fail') return false;
+        if (ds === 'outcome_hold' && a.interview_outcome !== 'Hold') return false;
+        if (ds === 'stage_booked' && a.candidate_stage !== 'Interview Scheduled') return false;
+        if (ds === 'stage_scheduling' && a.candidate_stage !== 'Interview Scheduling') return false;
+        if (ds === 'stage_closed' && a.candidate_stage !== 'Closed – Not Progressed') return false;
+        if (['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(ds) && a.status !== ds) return false;
+      }
       return true;
     });
   }, [applicants, filters]);

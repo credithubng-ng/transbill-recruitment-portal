@@ -17,8 +17,20 @@ export default function ApplicantFilters({ filters, setFilters }) {
           className="w-full pl-9 pr-4 py-2.5 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm"
         />
       </div>
-      <FilterSelect label="Status" value={filters.status} onChange={v => handleChange('status', v)}
-        options={[['all', 'All'], ['Interview Ready', 'Interview Ready'], ['Reserve List', 'Reserve List'], ['Not Progressed', 'Not Progressed'], ['Applied', 'Applied']]} />
+      <FilterSelect label="Display Status" value={filters.displayStatus} onChange={v => handleChange('displayStatus', v)}
+        options={[
+          ['all', 'All'],
+          ['Applied', 'Applied'],
+          ['Interview Ready', 'Interview Ready'],
+          ['Reserve List', 'Reserve List'],
+          ['Not Progressed', 'Not Progressed'],
+          ['outcome_pass', 'Interview – Pass'],
+          ['outcome_fail', 'Interview – Fail'],
+          ['outcome_hold', 'Interview – Hold'],
+          ['stage_booked', 'Interview Booked'],
+          ['stage_scheduling', 'Booking Pending'],
+          ['stage_closed', 'Closed'],
+        ]} />
       <FilterSelect label="Lagos" value={filters.lagos} onChange={v => handleChange('lagos', v)}
         options={[['all', 'All'], ['Yes', 'Yes'], ['No', 'No']]} />
       <FilterSelect label="3MTT" value={filters.threeMTT} onChange={v => handleChange('threeMTT', v)}
@@ -32,13 +44,18 @@ export default function ApplicantFilters({ filters, setFilters }) {
       <FilterSelect label="Stage" value={filters.stage} onChange={v => handleChange('stage', v)}
         options={[
           ['all', 'All Stages'],
+          ['Assessment Started', 'Assessment Started'],
+          ['Assessment Completed', 'Assessment Completed'],
+          ['Email Sent', 'Email Sent'],
           ['Interview Ready', 'Interview Ready'],
           ['Reserve List', 'Reserve List'],
           ['Not Progressed', 'Not Progressed'],
-          ['Awaiting Registration', 'Awaiting Registration'],
-          ['Registered on Transbill.ng', 'Registered'],
           ['Interview Scheduling', 'Interview Scheduling'],
-          ['Closed – Not Progressed', 'Closed'],
+          ['Interview Scheduled', 'Interview Scheduled'],
+          ['Interview Outcome – Pass', 'Interview Outcome – Pass'],
+          ['Interview Outcome – Hold', 'Interview Outcome – Hold'],
+          ['Final Hiring Decision', 'Final Hiring Decision'],
+          ['Closed – Not Progressed', 'Closed – Not Progressed'],
         ]} />
     </div>
   );
