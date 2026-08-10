@@ -1,12 +1,12 @@
 import React from 'react';
 
 const requirements = [
-  { icon: '📚', title: 'Digital Marketing Training', desc: 'Completed formal digital marketing training — 3MTT graduates, SAIL Alumni, and self-trained professionals with proven skills are all welcome' },
-  { icon: '📍', title: 'Lagos Resident', desc: 'Must be resident in Lagos State for the initial 12-month deployment. Nationwide expansion is planned' },
-  { icon: '📱', title: 'Social Media Proficiency', desc: 'Strong hands-on experience with WhatsApp Business, Instagram, Facebook, TikTok, and X for content creation and community management' },
-  { icon: '🤝', title: 'Affiliate or Field Experience', desc: 'Prior experience in affiliate marketing, agent recruitment, field sales, or community engagement is a strong advantage' },
-  { icon: '🎯', title: 'Results-Oriented', desc: 'Self-driven, target-focused, capable of working independently without close supervision' },
-  { icon: '🏦', title: 'Fintech or Banking Awareness', desc: 'Understanding of agent banking, SME finance, or CBN-regulated payment services is an advantage' },
+  { icon: '📍', title: 'Lagos Resident', desc: 'You must currently live in Lagos State and be able to provide accurate residence information' },
+  { icon: '🔞', title: '18 Years or Older', desc: 'Applicants must be at least 18 years old when applying' },
+  { icon: '📚', title: 'Ready to Learn', desc: 'Prior digital marketing exposure is useful, but strong learning potential and commitment are central to selection' },
+  { icon: '🗓️', title: 'Two-Week Availability', desc: 'You must be able to participate fully in the intensive practical training and complete assignments' },
+  { icon: '📱', title: 'Digital Access', desc: 'Reliable access to a smartphone and internet is required; laptop access should be declared in your application' },
+  { icon: '🎯', title: 'Performance Mindset', desc: 'You should be willing to recruit Affiliate Bankers, support their activation and manage performance against targets' },
 ];
 
 export default function RequirementsSection() {
@@ -27,7 +27,7 @@ export default function RequirementsSection() {
         </div>
         <div className="mt-8 bg-[#EBF5EB] border-l-4 border-[#2D6A2F] rounded-r-lg p-4 sm:p-5">
           <p className="text-[#333333] text-sm leading-relaxed">
-            ⭐ <strong>This is a competitive selection.</strong> Only the best candidates will progress. After your application, you will complete a timed online competency test covering digital marketing and affiliate banking knowledge. Only those who meet the minimum pass threshold will be invited to interview. Come prepared.
+            <strong>This is a competitive selection.</strong> After applying, you will complete a timed pre-screening covering digital marketing fundamentals, learning agility, Affiliate Banker recruitment and performance management. Admission and employment are not guaranteed.
           </p>
         </div>
       </div>

@@ -24,8 +24,8 @@ const STAGE_CONFIG = {
 const STEPS = [
   { key: 'apply', label: 'Application Submitted' },
   { key: 'assessment', label: 'Assessment' },
-  { key: 'interview', label: 'Interview' },
-  { key: 'decision', label: 'Final Decision' },
+  { key: 'interview', label: 'Selection Interview' },
+  { key: 'decision', label: 'Training Decision' },
 ];
 
 function getActiveStep(stage, status, assessmentCompleted) {
@@ -81,7 +81,7 @@ export default function ApplicantStatus() {
   const activeStep = getActiveStep(stage, applicant?.status, applicant?.assessment_completed);
 
   const scorePercent = applicant?.assessment_completed
-    ? Math.round((applicant.assessment_score / 25) * 100)
+    ? Math.round((applicant.assessment_score / (applicant.assessment_question_count || 25)) * 100)
     : null;
 
   return (
@@ -159,6 +159,8 @@ export default function ApplicantStatus() {
               <Row label="Education" value={applicant.education} />
               <Row label="Experience" value={applicant.years_experience} />
               <Row label="Lagos Resident" value={applicant.lagos_resident} />
+              <Row label="LASRRA Record" value={applicant.lasrra_verified ? 'Found — physical card pending' : 'Pending'} />
+              <Row label="Two-Week Availability" value={applicant.availability_2_weeks} />
               <Row label="Applied" value={applicant.created_date ? new Date(applicant.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
             </div>
 
@@ -175,7 +177,7 @@ export default function ApplicantStatus() {
                     {scorePercent}%
                   </div>
                   <div>
-                    <p className="font-bold text-[#1A1A1A]">{applicant.assessment_score}/25 questions correct</p>
+                    <p className="font-bold text-[#1A1A1A]">{applicant.assessment_score}/{applicant.assessment_question_count || 25} questions correct</p>
                     <p className="text-sm text-[#7A7A8A]">Assessment completed</p>
                   </div>
                 </div>
@@ -191,7 +193,7 @@ export default function ApplicantStatus() {
                 <p className="text-[#5D3F00] text-sm mb-4">
                   {stage === 'Assessment Started'
                     ? 'You started but didn\'t finish your assessment. You can retake it — your previous attempt will be replaced.'
-                    : 'Your application has been received. Take your competency assessment now to proceed to the next stage.'}
+                    : 'Your application has been received. Complete the programme pre-screening to proceed.'}
                 </p>
                 <a
                   href={`/assessment?id=${applicant.id}&exp=${encodeURIComponent(applicant.years_experience || 'Less than 1 year')}`}

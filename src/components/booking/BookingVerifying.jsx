@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function BookingVerifying({ reason }) {
   const isUsed = reason === 'already_used';

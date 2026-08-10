@@ -5,13 +5,14 @@ import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
 import Footer from '../components/landing/Footer';
 import { NIGERIA_STATES } from '../lib/nigeriaStates';
-import { CheckCircle2, Lock, Loader2 } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const SOCIAL_PLATFORMS = ['WhatsApp Business', 'Instagram', 'Facebook', 'TikTok', 'X (Twitter)', 'LinkedIn', 'YouTube', 'Others'];
 const EDUCATION_OPTIONS = ['SSCE', 'OND', 'HND', 'BSc', 'MSc', 'PhD', 'Professional Certification', 'Other'];
-const EXPERIENCE_OPTIONS = ['Less than 1 year', '1–3 years', '3–5 years', '5+ years'];
-const REFERRAL_OPTIONS = ['SAIL Alumni Network', '3MTT Community', 'Social Media — Instagram', 'Social Media — Facebook', 'Social Media — WhatsApp', 'Referral from a friend', 'Google Search', 'Other'];
+const EXPERIENCE_OPTIONS = ['No formal experience', 'Less than 1 year', '1–3 years', '3–5 years', '5+ years'];
+const REFERRAL_OPTIONS = ['LSETF', 'Lagos Innovates', 'Transbill', 'Instagram', 'Facebook', 'WhatsApp', 'LinkedIn', 'Referral from a friend', 'Other'];
+const LAGOS_LGAS = ['Agege', 'Ajeromi-Ifelodun', 'Alimosho', 'Amuwo-Odofin', 'Apapa', 'Badagry', 'Epe', 'Eti-Osa', 'Ibeju-Lekki', 'Ifako-Ijaiye', 'Ikeja', 'Ikorodu', 'Kosofe', 'Lagos Island', 'Lagos Mainland', 'Mushin', 'Ojo', 'Oshodi-Isolo', 'Shomolu', 'Surulere'];
 
 export default function Apply() {
   const navigate = useNavigate();
@@ -19,10 +20,11 @@ export default function Apply() {
   React.useEffect(() => { window.scrollTo(0, 0); }, []);
 
   const [form, setForm] = useState({
-    full_name: '', email: '', phone: '', gender: '', date_of_birth: '', state_of_origin: '', current_lga: '',
-    lagos_resident: '', education: '', years_experience: '', is_3mtt: '', has_3mtt_id_card: '', is_sail: '',
+    full_name: '', email: '', phone: '', gender: '', date_of_birth: '', state_of_origin: '', current_lga: '', lasrra_id: '',
+    lagos_resident: '', education: '', employment_status: '', years_experience: '',
     social_platforms: [], affiliate_experience: '', affiliate_experience_desc: '',
-    motivation: '', linkedin_url: '', referral_source: ''
+    availability_2_weeks: '', has_smartphone: '', has_laptop: '', internet_access: '',
+    willing_affiliate_role: '', motivation: '', linkedin_url: '', referral_source: '', data_processing_consent: false
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -67,21 +69,27 @@ export default function Apply() {
       let age = today.getFullYear() - dob.getFullYear();
       const m = today.getMonth() - dob.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-      if (age > 30) errs.date_of_birth = 'You must be 30 years old or younger to apply.';
-      if (age < 16) errs.date_of_birth = 'You must be at least 16 years old to apply.';
+      if (age < 18) errs.date_of_birth = 'You must be at least 18 years old to apply.';
     }
     if (!form.state_of_origin) errs.state_of_origin = 'Required';
-    if (!form.current_lga.trim()) errs.current_lga = 'Required';
-    if (!form.lagos_resident) errs.lagos_resident = 'Required';
+    if (!form.current_lga) errs.current_lga = 'Required';
+    if (!/^LA[A-Z0-9]{10}$/.test(form.lasrra_id.trim().toUpperCase())) {
+      errs.lasrra_id = 'Enter a valid 12-character LASRRA ID, for example LA0F10020751';
+    }
+    if (form.lagos_resident !== 'Yes') errs.lagos_resident = 'This programme is open to current Lagos State residents only.';
     if (!form.education) errs.education = 'Required';
+    if (!form.employment_status) errs.employment_status = 'Required';
     if (!form.years_experience) errs.years_experience = 'Required';
-    if (!form.is_3mtt) errs.is_3mtt = 'Required';
-    if (form.is_3mtt === 'Yes' && !form.has_3mtt_id_card) errs.has_3mtt_id_card = 'Please indicate whether you have your 3MTT Fellow ID Card';
-    if (!form.is_sail) errs.is_sail = 'Required';
     if (form.social_platforms.length === 0) errs.social_platforms = 'Select at least one';
     if (!form.affiliate_experience) errs.affiliate_experience = 'Required';
-    if (wordCount < 100 || wordCount > 300) errs.motivation = 'Must be 100–300 words';
+    if (!form.availability_2_weeks) errs.availability_2_weeks = 'Required';
+    if (!form.has_smartphone) errs.has_smartphone = 'Required';
+    if (!form.has_laptop) errs.has_laptop = 'Required';
+    if (!form.internet_access) errs.internet_access = 'Required';
+    if (!form.willing_affiliate_role) errs.willing_affiliate_role = 'Required';
+    if (wordCount < 50 || wordCount > 200) errs.motivation = 'Must be 50–200 words';
     if (!form.referral_source) errs.referral_source = 'Required';
+    if (!form.data_processing_consent) errs.data_processing_consent = 'Consent is required to verify your residency and process your application';
     return errs;
   };
 
@@ -250,7 +258,7 @@ export default function Apply() {
           <div>
             <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & NIN Verification Notice</p>
             <p className="text-[#5D3F00] text-sm leading-relaxed">
-              This role is open to candidates aged <strong>30 years and below only</strong>. Your <strong>National Identification Number (NIN)</strong> will be required to verify your age before any successful candidate can be formally engaged. Ensure the date of birth you provide matches your NIN record.
+              Applicants must be <strong>18 years or older</strong> and currently resident in <strong>Lagos State</strong>. Eligibility information may be verified before admission to the programme.
             </p>
           </div>
         </div>
@@ -271,8 +279,7 @@ export default function Apply() {
           <Field label="Date of Birth" error={errors.date_of_birth}>
             <input className="form-input" type="date" value={form.date_of_birth}
               onChange={e => handleChange('date_of_birth', e.target.value)}
-              max={new Date(new Date().setFullYear(new Date().getFullYear() - 16)).toISOString().split('T')[0]}
-              min={new Date(new Date().setFullYear(new Date().getFullYear() - 30)).toISOString().split('T')[0]}
+              max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
             />
             {form.date_of_birth && (() => {
               const dob = new Date(form.date_of_birth);
@@ -280,7 +287,7 @@ export default function Apply() {
               let age = today.getFullYear() - dob.getFullYear();
               const m = today.getMonth() - dob.getMonth();
               if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-              if (age >= 16 && age <= 30) return <p className="text-[#2D6A2F] text-xs mt-1 font-medium">Age: {age} years ✓</p>;
+              if (age >= 18) return <p className="text-[#2D6A2F] text-xs mt-1 font-medium">Age: {age} years ✓</p>;
               return null;
             })()}
           </Field>
@@ -290,14 +297,43 @@ export default function Apply() {
               {NIGERIA_STATES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </Field>
-          <Field label="Current LGA of Residence" error={errors.current_lga}>
-            <input className="form-input" value={form.current_lga} onChange={e => handleChange('current_lga', e.target.value)} placeholder="Your LGA" />
+          <Field label="Current Lagos LGA of Residence" error={errors.current_lga}>
+            <select className="form-input" value={form.current_lga} onChange={e => handleChange('current_lga', e.target.value)}>
+              <option value="">Select your LGA</option>
+              {LAGOS_LGAS.map(lga => <option key={lga} value={lga}>{lga}</option>)}
+            </select>
+          </Field>
+          <Field label="LASRRA / LAG-ID Number" error={errors.lasrra_id}>
+            <input
+              className="form-input uppercase"
+              value={form.lasrra_id}
+              onChange={e => handleChange('lasrra_id', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
+              placeholder="LA0F10020751"
+              pattern="LA[A-Z0-9]{10}"
+              maxLength={12}
+              autoComplete="off"
+            />
+            <p className="text-[#7A7A8A] text-xs mt-1">
+              Use the 12-character format shown on your resident record. You can first{' '}
+              <a
+                href="https://registration.lagosresidents.gov.ng/validation/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#006838] underline font-medium"
+              >
+                confirm that LASRRA finds your record
+              </a>.
+              {' '}Your application will continue if the record is found. This does not complete identity verification.
+            </p>
+            <div className="mt-3 rounded-lg border border-[#F0B429] bg-[#FFF8E1] p-3 text-sm text-[#5D4700]">
+              <strong>Physical card required:</strong> If selected, you must bring your original LASRRA card for verification before training begins on Day 1. Failure to present a valid card may result in withdrawal of your training place.
+            </div>
           </Field>
           <Field label="Are you currently resident in Lagos State?" error={errors.lagos_resident}>
             <RadioGroup options={['Yes', 'No']} value={form.lagos_resident} onChange={v => handleChange('lagos_resident', v)} />
             {form.lagos_resident === 'No' && (
               <div className="mt-2 bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-3 text-sm text-[#333333]">
-                Initial deployment is Lagos-based. You may still apply — we plan expansion to additional states.
+                This programme is sponsored for Lagos residents, so non-residents are not eligible for this application round.
               </div>
             )}
           </Field>
@@ -307,31 +343,13 @@ export default function Apply() {
               {EDUCATION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </Field>
+          <Field label="Current employment status" error={errors.employment_status}>
+            <RadioGroup options={['Unemployed', 'Self-employed', 'Employed part-time', 'Employed full-time', 'Student']} value={form.employment_status} onChange={v => handleChange('employment_status', v)} />
+          </Field>
           <Field label="Years of digital marketing experience" error={errors.years_experience}>
             <RadioGroup options={EXPERIENCE_OPTIONS} value={form.years_experience} onChange={v => handleChange('years_experience', v)} />
           </Field>
-          <Field label="Have you completed a 3MTT Digital Marketing programme?" error={errors.is_3mtt}>
-            <RadioGroup options={['Yes', 'No']} value={form.is_3mtt} onChange={v => handleChange('is_3mtt', v)} />
-          </Field>
-          {form.is_3mtt === 'Yes' && (
-            <Field label="Do you have your 3MTT Fellow Identity Card?" error={errors.has_3mtt_id_card}>
-              <RadioGroup options={['Yes', 'No']} value={form.has_3mtt_id_card} onChange={v => handleChange('has_3mtt_id_card', v)} />
-              {form.has_3mtt_id_card === 'Yes' && (
-                <div className="mt-2 bg-[#EBF5EB] border border-[#A5C8A6] rounded-lg p-3 text-sm text-[#1A3D1B]">
-                  ✅ Your 3MTT Fellow Identity Card will be required for verification at the final engagement stage.
-                </div>
-              )}
-              {form.has_3mtt_id_card === 'No' && (
-                <div className="mt-2 bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-3 text-sm text-[#5D3F00]">
-                  ⚠️ You will need to obtain your 3MTT Fellow Identity Card before final engagement. Please ensure you have it ready.
-                </div>
-              )}
-            </Field>
-          )}
-          <Field label="Are you a SAIL Innovation Lab alumnus?" error={errors.is_sail}>
-            <RadioGroup options={['Yes', 'No']} value={form.is_sail} onChange={v => handleChange('is_sail', v)} />
-          </Field>
-          <Field label="Which social media platforms do you manage professionally?" error={errors.social_platforms}>
+          <Field label="Which digital platforms have you used?" error={errors.social_platforms}>
             <div className="flex flex-wrap gap-2">
               {SOCIAL_PLATFORMS.map(p => (
                 <button type="button" key={p} onClick={() => togglePlatform(p)}
@@ -351,20 +369,48 @@ export default function Apply() {
               <textarea className="form-input min-h-[100px]" value={form.affiliate_experience_desc} onChange={e => handleChange('affiliate_experience_desc', e.target.value)} placeholder="Describe your experience..." />
             </Field>
           )}
-          <Field label="Why do you want this role at Transbill? (100–300 words)" error={errors.motivation}>
-            <textarea className="form-input min-h-[140px]" value={form.motivation} onChange={e => handleChange('motivation', e.target.value)} placeholder="Tell us why you're the right fit..." />
-            <div className={`text-xs mt-1 font-medium ${wordCount < 100 || wordCount > 300 ? 'text-[#D32F2F]' : 'text-[#2D6A2F]'}`}>
-              {wordCount}/300 words {wordCount < 100 && `(minimum 100)`}
+          <Field label="Can you attend and fully participate in two weeks of intensive practical training?" error={errors.availability_2_weeks}>
+            <RadioGroup options={['Yes', 'No']} value={form.availability_2_weeks} onChange={v => handleChange('availability_2_weeks', v)} />
+          </Field>
+          <Field label="Do you have reliable access to a smartphone?" error={errors.has_smartphone}>
+            <RadioGroup options={['Yes', 'No']} value={form.has_smartphone} onChange={v => handleChange('has_smartphone', v)} />
+          </Field>
+          <Field label="Do you have access to a laptop?" error={errors.has_laptop}>
+            <RadioGroup options={['Yes', 'No', 'Occasionally']} value={form.has_laptop} onChange={v => handleChange('has_laptop', v)} />
+          </Field>
+          <Field label="Do you have reliable internet access for training and assignments?" error={errors.internet_access}>
+            <RadioGroup options={['Yes', 'No', 'Sometimes']} value={form.internet_access} onChange={v => handleChange('internet_access', v)} />
+          </Field>
+          <Field label="If retained after training, are you willing to recruit Affiliate Bankers and manage them against performance targets?" error={errors.willing_affiliate_role}>
+            <RadioGroup options={['Yes', 'No']} value={form.willing_affiliate_role} onChange={v => handleChange('willing_affiliate_role', v)} />
+          </Field>
+          <Field label="Why should you be selected for this programme? (50–200 words)" error={errors.motivation}>
+            <textarea className="form-input min-h-[140px]" value={form.motivation} onChange={e => handleChange('motivation', e.target.value)} placeholder="Describe your interest, learning commitment and relevant potential..." />
+            <div className={`text-xs mt-1 font-medium ${wordCount < 50 || wordCount > 200 ? 'text-[#D32F2F]' : 'text-[#2D6A2F]'}`}>
+              {wordCount}/200 words {wordCount < 50 && `(minimum 50)`}
             </div>
           </Field>
           <Field label="LinkedIn profile or portfolio link (optional)">
             <input className="form-input" value={form.linkedin_url} onChange={e => handleChange('linkedin_url', e.target.value)} placeholder="https://" />
           </Field>
-          <Field label="How did you hear about this role?" error={errors.referral_source}>
+          <Field label="How did you hear about this programme?" error={errors.referral_source}>
             <select className="form-input" value={form.referral_source} onChange={e => handleChange('referral_source', e.target.value)}>
               <option value="">Select</option>
               {REFERRAL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
+          </Field>
+          <Field label="Applicant Consent" error={errors.data_processing_consent}>
+            <label className="flex items-start gap-3 rounded-[10px] border border-[#E2E8E2] p-4 cursor-pointer">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={form.data_processing_consent}
+                onChange={e => handleChange('data_processing_consent', e.target.checked)}
+              />
+              <span className="text-sm text-[#333333] leading-relaxed">
+                I consent to Transbill processing my application information and checking whether my LASRRA/LAG-ID record exists. I understand that I must present my original physical LASRRA card for verification before training begins on Day 1, and that admission and employment are not guaranteed.
+              </span>
+            </label>
           </Field>
           {errors.submit && <p className="text-[#D32F2F] text-sm font-medium text-center">{errors.submit}</p>}
           <button type="submit" disabled={submitting}

@@ -1,16 +1,6 @@
 import React from 'react';
 import TransbillLogo from '../TransbillLogo';
 
-function FirstBankLogo() {
-  return (
-    <img
-      src="https://media.base44.com/images/public/6a1d7f35df3abaff93c10cec/cff5b9843_Image11-06-2026at04161.jpeg"
-      alt="FirstBank Nigeria"
-      className="h-10 w-auto object-contain"
-    />
-  );
-}
-
 export default function Footer() {
   return (
     <footer className="bg-[#1A1A1A]">
@@ -18,10 +8,9 @@ export default function Footer() {
       <div className="border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-white/50 text-xs font-medium uppercase tracking-widest">In Partnership with</span>
-            <div className="bg-white rounded-lg px-4 py-2 flex items-center gap-2">
-              <FirstBankLogo />
-              <span className="text-[10px] text-[#003057]/60 font-medium ml-1">First Bank of Nigeria Limited</span>
+            <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Proudly supported by</span>
+            <div className="bg-white rounded-lg px-5 py-3 text-center">
+              <span className="text-sm text-[#003B7A] font-bold">Lagos Innovates | LSETF</span>
             </div>
           </div>
         </div>

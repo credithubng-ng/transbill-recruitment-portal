@@ -33,9 +33,9 @@ export default function ApplicantFilters({ filters, setFilters }) {
         ]} />
       <FilterSelect label="Lagos" value={filters.lagos} onChange={v => handleChange('lagos', v)}
         options={[['all', 'All'], ['Yes', 'Yes'], ['No', 'No']]} />
-      <FilterSelect label="3MTT" value={filters.threeMTT} onChange={v => handleChange('threeMTT', v)}
+      <FilterSelect label="2-Week Availability" value={filters.available} onChange={v => handleChange('available', v)}
         options={[['all', 'All'], ['Yes', 'Yes'], ['No', 'No']]} />
-      <FilterSelect label="SAIL" value={filters.sail} onChange={v => handleChange('sail', v)}
+      <FilterSelect label="Affiliate Role" value={filters.affiliateRole} onChange={v => handleChange('affiliateRole', v)}
         options={[['all', 'All'], ['Yes', 'Yes'], ['No', 'No']]} />
       <FilterSelect label="Score" value={filters.score} onChange={v => handleChange('score', v)}
         options={[['all', 'All'], ['84-100', '84–100%'], ['64-83', '64–83%'], ['0-63', 'Below 64%']]} />

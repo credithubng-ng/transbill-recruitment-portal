@@ -29,6 +29,30 @@
     "current_lga": {
       "type": "string"
     },
+    "lasrra_id": {
+      "type": "string",
+      "description": "12-character LASRRA/LAG-ID residency identifier, for example LA0F10020751",
+      "pattern": "^LA[A-Z0-9]{10}$"
+    },
+    "lasrra_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "lasrra_verified_at": {
+      "type": "string"
+    },
+    "lasrra_physical_card_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Set true only after staff inspect the applicant's original LASRRA card in person"
+    },
+    "data_processing_consent": {
+      "type": "boolean",
+      "default": false
+    },
+    "data_processing_consented_at": {
+      "type": "string"
+    },
     "lagos_resident": {
       "type": "string",
       "enum": [
@@ -49,9 +73,14 @@
         "Other"
       ]
     },
+    "employment_status": {
+      "type": "string",
+      "enum": ["Unemployed", "Self-employed", "Employed part-time", "Employed full-time", "Student"]
+    },
     "years_experience": {
       "type": "string",
       "enum": [
+        "No formal experience",
         "Less than 1 year",
         "1\u20133 years",
         "3\u20135 years",
@@ -88,6 +117,30 @@
     "affiliate_experience_desc": {
       "type": "string"
     },
+    "availability_2_weeks": {
+      "type": "string",
+      "enum": ["Yes", "No"]
+    },
+    "has_smartphone": {
+      "type": "string",
+      "enum": ["Yes", "No"]
+    },
+    "has_laptop": {
+      "type": "string",
+      "enum": ["Yes", "No", "Occasionally"]
+    },
+    "internet_access": {
+      "type": "string",
+      "enum": ["Yes", "No", "Sometimes"]
+    },
+    "willing_affiliate_role": {
+      "type": "string",
+      "enum": ["Yes", "No"]
+    },
+    "eligibility_status": {
+      "type": "string",
+      "enum": ["Eligible for screening", "Manual review required"]
+    },
     "motivation": {
       "type": "string"
     },
@@ -99,6 +152,24 @@
     },
     "assessment_score": {
       "type": "number"
+    },
+    "assessment_question_count": {
+      "type": "number",
+      "description": "Number of questions in the applicant's assessment version"
+    },
+    "assessment_bank_version": {
+      "type": "string"
+    },
+    "screening_recommendation": {
+      "type": "string",
+      "enum": ["Ready for training", "High potential – foundational support needed", "Manual review", "Not currently suitable"]
+    },
+    "assessment_category_scores": {
+      "type": "object",
+      "description": "Server-calculated scores for digital knowledge, trainability, affiliate recruitment and performance management"
+    },
+    "assessment_category_maximums": {
+      "type": "object"
     },
     "assessment_answers": {
       "type": "array",
@@ -243,13 +314,18 @@
     "date_of_birth",
     "state_of_origin",
     "current_lga",
+    "lasrra_id",
     "lagos_resident",
     "education",
+    "employment_status",
     "years_experience",
-    "is_3mtt",
-    "is_sail",
     "social_platforms",
     "affiliate_experience",
+    "availability_2_weeks",
+    "has_smartphone",
+    "has_laptop",
+    "internet_access",
+    "willing_affiliate_role",
     "motivation",
     "referral_source"
   ],
@@ -268,16 +344,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "data.email": "{{user.email}}"
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {

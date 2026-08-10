@@ -9,7 +9,7 @@ export default function CTASection() {
           Ready to <span className="text-[#2D6A2F]">Apply</span>?
         </h2>
         <p className="text-[#555555] text-base mb-8">
-          Open to all qualified candidates across Nigeria. If you have the skills and the drive, we want to hear from you.
+          If you are a Lagos resident aged 18 or above and ready for two weeks of practical learning, complete the application and pre-screening.
         </p>
         <Link
           to="/apply"

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -6,8 +6,8 @@ import SlotManager from './SlotManager';
 import InterviewerManager from './InterviewerManager';
 
 const DEFAULTS = {
-  interview_ready_min: 21,
-  reserve_list_min: 16,
+  interview_ready_min: 23,
+  reserve_list_min: 18,
   rapid_minutes: 7,
   very_rapid_minutes: 4,
   inflation_3_5_pct: 60,
@@ -15,21 +15,11 @@ const DEFAULTS = {
   reserve_list_custom_email: false,
   reserve_list_email_body: `Hello [First Name],
 
-Thank you for participating in the Transbill Digital Marketing Assessment.
+Thank you for completing the Transbill programme pre-screening.
 
 You have successfully completed this stage and have been placed on our Reserve List.
 
-The next step requires registration on Transbill.ng.
-
-Registration Link:
-https://transbill.ng
-
-Complete registration within 7 days.
-
-Please note:
-• Registration is mandatory
-• Final selection is subject to availability
-• Additional screening and interviews may follow
+Your application shows potential and remains under consideration. We will contact you if a selection interview place becomes available.
 
 Support:
 support@transbill.ng
@@ -56,9 +46,9 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
   const thresholdError = irMin <= rlMin ? 'Interview Ready minimum must be greater than Reserve List minimum.' : null;
   const rapidError = vRapidM >= rapidM ? 'Very rapid threshold must be lower than rapid threshold.' : null;
 
-  const irPct = Math.round((irMin / 25) * 100);
-  const rlPct = Math.round((rlMin / 25) * 100);
-  const irMax = 25;
+  const irPct = Math.round((irMin / 30) * 100);
+  const rlPct = Math.round((rlMin / 30) * 100);
+  const irMax = 30;
   const rlMax = irMin - 1;
   const npMax = rlMin - 1;
 
@@ -111,7 +101,7 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
     for (let i = 0; i < assessed.length; i++) {
       const a = assessed[i];
       const score = a.assessment_score ?? 0;
-      const scorePercent = (score / 25) * 100;
+      const scorePercent = (score / (a.assessment_question_count || 25)) * 100;
       const completionTime = a.assessment_completion_time;
 
       // New status
@@ -168,7 +158,7 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
         <div className="px-5 py-5 space-y-8">
 
           {/* SECTION 1 — PASS THRESHOLDS */}
-          <Section title="Pass Thresholds (out of 25)">
+          <Section title="Pass Thresholds (out of 30)">
             <NumberField label="Interview Ready minimum score" value={s.interview_ready_min} onChange={v => set('interview_ready_min', v)} />
             <NumberField label="Reserve List minimum score" value={s.reserve_list_min} onChange={v => set('reserve_list_min', v)} />
             {thresholdError && <p className="text-xs text-[#D32F2F] font-medium">{thresholdError}</p>}

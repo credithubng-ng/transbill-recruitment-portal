@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Plus, Trash2, Calendar, MapPin, User, Zap, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Calendar, MapPin, User, Zap, Loader2 } from 'lucide-react';
 
 function formatSlot(iso) {
   return new Date(iso).toLocaleString('en-NG', {

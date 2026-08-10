@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
           const watDateTime = formatWATDateTime(applicant.interview_scheduled_at);
           const meetLink = applicant.interview_meet_link || '#';
           const scorePercent = applicant.assessment_completed
-            ? Math.round((applicant.assessment_score / 25) * 100) + '%'
+            ? Math.round((applicant.assessment_score / (applicant.assessment_question_count || 25)) * 100) + '%'
             : 'N/A';
           const flags = [
             applicant.rapid_completion_flag && 'Rapid completion',
@@ -125,7 +125,8 @@ Deno.serve(async (req) => {
       <p style="margin:5px 0;"><strong>Score:</strong> ${scorePercent}</p>
       <p style="margin:5px 0;"><strong>Experience:</strong> ${applicant.years_experience || 'N/A'}</p>
       <p style="margin:5px 0;"><strong>Lagos:</strong> ${applicant.lagos_resident || 'N/A'}</p>
-      <p style="margin:5px 0;"><strong>3MTT:</strong> ${applicant.is_3mtt || 'N/A'}</p>
+      <p style="margin:5px 0;"><strong>Two-Week Availability:</strong> ${applicant.availability_2_weeks || 'N/A'}</p>
+      <p style="margin:5px 0;"><strong>Willing to Manage Affiliate Bankers:</strong> ${applicant.willing_affiliate_role || 'N/A'}</p>
       ${flags.length ? `<p style="margin:8px 0 0;color:#D32F2F;font-weight:bold;">⚠ Flags: ${flags.join(', ')}</p>` : ''}
     </div>
     <p style="font-size:13px;color:#7A7A8A;">Transbill Recruitment System</p>

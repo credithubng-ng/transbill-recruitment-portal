@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
-import { format, isAfter, isBefore, startOfDay, endOfDay, addDays } from 'date-fns';
 import TransbillLogo from '../components/TransbillLogo';
 import SlotManager from '../components/admin/SlotManager';
-import { Video, CheckCircle2, XCircle, PauseCircle, LogOut, ArrowLeft, Filter, Mail } from 'lucide-react';
+import { Video, ArrowLeft, Mail } from 'lucide-react';
 
 const OUTCOME_STYLES = {
   Pass: 'bg-[#EBF5EB] text-[#2D6A2F] border-[#2D6A2F]/20',
@@ -95,6 +94,7 @@ export default function ScheduleView({ onBack }) {
         applicantId: recordingOutcome,
         outcome: outcomeData.outcome,
         notes: outcomeData.notes,
+        token: sessionStorage.getItem('transbill_admin_token'),
       });
       refetch();
       setRecordingOutcome(null);

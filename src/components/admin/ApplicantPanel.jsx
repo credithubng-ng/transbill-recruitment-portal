@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { X, AlertTriangle, Clock } from 'lucide-react';
-import { QUESTIONS } from '../../lib/assessmentQuestions';
 import InterviewSection from './InterviewSection';
-
-// Build a lookup map from question ID to question object
-const Q_MAP = Object.fromEntries(QUESTIONS.map(q => [q.id, q]));
 
 const STATUS_OPTIONS = ['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'];
 
@@ -30,7 +26,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
   };
 
   const scorePercent = applicant.assessment_completed
-    ? Math.round((applicant.assessment_score / 25) * 100)
+    ? Math.round((applicant.assessment_score / (applicant.assessment_question_count || 25)) * 100)
     : null;
 
   const riskFlags = [
@@ -80,14 +76,21 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
             <InfoRow label="Gender" value={applicant.gender} />
             <InfoRow label="State of Origin" value={applicant.state_of_origin} />
             <InfoRow label="LGA" value={applicant.current_lga} />
+            <InfoRow label="LASRRA ID" value={applicant.lasrra_id} />
+            <InfoRow label="LASRRA Record" value={applicant.lasrra_verified ? 'Found — physical card pending' : 'Not found'} />
             <InfoRow label="Lagos Resident" value={applicant.lagos_resident} />
             <InfoRow label="Education" value={applicant.education} />
+            <InfoRow label="Employment" value={applicant.employment_status} />
             <InfoRow label="Experience" value={applicant.years_experience} />
-            <InfoRow label="3MTT Graduate" value={applicant.is_3mtt} />
-            <InfoRow label="SAIL Alumnus" value={applicant.is_sail} />
             <InfoRow label="Platforms" value={applicant.social_platforms?.join(', ')} />
             <InfoRow label="Affiliate Exp." value={applicant.affiliate_experience} />
             {applicant.affiliate_experience_desc && <InfoRow label="Exp. Details" value={applicant.affiliate_experience_desc} />}
+            <InfoRow label="2-Week Availability" value={applicant.availability_2_weeks} />
+            <InfoRow label="Smartphone" value={applicant.has_smartphone} />
+            <InfoRow label="Laptop" value={applicant.has_laptop} />
+            <InfoRow label="Internet" value={applicant.internet_access} />
+            <InfoRow label="Willing to Manage Affiliates" value={applicant.willing_affiliate_role} />
+            <InfoRow label="Eligibility" value={applicant.eligibility_status} />
             <InfoRow label="Motivation" value={applicant.motivation} />
             {applicant.linkedin_url && <InfoRow label="LinkedIn" value={applicant.linkedin_url} />}
             <InfoRow label="Referral Source" value={applicant.referral_source} />
@@ -99,7 +102,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <div className="bg-[#F8FAF8] rounded-lg p-3 text-center">
                   <p className="text-[10px] text-[#7A7A8A]">Score</p>
-                  <p className="text-xl font-extrabold text-[#1A1A1A]">{applicant.assessment_score}/25</p>
+                  <p className="text-xl font-extrabold text-[#1A1A1A]">{applicant.assessment_score}/{applicant.assessment_question_count || 25}</p>
                   <p className="text-xs text-[#7A7A8A]">{scorePercent}%</p>
                 </div>
                 <div className="bg-[#F8FAF8] rounded-lg p-3 text-center">
@@ -114,6 +117,17 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
                 </div>
               </div>
 
+              {applicant.assessment_category_scores && (
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <InfoRow label="Digital" value={`${applicant.assessment_category_scores.digital || 0}/${applicant.assessment_category_maximums?.digital || 0}`} />
+                  <InfoRow label="Content & leads" value={`${applicant.assessment_category_scores.content || 0}/${applicant.assessment_category_maximums?.content || 0}`} />
+                  <InfoRow label="Trainability" value={`${applicant.assessment_category_scores.learnability || 0}/${applicant.assessment_category_maximums?.learnability || 0}`} />
+                  <InfoRow label="Affiliate recruitment" value={`${applicant.assessment_category_scores.affiliate || 0}/${applicant.assessment_category_maximums?.affiliate || 0}`} />
+                  <InfoRow label="Performance" value={`${applicant.assessment_category_scores.performance || 0}/${applicant.assessment_category_maximums?.performance || 0}`} />
+                  <InfoRow label="Recommendation" value={applicant.screening_recommendation} />
+                </div>
+              )}
+
               {applicant.question_set_signature && (
                 <div className="mb-3">
                   <p className="text-[10px] text-[#7A7A8A] font-medium">Question Set Signature</p>
@@ -121,48 +135,6 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
                 </div>
               )}
 
-              <div className="space-y-2">
-                {(applicant.assessment_question_ids || []).map((qId, i) => {
-                  const baseQ = Q_MAP[qId];
-                  if (!baseQ) return null;
-
-                  // Options as shown to this candidate
-                  const shownOptionTexts = applicant.assessment_option_order?.[qId] || baseQ.options.map(o => o.text);
-                  // Correct answer key as recorded (post-shuffle)
-                  const correctKey = applicant.assessment_correct_answers?.[qId];
-                  // Candidate's selected key
-                  const selectedKey = applicant.assessment_answers?.[i];
-                  // Correct text (from original question)
-                  const correctText = correctKey
-                    ? shownOptionTexts[['A','B','C','D'].indexOf(correctKey)]
-                    : baseQ.options.find(o => o.key === baseQ.correctAnswer)?.text;
-                  const selectedText = selectedKey
-                    ? shownOptionTexts[['A','B','C','D'].indexOf(selectedKey)]
-                    : null;
-                  const isCorrect = selectedKey && selectedKey === correctKey;
-
-                  return (
-                    <div key={i} className={`text-xs p-2.5 rounded-lg border ${isCorrect ? 'border-[#2D6A2F]/20 bg-[#EBF5EB]' : 'border-[#D32F2F]/20 bg-red-50'}`}>
-                      <div className="flex items-start gap-2">
-                        <span className={`mt-0.5 font-bold flex-shrink-0 ${isCorrect ? 'text-[#2D6A2F]' : 'text-[#D32F2F]'}`}>
-                          {isCorrect ? '✓' : '✗'}
-                        </span>
-                        <div>
-                          <p className="font-medium text-[#1A1A1A]">Q{i + 1}. {baseQ.questionText}</p>
-                          <p className="text-[10px] text-[#7A7A8A] mt-0.5 capitalize">{baseQ.category} · {baseQ.difficulty}</p>
-                          <p className="text-[#555555] mt-0.5">Answered: <span className="font-medium">{selectedText || 'No answer'}</span></p>
-                          {!isCorrect && correctText && (
-                            <p className="text-[#2D6A2F] mt-0.5">Correct: <span className="font-medium">{correctText}</span></p>
-                          )}
-                          {baseQ.explanationForAdmin && (
-                            <p className="text-[#7A7A8A] mt-0.5 italic text-[10px]">{baseQ.explanationForAdmin}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </Section>
           )}
 

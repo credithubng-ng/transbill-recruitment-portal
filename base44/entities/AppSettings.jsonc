@@ -8,11 +8,11 @@
     },
     "interview_ready_min": {
       "type": "number",
-      "default": 21
+      "default": 23
     },
     "reserve_list_min": {
       "type": "number",
-      "default": 16
+      "default": 18
     },
     "rapid_minutes": {
       "type": "number",

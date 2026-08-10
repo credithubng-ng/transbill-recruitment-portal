@@ -92,13 +92,12 @@ export default function InterviewSection({ applicant, onUpdate }) {
   const [resendMsg, setResendMsg] = useState('');
   const [resetting, setResetting] = useState(false);
 
-  const appDomain = window.location.origin;
-
   const handleResendBookingLink = async () => {
     setResending(true);
     setResendMsg('');
     try {
-      await base44.functions.invoke('resendBookingLink', { applicantId: applicant.id, appDomain });
+      const token = sessionStorage.getItem('transbill_admin_token');
+      await base44.functions.invoke('resendBookingLink', { applicantId: applicant.id, token });
       setResendMsg('New booking link sent!');
       onUpdate({
         ...applicant,

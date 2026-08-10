@@ -35,8 +35,9 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
               <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden md:table-cell">Phone</th>
               <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Email</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">Lagos</th>
-              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">3MTT</th>
-              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">SAIL</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">LASRRA</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">Available</th>
+              <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden sm:table-cell">Affiliate Role</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Score</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Status</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Flags</th>
@@ -55,10 +56,11 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                 <td className="px-4 py-3 text-[#555555] hidden md:table-cell">{a.phone}</td>
                 <td className="px-4 py-3 text-[#555555] hidden lg:table-cell">{a.email}</td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">{a.lagos_resident === 'Yes' ? '✅' : '❌'}</td>
-                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.is_3mtt === 'Yes' ? '✅' : '❌'}</td>
-                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.is_sail === 'Yes' ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.lasrra_verified ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.availability_2_weeks === 'Yes' ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.willing_affiliate_role === 'Yes' ? '✅' : '❌'}</td>
                 <td className="px-4 py-3 text-center font-bold">
-                  {a.assessment_completed ? `${Math.round((a.assessment_score / 25) * 100)}%` : '—'}
+                  {a.assessment_completed ? `${Math.round((a.assessment_score / (a.assessment_question_count || 25)) * 100)}%` : '—'}
                 </td>
                 <td className="px-4 py-3 text-center">
                  {(() => { const d = deriveDisplayStatus(a); return (

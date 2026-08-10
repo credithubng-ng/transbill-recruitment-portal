@@ -18,7 +18,7 @@ export default function StatsCards({ applicants }) {
   const expTiers = ['Less than 1 year', '1–3 years', '3–5 years', '5+ years'];
   const avgByExp = expTiers.map(tier => {
     const group = applicants.filter(a => a.assessment_completed && a.years_experience === tier);
-    const avg = group.length ? Math.round(group.reduce((s, a) => s + (a.assessment_score || 0), 0) / group.length / 25 * 100) : null;
+    const avg = group.length ? Math.round(group.reduce((sum, applicant) => sum + ((applicant.assessment_score || 0) / (applicant.assessment_question_count || 25) * 100), 0) / group.length) : null;
     return { tier, avg, count: group.length };
   });
 

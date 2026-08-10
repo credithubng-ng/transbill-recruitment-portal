@@ -1,9 +1,27 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
+async function verifyAdminToken(token, secret) {
+  if (!token || !secret) return false;
+  const dotIndex = token.lastIndexOf('.');
+  if (dotIndex === -1) return false;
+  const payload = token.substring(0, dotIndex);
+  const suppliedSignature = token.substring(dotIndex + 1);
+  if (!payload.startsWith('admin:')) return false;
+  const expiresAt = Number(payload.split(':')[1]);
+  if (!expiresAt || Date.now() > expiresAt) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const bytes = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
+  const expected = Array.from(new Uint8Array(bytes)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+  return suppliedSignature === expected;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { applicantId, appDomain } = await req.json();
+    const { applicantId, token } = await req.json();
+    const isAdmin = await verifyAdminToken(token, Deno.env.get('ADMIN_PASSWORD'));
+    if (!isAdmin) return Response.json({ error: 'Forbidden' }, { status: 403 });
 
     if (!applicantId) {
       return Response.json({ error: 'applicantId is required' }, { status: 400 });
@@ -18,7 +36,8 @@ Deno.serve(async (req) => {
     const newToken = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
 
-    const domain = appDomain || 'https://app.transbill.ng';
+    const domain = Deno.env.get('APP_DOMAIN');
+    if (!domain) return Response.json({ error: 'APP_DOMAIN is not configured' }, { status: 500 });
     const bookingLink = `${domain}/book-interview?token=${newToken}`;
 
     const emailBody = `
@@ -29,7 +48,7 @@ Deno.serve(async (req) => {
   </div>
   <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
     <p style="font-size: 16px;">Dear <strong>${applicant.full_name}</strong>,</p>
-    <p>Congratulations! You have passed the competency assessment for the <strong>Digital Marketing Executive</strong> role at <strong>Transbill</strong>.</p>
+    <p>You have passed the pre-screening for the <strong>Digital Marketing &amp; Workforce Development Programme</strong>.</p>
     <p>Please use the link below to choose a convenient interview date and time:</p>
     <div style="text-align: center; margin: 32px 0;">
       <a href="${bookingLink}" style="background: #3A7D3C; color: white; padding: 14px 32px; border-radius: 30px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
@@ -43,7 +62,7 @@ Deno.serve(async (req) => {
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: applicant.email,
-      subject: 'Book Your Interview – Transbill Digital Marketing Recruitment',
+      subject: 'Book Your Selection Interview – Transbill Programme',
       body: emailBody,
     });
 

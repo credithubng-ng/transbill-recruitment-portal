@@ -32,7 +32,7 @@ export default function Admin() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [settingsRecord, setSettingsRecord] = useState(null);
   const [filters, setFilters] = useState({
-    search: '', status: 'all', displayStatus: 'all', lagos: 'all', threeMTT: 'all', sail: 'all', score: 'all', flags: 'all', stage: 'all'
+    search: '', status: 'all', displayStatus: 'all', lagos: 'all', available: 'all', affiliateRole: 'all', score: 'all', flags: 'all', stage: 'all'
   });
   const queryClient = useQueryClient();
 
@@ -62,11 +62,11 @@ export default function Admin() {
       if (search && !a.full_name?.toLowerCase().includes(search) && !a.email?.toLowerCase().includes(search)) return false;
       if (filters.status !== 'all' && a.status !== filters.status) return false;
       if (filters.lagos !== 'all' && a.lagos_resident !== filters.lagos) return false;
-      if (filters.threeMTT !== 'all' && a.is_3mtt !== filters.threeMTT) return false;
-      if (filters.sail !== 'all' && a.is_sail !== filters.sail) return false;
+      if (filters.available !== 'all' && a.availability_2_weeks !== filters.available) return false;
+      if (filters.affiliateRole !== 'all' && a.willing_affiliate_role !== filters.affiliateRole) return false;
       if (filters.score !== 'all' && !a.assessment_completed) return false;
       if (filters.score !== 'all') {
-        const pct = a.assessment_completed ? Math.round((a.assessment_score / 25) * 100) : -1;
+        const pct = a.assessment_completed ? Math.round((a.assessment_score / (a.assessment_question_count || 25)) * 100) : -1;
         if (filters.score === '84-100' && (pct < 84 || pct > 100)) return false;
         if (filters.score === '64-83' && (pct < 64 || pct > 83)) return false;
         if (filters.score === '0-63' && (pct < 0 || pct > 63)) return false;
@@ -93,13 +93,16 @@ export default function Admin() {
   }, [applicants, filters]);
 
   const exportCSV = () => {
-    const headers = ['Full Name', 'Phone', 'Email', 'Lagos Resident', '3MTT Graduate', 'SAIL Alumni', 'Score %', 'Status', 'Candidate Stage', 'Email Sent', 'Email Sent At', 'Registration Completed', 'Registration At', 'Gender', 'State', 'LGA', 'Education', 'Experience', 'Referral Source', 'Date Applied'];
+    const headers = ['Full Name', 'Phone', 'Email', 'Lagos Resident', 'LASRRA ID', 'LASRRA Record Found', 'Employment Status', 'Two-Week Availability', 'Smartphone', 'Laptop', 'Internet', 'Willing Affiliate Role', 'Eligibility', 'Score %', 'Digital', 'Content & Leads', 'Trainability', 'Affiliate Recruitment', 'Performance', 'Recommendation', 'Status', 'Candidate Stage', 'Email Sent', 'Email Sent At', 'Gender', 'State', 'LGA', 'Education', 'Experience', 'Referral Source', 'Date Applied'];
     const rows = filtered.map(a => [
-      a.full_name, a.phone, a.email, a.lagos_resident, a.is_3mtt, a.is_sail,
-      a.assessment_completed ? Math.round((a.assessment_score / 25) * 100) : '',
+      a.full_name, a.phone, a.email, a.lagos_resident, a.lasrra_id, a.lasrra_verified ? 'Yes' : 'No', a.employment_status, a.availability_2_weeks,
+      a.has_smartphone, a.has_laptop, a.internet_access, a.willing_affiliate_role, a.eligibility_status,
+      a.assessment_completed ? Math.round((a.assessment_score / (a.assessment_question_count || 25)) * 100) : '',
+      a.assessment_category_scores?.digital ?? '', a.assessment_category_scores?.content ?? '',
+      a.assessment_category_scores?.learnability ?? '', a.assessment_category_scores?.affiliate ?? '',
+      a.assessment_category_scores?.performance ?? '', a.screening_recommendation || '',
       a.status, a.candidate_stage || '',
       a.assessment_email_sent ? 'Yes' : 'No', a.assessment_email_sent_at || '',
-      a.registration_completed ? 'Yes' : 'No', a.registration_completed_at || '',
       a.gender, a.state_of_origin, a.current_lga, a.education,
       a.years_experience, a.referral_source, a.created_date || ''
     ]);
