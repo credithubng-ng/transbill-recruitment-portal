@@ -70,9 +70,36 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'duplicate' }, { status: 409 });
     }
 
-    // Create applicant using service role
+    // Whitelist candidate-supplied fields only — prevents mass assignment of privileged fields
+    // (assessment_score, interview_outcome, screening_recommendation, flags, etc.)
+    const candidateInput = {
+      full_name: body.full_name,
+      phone: body.phone,
+      gender: body.gender,
+      date_of_birth: body.date_of_birth,
+      state_of_origin: body.state_of_origin,
+      current_lga: body.current_lga,
+      lagos_resident: body.lagos_resident,
+      education: body.education,
+      employment_status: body.employment_status,
+      years_experience: body.years_experience,
+      is_3mtt: body.is_3mtt,
+      is_sail: body.is_sail,
+      social_platforms: Array.isArray(body.social_platforms) ? body.social_platforms : [],
+      affiliate_experience: body.affiliate_experience,
+      affiliate_experience_desc: body.affiliate_experience_desc,
+      availability_2_weeks: body.availability_2_weeks,
+      has_smartphone: body.has_smartphone,
+      has_laptop: body.has_laptop,
+      internet_access: body.internet_access,
+      willing_affiliate_role: body.willing_affiliate_role,
+      motivation: body.motivation,
+      linkedin_url: body.linkedin_url,
+      referral_source: body.referral_source,
+    };
+
     const applicant = await base44.asServiceRole.entities.Applicant.create({
-      ...body,
+      ...candidateInput,
       email,
       status: 'Applied',
       candidate_stage: 'Assessment Started',
