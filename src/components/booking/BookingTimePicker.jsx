@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Loader2, ArrowLeft } from 'lucide-react';
 
-export default function BookingTimePicker({ selectedDate, onSelectSlot, onBack }) {
+export default function BookingTimePicker({ token, selectedDate, onSelectSlot, onBack }) {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -11,13 +11,13 @@ export default function BookingTimePicker({ selectedDate, onSelectSlot, onBack }
   useEffect(() => {
     setLoading(true);
     setError('');
-    base44.functions.invoke('getAvailableSlots', { dateStr: selectedDate.dateStr })
+    base44.functions.invoke('getAvailableSlots', { dateStr: selectedDate.dateStr, token })
       .then(res => {
         setSlots(res.data?.slots || []);
       })
       .catch(() => setError('Could not load time slots. Please try again.'))
       .finally(() => setLoading(false));
-  }, [selectedDate.dateStr]);
+  }, [selectedDate.dateStr, token]);
 
   const handleSelect = (slot) => {
     setSelected(slot.datetime);

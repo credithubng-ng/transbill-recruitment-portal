@@ -2,19 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Calendar, Loader2 } from 'lucide-react';
 
-export default function BookingDatePicker({ onSelectDate }) {
+export default function BookingDatePicker({ token, onSelectDate }) {
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    base44.functions.invoke('getAvailableDays', {})
+    base44.functions.invoke('getAvailableDays', { token })
       .then(res => {
         setDays(res.data?.availableDays || []);
       })
       .catch(() => setError('Could not load available dates. Please refresh.'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [token]);
 
   if (loading) {
     return (

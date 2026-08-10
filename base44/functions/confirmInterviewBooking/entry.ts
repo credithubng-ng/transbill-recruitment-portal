@@ -8,6 +8,15 @@ Deno.serve(async (req) => {
     if (!token || !slotId) {
       return Response.json({ error: 'token and slotId are required' }, { status: 400 });
     }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(token)) {
+      return Response.json({ error: 'Invalid booking token' }, { status: 401 });
+    }
+    const applicants = await base44.asServiceRole.entities.Applicant.filter({ booking_token: token });
+    const applicant = applicants?.[0];
+    if (!applicant || applicant.booking_used || !applicant.booking_token_expires_at ||
+        new Date(applicant.booking_token_expires_at) < new Date()) {
+      return Response.json({ error: 'Invalid or expired booking token' }, { status: 403 });
+    }
 
     // Delegate to bookInterviewSlot
     const result = await base44.asServiceRole.functions.invoke('bookInterviewSlot', { token, slotId });

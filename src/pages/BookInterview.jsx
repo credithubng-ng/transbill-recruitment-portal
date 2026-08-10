@@ -111,12 +111,13 @@ export default function BookInterview() {
                 All interviews are conducted via Google Meet and last 30 minutes.
               </p>
             </div>
-            <BookingDatePicker onSelectDate={handleDateSelect} />
+            <BookingDatePicker token={token} onSelectDate={handleDateSelect} />
           </div>
         )}
 
         {state === 'time' && selectedDate && (
           <BookingTimePicker
+            token={token}
             selectedDate={selectedDate}
             onSelectSlot={handleSlotSelect}
             onBack={() => setState('date')}
