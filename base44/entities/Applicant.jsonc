@@ -75,7 +75,13 @@
     },
     "employment_status": {
       "type": "string",
-      "enum": ["Unemployed", "Self-employed", "Employed part-time", "Employed full-time", "Student"]
+      "enum": [
+        "Unemployed",
+        "Self-employed",
+        "Employed part-time",
+        "Employed full-time",
+        "Student"
+      ]
     },
     "years_experience": {
       "type": "string",
@@ -119,27 +125,47 @@
     },
     "availability_2_weeks": {
       "type": "string",
-      "enum": ["Yes", "No"]
+      "enum": [
+        "Yes",
+        "No"
+      ]
     },
     "has_smartphone": {
       "type": "string",
-      "enum": ["Yes", "No"]
+      "enum": [
+        "Yes",
+        "No"
+      ]
     },
     "has_laptop": {
       "type": "string",
-      "enum": ["Yes", "No", "Occasionally"]
+      "enum": [
+        "Yes",
+        "No",
+        "Occasionally"
+      ]
     },
     "internet_access": {
       "type": "string",
-      "enum": ["Yes", "No", "Sometimes"]
+      "enum": [
+        "Yes",
+        "No",
+        "Sometimes"
+      ]
     },
     "willing_affiliate_role": {
       "type": "string",
-      "enum": ["Yes", "No"]
+      "enum": [
+        "Yes",
+        "No"
+      ]
     },
     "eligibility_status": {
       "type": "string",
-      "enum": ["Eligible for screening", "Manual review required"]
+      "enum": [
+        "Eligible for screening",
+        "Manual review required"
+      ]
     },
     "motivation": {
       "type": "string"
@@ -162,7 +188,12 @@
     },
     "screening_recommendation": {
       "type": "string",
-      "enum": ["Ready for training", "High potential – foundational support needed", "Manual review", "Not currently suitable"]
+      "enum": [
+        "Ready for training",
+        "High potential \u2013 foundational support needed",
+        "Manual review",
+        "Not currently suitable"
+      ]
     },
     "assessment_category_scores": {
       "type": "object",
@@ -330,7 +361,11 @@
     "referral_source"
   ],
   "rls": {
-    "create": {},
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
     "read": {
       "$or": [
         {
