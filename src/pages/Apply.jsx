@@ -74,7 +74,7 @@ export default function Apply() {
     if (!form.state_of_origin) errs.state_of_origin = 'Required';
     if (!form.current_lga) errs.current_lga = 'Required';
     if (!/^LA[A-Z0-9]{10}$/.test(form.lasrra_id.trim().toUpperCase())) {
-      errs.lasrra_id = 'Enter a valid 12-character LASRRA ID, for example LA0F10020751';
+    errs.lasrra_id = 'Enter a valid 12-character LASRRA ID (starts with LA followed by 10 characters)';
     }
     if (form.lagos_resident !== 'Yes') errs.lagos_resident = 'This programme is open to current Lagos State residents only.';
     if (!form.education) errs.education = 'Required';
@@ -308,7 +308,7 @@ export default function Apply() {
               className="form-input uppercase"
               value={form.lasrra_id}
               onChange={e => handleChange('lasrra_id', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12))}
-              placeholder="LA0F10020751"
+              placeholder="LAxxxxxxxxxx"
               pattern="LA[A-Z0-9]{10}"
               maxLength={12}
               autoComplete="off"
