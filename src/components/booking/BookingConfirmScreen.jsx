@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowLeft, Loader2, Video, Calendar, Clock } from 'lucide-react';
 
 export default function BookingConfirmScreen({
-  applicant, selectedDate, selectedSlot, onConfirm, onBack, loading, error
+  selectedDate, selectedSlot, onConfirm, onBack, loading, error
 }) {
   return (
     <div className="space-y-5">

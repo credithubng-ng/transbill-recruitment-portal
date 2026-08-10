@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
 	    <h1 style="color:white;margin:0;font-size:22px;">Congratulations, ${firstName}!</h1>
   </div>
   <div style="background:#F8FAF8;padding:28px;border-radius:0 0 12px 12px;">
-	    <p style="font-size:16px;">Thank you for completing the pre-screening for the Transbill Digital Marketing &amp; Workforce Development Programme, supported by Lagos Innovates | LSETF.</p>
+	    <p style="font-size:16px;">Thank you for completing the pre-screening for the Transbill Digital Marketing &amp; Workforce Development Programme, delivered with funding support from Lagos Innovates | LSETF.</p>
 	    <p>Your result indicates that you may have the foundation and learning potential required for the two-week practical training.</p>
 
     <div style="background:#EBF5EB;border-radius:10px;padding:20px;margin:20px 0;text-align:center;">

@@ -125,7 +125,6 @@ export default function BookInterview() {
 
         {(state === 'confirm' || state === 'booking') && selectedSlot && selectedDate && (
           <BookingConfirmScreen
-            applicant={applicant}
             selectedDate={selectedDate}
             selectedSlot={selectedSlot}
             onConfirm={handleConfirm}

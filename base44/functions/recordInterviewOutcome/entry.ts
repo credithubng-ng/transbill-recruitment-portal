@@ -63,7 +63,8 @@ Deno.serve(async (req) => {
   </div>
   <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
     <p style="font-size: 16px;">Dear <strong>${applicant.full_name}</strong>,</p>
-    <p>We are thrilled to inform you that you have <strong>successfully passed</strong> your interview for the <strong>Digital Marketing & Growth Associate</strong> role at <strong>Transbill Solutions Limited</strong>.</p>
+    <p>We are pleased to inform you that you have <strong>successfully passed</strong> your selection interview for the <strong>Digital Marketing &amp; Growth Associate</strong> employment pathway at <strong>Transbill Solutions Limited</strong>, supporting the FirstBank SME Account Acquisition Project.</p>
+    <p>Passing the interview or attending training does not constitute an employment offer. Only successful participants who meet Transbill's final employment requirements will receive an offer from Transbill.</p>
     <p>Please log in to your application portal to view your official progression letter with details on the next steps.</p>
     <p style="margin-top: 24px;">Best regards,<br/><strong>The Transbill Recruitment Team</strong></p>
   </div>

@@ -9,23 +9,24 @@ function buildLetterHtml(name) {
   <div style="background: white; padding: 32px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
     <p>Dear <strong>${name}</strong>,</p>
     <p><strong>Congratulations.</strong></p>
-    <p>Following your application, pre-screening and interview, we are pleased to offer you a place in the training stage of the <strong>Digital Marketing &amp; Workforce Development Programme</strong>, supported by Lagos Innovates | LSETF.</p>
+    <p>Following your application, pre-screening and interview, we are pleased to offer you a place in the training stage of the <strong>Digital Marketing &amp; Workforce Development Programme</strong>, delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.</p>
     <p>This is a training admission and does not constitute an employment offer.</p>
     <p>The next phase is a compulsory <strong>two-week practical training programme</strong> in Lagos. The venue, delivery format and commencement date will be communicated separately.</p>
     <p><strong>The purpose of this training programme is to:</strong></p>
     <ul>
       <li>Equip candidates with the practical knowledge required for the role</li>
       <li>Assess competence, commitment, teamwork and performance</li>
-      <li>Prepare high-performing participants for possible employment consideration</li>
+      <li>Prepare successful participants for potential employment with Transbill</li>
     </ul>
     <h3 style="margin-top: 24px; color: #2D6A2F;">Employment Pathway</h3>
-    <p>Participants who successfully complete the programme may be considered for structured employment opportunities involving the recruitment, activation, support and performance management of Affiliate Bankers.</p>
+    <p>Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to recruit, activate, support and manage Affiliate Bankers for the FirstBank SME Account Acquisition Project.</p>
     <h3 style="color: #2D6A2F;">Important Notice</h3>
     <p>Please note that:</p>
     <ul>
       <li>Participation in the Two-Week Hybrid Training Programme is mandatory.</li>
       <li>Training participation does not guarantee employment.</li>
       <li>Transbill will determine any employment selection based on training performance, conduct, attendance, business need and overall suitability.</li>
+      <li>Successful candidates will be employed by Transbill Solutions Limited, not Lagos Innovates, LSETF or FirstBank.</li>
     </ul>
     <p>Please reply to this email to confirm your availability when the programme schedule is communicated.</p>
     <p>We look forward to your participation in the training programme.</p>

@@ -4,9 +4,9 @@ const benefits = [
   { icon: '🎓', title: 'Practical Training', desc: 'Two weeks of hands-on digital marketing, content creation, lead generation and more' },
   { icon: '🌱', title: 'Training for Potential', desc: 'Applicants with strong potential can build skills even without extensive formal experience' },
   { icon: '📈', title: 'Real Skills, Real Impact', desc: 'Develop in-demand capabilities that support business growth and financial inclusion' },
-  { icon: '💼', title: 'Employment Opportunities', desc: 'Successful participants may be considered for structured employment opportunities with Transbill' },
+  { icon: '💼', title: 'Employment Pathway', desc: 'Only successful participants who meet Transbill’s requirements will be offered employment for the FirstBank SME Account Acquisition Project' },
   { icon: '✅', title: 'Free to Apply', desc: 'There are no application or training fees—selection is based on eligibility, commitment and potential' },
-  { icon: '🤝', title: 'Supported Programme', desc: 'The programme is proudly supported by Lagos Innovates | LSETF' },
+  { icon: '🤝', title: 'Funding Support', desc: 'Training for Lagos residents is supported with funding from Lagos Innovates | LSETF' },
 ];
 
 export default function BenefitsSection() {

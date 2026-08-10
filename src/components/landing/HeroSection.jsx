@@ -6,7 +6,7 @@ const highlights = [
   { icon: GraduationCap, label: '2 Weeks of Practical Training' },
   { icon: MapPin, label: 'Lagos Residents Only' },
   { icon: BadgeCheck, label: 'Free to Apply' },
-  { icon: Briefcase, label: 'Employment Consideration' },
+  { icon: Briefcase, label: 'Employment for Successful Participants' },
 ];
 
 export default function HeroSection() {
@@ -27,8 +27,11 @@ export default function HeroSection() {
             </h1>
             <div className="w-10 h-1 bg-[#2D6A2F] rounded-full mb-4 mx-auto lg:mx-0" />
             <p className="text-[#444444] text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0 mb-8">
-              A free, practical training programme for Lagos residents aged 18 and above, supported by Lagos Innovates | LSETF.
+              A free, practical training programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.
             </p>
+            <div className="max-w-md mx-auto lg:mx-0 mb-8 rounded-xl border border-[#003B7A]/20 bg-[#F4F8FC] px-4 py-3 text-sm text-[#173B5E]">
+              <strong>Employment pathway:</strong> Only successful participants who meet Transbill&apos;s employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project.
+            </div>
             <Link
               to="/apply"
               className="inline-block bg-[#2D6A2F] hover:bg-[#3A7D3C] text-white font-bold text-base px-9 py-4 rounded-full transition-all shadow-lg hover:shadow-xl"

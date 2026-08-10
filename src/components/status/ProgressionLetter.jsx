@@ -19,7 +19,7 @@ export default function ProgressionLetter({ name }) {
 
         <p>
           Following your application, pre-screening and interview, we are pleased to offer you a place in the
-          <strong> training stage</strong> of the programme supported by Lagos Innovates | LSETF.
+          <strong> training stage</strong> of the programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.
         </p>
 
         <p>
@@ -36,15 +36,15 @@ export default function ProgressionLetter({ name }) {
           <ul className="list-disc ml-5 space-y-1 text-[#333333]">
             <li>Equip candidates with the practical knowledge required for the role</li>
             <li>Assess competence, commitment, teamwork and performance</li>
-            <li>Prepare high-performing participants for possible employment consideration</li>
+            <li>Prepare successful participants for potential employment with Transbill</li>
           </ul>
         </div>
 
         <div>
           <p className="font-bold text-[#1A1A1A] mb-1">Employment Pathway</p>
           <p>
-            Participants who successfully complete the programme may be considered for structured employment involving
-            the recruitment, activation, support and performance management of Affiliate Bankers.
+            Participants who successfully complete the programme and meet Transbill&apos;s employment selection requirements
+            will be offered employment by Transbill to recruit, activate, support and manage Affiliate Bankers for the FirstBank SME Account Acquisition Project.
           </p>
         </div>
 
@@ -55,6 +55,7 @@ export default function ProgressionLetter({ name }) {
             <li>You must bring your original physical LASRRA card for verification before training begins on Day 1. Failure to present a valid card may result in withdrawal of your training place.</li>
             <li>Training participation does not guarantee employment.</li>
             <li>Any employment selection will depend on training performance, conduct, attendance, business need and overall suitability.</li>
+            <li>Successful candidates will be employed by Transbill Solutions Limited, not Lagos Innovates, LSETF or FirstBank.</li>
           </ul>
         </div>
 

@@ -63,7 +63,7 @@ export default function Assessment() {
       });
 
       setResult({ score: res.data.score, status: res.data.status });
-    } catch (err) {
+    } catch {
       setSubmitted(false);
       setSubmitError('Submission failed. Please try again.');
     } finally {
@@ -250,7 +250,7 @@ function ResultScreen({ result }) {
       icon: '✅',
       bg: 'bg-[#2D6A2F]',
       heading: "You've Passed the Pre-screening",
-      body: 'Your result indicates the foundation and learning potential required for the programme. The next step is a selection interview. Passing the pre-screening does not guarantee admission or employment.'
+      body: 'Your result indicates the foundation and learning potential required for the programme. The next step is a selection interview. Passing the pre-screening does not guarantee training admission or employment. Employment offers will be made only to successful participants who meet Transbill’s requirements.'
     },
     'Reserve List': {
       icon: '🟡',

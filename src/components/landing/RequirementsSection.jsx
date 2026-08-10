@@ -27,7 +27,7 @@ export default function RequirementsSection() {
         </div>
         <div className="mt-8 bg-[#EBF5EB] border-l-4 border-[#2D6A2F] rounded-r-lg p-4 sm:p-5">
           <p className="text-[#333333] text-sm leading-relaxed">
-            <strong>This is a competitive selection.</strong> After applying, you will complete a timed pre-screening covering digital marketing fundamentals, learning agility, Affiliate Banker recruitment and performance management. Admission and employment are not guaranteed.
+            <strong>This is a competitive selection.</strong> After applying, you will complete a timed pre-screening covering digital marketing fundamentals, learning agility, Affiliate Banker recruitment and performance management. Training does not guarantee employment; employment offers will be made only to successful participants who meet Transbill&apos;s requirements.
           </p>
         </div>
       </div>

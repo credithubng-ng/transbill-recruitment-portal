@@ -8,9 +8,15 @@ export default function Footer() {
       <div className="border-b border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12">
           <div className="flex flex-col items-center gap-2">
-            <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Proudly supported by</span>
+            <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Training funding support</span>
             <div className="bg-white rounded-lg px-5 py-3 text-center">
               <span className="text-sm text-[#003B7A] font-bold">Lagos Innovates | LSETF</span>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <span className="text-white/50 text-xs font-medium uppercase tracking-widest">Employment project</span>
+            <div className="rounded-lg border border-white/20 px-5 py-3 text-sm font-bold text-white">
+              FirstBank SME Account Acquisition Project
             </div>
           </div>
         </div>

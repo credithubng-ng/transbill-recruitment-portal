@@ -39,7 +39,7 @@ Documentation: [https://docs.base44.com/Integrations/Using-GitHub](https://docs.
 Support: [https://app.base44.com/support](https://app.base44.com/support)
 # Transbill Digital Marketing & Workforce Development Programme
 
-This application manages applications, pre-screening, selection interviews and applicant status for the free two-week Lagos programme supported by Lagos Innovates | LSETF.
+This application manages applications, pre-screening, selection interviews and applicant status for Transbill's free two-week Lagos programme, delivered with funding support from Lagos Innovates | LSETF. Only successful participants who meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project; training does not guarantee employment.
 
 ## Required deployment secrets
 

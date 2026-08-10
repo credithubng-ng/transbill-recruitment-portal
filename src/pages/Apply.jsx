@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
@@ -15,8 +14,6 @@ const REFERRAL_OPTIONS = ['LSETF', 'Lagos Innovates', 'Transbill', 'Instagram', 
 const LAGOS_LGAS = ['Agege', 'Ajeromi-Ifelodun', 'Alimosho', 'Amuwo-Odofin', 'Apapa', 'Badagry', 'Epe', 'Eti-Osa', 'Ibeju-Lekki', 'Ifako-Ijaiye', 'Ikeja', 'Ikorodu', 'Kosofe', 'Lagos Island', 'Lagos Mainland', 'Mushin', 'Ojo', 'Oshodi-Isolo', 'Shomolu', 'Surulere'];
 
 export default function Apply() {
-  const navigate = useNavigate();
-
   React.useEffect(() => { window.scrollTo(0, 0); }, []);
 
   const [form, setForm] = useState({
@@ -333,7 +330,7 @@ export default function Apply() {
             <RadioGroup options={['Yes', 'No']} value={form.lagos_resident} onChange={v => handleChange('lagos_resident', v)} />
             {form.lagos_resident === 'No' && (
               <div className="mt-2 bg-[#FFF8E1] border border-[#FFE082] rounded-lg p-3 text-sm text-[#333333]">
-                This programme is sponsored for Lagos residents, so non-residents are not eligible for this application round.
+                Funding support is provided to train Lagos residents, so non-residents are not eligible for this application round.
               </div>
             )}
           </Field>
@@ -381,7 +378,7 @@ export default function Apply() {
           <Field label="Do you have reliable internet access for training and assignments?" error={errors.internet_access}>
             <RadioGroup options={['Yes', 'No', 'Sometimes']} value={form.internet_access} onChange={v => handleChange('internet_access', v)} />
           </Field>
-          <Field label="If retained after training, are you willing to recruit Affiliate Bankers and manage them against performance targets?" error={errors.willing_affiliate_role}>
+          <Field label="If offered employment by Transbill after training, are you willing to recruit Affiliate Bankers and manage their performance for the FirstBank SME Account Acquisition Project?" error={errors.willing_affiliate_role}>
             <RadioGroup options={['Yes', 'No']} value={form.willing_affiliate_role} onChange={v => handleChange('willing_affiliate_role', v)} />
           </Field>
           <Field label="Why should you be selected for this programme? (50–200 words)" error={errors.motivation}>
@@ -408,7 +405,7 @@ export default function Apply() {
                 onChange={e => handleChange('data_processing_consent', e.target.checked)}
               />
               <span className="text-sm text-[#333333] leading-relaxed">
-                I consent to Transbill processing my application information and checking whether my LASRRA/LAG-ID record exists. I understand that I must present my original physical LASRRA card for verification before training begins on Day 1, and that admission and employment are not guaranteed.
+                I consent to Transbill processing my application information and checking whether my LASRRA/LAG-ID record exists. I understand that I must present my original physical LASRRA card for verification before training begins on Day 1. I also understand that training does not guarantee employment and that employment offers from Transbill will be made only to successful participants who meet Transbill&apos;s selection requirements.
               </span>
             </label>
           </Field>

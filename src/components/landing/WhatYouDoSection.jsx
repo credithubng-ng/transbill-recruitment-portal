@@ -8,7 +8,7 @@ const items = [
   'Track recruitment, activation and productive-activity metrics',
   'Coach and re-engage Affiliate Bankers who need help improving performance',
   'Prepare clear daily reports showing results, gaps, actions and next steps',
-  'Demonstrate integrity and professionalism when representing Transbill',
+  'Demonstrate integrity and professionalism when representing Transbill on the FirstBank SME Account Acquisition Project',
 ];
 
 export default function WhatYouDoSection() {

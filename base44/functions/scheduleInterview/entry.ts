@@ -38,7 +38,8 @@ Deno.serve(async (req) => {
   </div>
   <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
     <p style="font-size: 16px;">Dear <strong>${applicant.full_name}</strong>,</p>
-    <p>We are pleased to invite you to an interview for the <strong>Digital Marketing Executive</strong> role at <strong>Transbill</strong>.</p>
+    <p>We are pleased to invite you to a selection interview for the <strong>Digital Marketing &amp; Growth Associate</strong> employment pathway at <strong>Transbill</strong>, supporting the FirstBank SME Account Acquisition Project.</p>
+    <p>Training participation does not guarantee employment. Only successful participants who meet Transbill's selection requirements may receive employment offers from Transbill.</p>
     <div style="background: white; border: 1px solid #d1fae5; border-left: 4px solid #2D6A2F; border-radius: 8px; padding: 20px; margin: 24px 0;">
       <h3 style="margin: 0 0 12px; color: #2D6A2F; font-size: 15px;">Interview Details</h3>
       <p style="margin: 6px 0;"><strong>Date:</strong> ${dateStr}</p>

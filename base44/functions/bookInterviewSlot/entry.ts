@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
 
       const eventBody = {
         summary: `Transbill Interview — ${applicant.full_name}`,
-        description: `Digital Marketing Executive interview with ${applicant.full_name}.\n\nCandidate email: ${applicant.email}`,
+        description: `Digital Marketing & Growth Associate selection interview with ${applicant.full_name} for Transbill's FirstBank SME Account Acquisition Project.\n\nCandidate email: ${applicant.email}`,
         start: {
           dateTime: dateObj.toISOString(),
           timeZone: 'Africa/Lagos',
@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
   </div>
   <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
     <p style="font-size: 16px;">Dear <strong>${applicant.full_name}</strong>,</p>
-    <p>Your interview for the <strong>Digital Marketing Executive</strong> role at <strong>Transbill</strong> has been confirmed.</p>
+    <p>Your selection interview for the <strong>Digital Marketing &amp; Growth Associate</strong> employment pathway at <strong>Transbill</strong>, supporting the FirstBank SME Account Acquisition Project, has been confirmed.</p>
     <div style="background: white; border: 1px solid #d1fae5; border-left: 4px solid #2D6A2F; border-radius: 8px; padding: 20px; margin: 24px 0;">
       <h3 style="margin: 0 0 12px; color: #2D6A2F; font-size: 15px;">Interview Details</h3>
       <p style="margin: 6px 0;"><strong>Date:</strong> ${dateStr}</p>
