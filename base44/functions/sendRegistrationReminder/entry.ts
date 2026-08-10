@@ -6,6 +6,10 @@ const COMPANY_NAME = 'Transbill';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Admin access required' }, { status: 403 });
+    }
 
     // Find all candidates awaiting registration who haven't completed it
     const candidates = await base44.asServiceRole.entities.Applicant.filter({
