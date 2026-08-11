@@ -45,7 +45,7 @@ export default function HeroSection() {
           <div className="flex-1 flex justify-center lg:justify-end relative">
             <div className="relative w-full max-w-sm lg:max-w-md">
               <img
-                src="/campaign-flier.png"
+                src="/transbill-lsetf-flier-2026.png"
                 alt="Call for applications for the Transbill Digital Marketing and Workforce Development Programme"
                 className="w-full max-h-[560px] object-contain rounded-[20px] shadow-xl bg-white"
               />
