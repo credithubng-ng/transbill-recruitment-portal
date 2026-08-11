@@ -24,6 +24,9 @@ Deno.serve(async (req) => {
     if (!valid) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
+    if (!['Pass', 'Fail', 'Hold'].includes(outcome)) {
+      return Response.json({ error: 'Invalid interview outcome' }, { status: 400 });
+    }
 
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
     if (!applicant) {
@@ -31,8 +34,6 @@ Deno.serve(async (req) => {
     }
 
     let newStage = 'Interview Scheduling';
-    let emailSent = false;
-
     if (outcome === 'Pass') {
       newStage = 'Interview Outcome – Pass';
     } else if (outcome === 'Fail') {
@@ -48,30 +49,14 @@ Deno.serve(async (req) => {
       candidate_stage: newStage
     });
 
-    // Fire email + follow-up update asynchronously — don't block the response
-    const sendEmail = async () => {
-      let sent = false;
-      try {
-        let emailBody = '';
-        let subject = '';
-        if (outcome === 'Pass') {
-          subject = 'You Passed Your Interview – Transbill Solutions Limited';
-          emailBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1A1A;">
-  <div style="background: #2D6A2F; padding: 24px 32px; border-radius: 12px 12px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 22px;">Congratulations! 🎉</h1>
-    <p style="color: #c8e6c9; margin: 6px 0 0; font-size: 14px;">Transbill Digital Marketing Recruitment</p>
-  </div>
-  <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb; border-top: none;">
-    <p style="font-size: 16px;">Dear <strong>${applicant.full_name}</strong>,</p>
-    <p>We are pleased to inform you that you have <strong>successfully passed</strong> your selection interview for the <strong>Digital Marketing &amp; Growth Associate</strong> employment pathway at <strong>Transbill Solutions Limited</strong>, supporting the FirstBank SME Account Acquisition Project.</p>
-    <p>Passing the interview or attending training does not constitute an employment offer. Only successful participants who meet Transbill's final employment requirements will receive an offer from Transbill.</p>
-    <p>Please log in to your application portal to view your official progression letter with details on the next steps.</p>
-    <p style="margin-top: 24px;">Best regards,<br/><strong>The Transbill Recruitment Team</strong></p>
-  </div>
-</div>`;
-        } else if (outcome === 'Fail') {
-          subject = 'Update on Your Transbill Application';
-          emailBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1A1A;">
+    // Send the outcome communication before returning so the serverless runtime cannot terminate it early.
+    let emailSent = false;
+    try {
+      if (outcome === 'Pass') {
+        const result = await base44.asServiceRole.functions.invoke('sendProgressionLetter', { applicantId });
+        emailSent = (result?.data?.sent ?? result?.sent ?? 0) > 0;
+      } else if (outcome === 'Fail') {
+        const emailBody = `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1A1A1A;">
   <div style="background: #4a4a4a; padding: 24px 32px; border-radius: 12px 12px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 22px;">Application Update</h1>
     <p style="color: #d1d5db; margin: 6px 0 0; font-size: 14px;">Transbill Digital Marketing Recruitment</p>
@@ -84,25 +69,21 @@ Deno.serve(async (req) => {
     <p style="margin-top: 24px;">Best regards,<br/><strong>The Transbill Recruitment Team</strong></p>
   </div>
 </div>`;
-        }
-        if (emailBody) {
-          await base44.asServiceRole.integrations.Core.SendEmail({ to: applicant.email, subject, body: emailBody });
-          sent = true;
-        }
-      } catch (e) {
-        console.error('Email send failed (non-fatal):', e.message);
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: applicant.email,
+          subject: 'Update on Your Transbill Application',
+          body: emailBody
+        });
+        emailSent = true;
       }
-      try {
-        await base44.asServiceRole.entities.Applicant.update(applicantId, { interview_outcome_email_sent: sent });
-      } catch (e) {
-        console.error('Email status update failed:', e.message);
-      }
-    };
+    } catch (emailError) {
+      console.error('Outcome communication failed (non-fatal):', emailError.message);
+    }
+    await base44.asServiceRole.entities.Applicant.update(applicantId, {
+      interview_outcome_email_sent: emailSent
+    });
 
-    // Fire and forget
-    sendEmail();
-
-    return Response.json({ success: true, stage: newStage, emailSent: false });
+    return Response.json({ success: true, stage: newStage, emailSent });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

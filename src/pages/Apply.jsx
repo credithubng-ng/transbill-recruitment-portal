@@ -253,7 +253,7 @@ export default function Apply() {
         <div className="bg-[#FFF3E0] border-2 border-[#FF8F00] rounded-[12px] p-4 flex gap-3">
           <span className="text-2xl flex-shrink-0">⚠️</span>
           <div>
-            <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & NIN Verification Notice</p>
+            <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & LASRRA Verification Notice</p>
             <p className="text-[#5D3F00] text-sm leading-relaxed">
               Applicants must be <strong>18 years or older</strong> and currently resident in <strong>Lagos State</strong>. Eligibility information may be verified before admission to the programme.
             </p>
