@@ -44,21 +44,33 @@ async function sendBrevoEmail({ to, subject, body }) {
   if (!response.ok) throw new Error('Email delivery failed. Please try again.');
 }
 
+async function getLatestOtp(base44, applicantId: string) {
+  const records = await base44.asServiceRole.entities.ApplicantLoginOtp.filter(
+    { applicant_id: applicantId },
+    '-created_date',
+    1
+  );
+  return records?.[0] || null;
+}
+
 async function requestLoginOtp(base44, email: string) {
   const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
   const applicant = applicants?.[0];
   const publicResult = { success: true, message: 'If an incomplete application exists, a code has been sent.' };
   if (!applicant || applicant.assessment_completed === true) return Response.json(publicResult);
 
-  const lastSent = applicant.login_otp_sent_at ? new Date(applicant.login_otp_sent_at).getTime() : 0;
+  const latest = await getLatestOtp(base44, applicant.id);
+  const lastSent = latest?.sent_at ? new Date(latest.sent_at).getTime() : 0;
   if (lastSent && Date.now() - lastSent < 60_000) return Response.json(publicResult);
 
   const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, '0');
-  await base44.asServiceRole.entities.Applicant.update(applicant.id, {
-    login_otp_hash: await hashApplicantOtp(applicant.id, code),
-    login_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-    login_otp_sent_at: new Date().toISOString(),
-    login_otp_attempts: 0,
+  await base44.asServiceRole.entities.ApplicantLoginOtp.create({
+    applicant_id: applicant.id,
+    email,
+    otp_hash: await hashApplicantOtp(applicant.id, code),
+    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    sent_at: new Date().toISOString(),
+    attempts: 0,
   });
   const firstName = applicant.full_name?.split(' ')[0] || 'Applicant';
   await sendBrevoEmail({
@@ -73,18 +85,23 @@ async function verifyLoginOtp(base44, email: string, code: string) {
   if (!/^\d{6}$/.test(code)) return Response.json({ error: 'Invalid or expired code.' }, { status: 400 });
   const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
   const applicant = applicants?.[0];
-  const attempts = applicant?.login_otp_attempts || 0;
-  const expired = !applicant?.login_otp_expires_at || new Date(applicant.login_otp_expires_at).getTime() < Date.now();
-  const suppliedHash = applicant ? await hashApplicantOtp(applicant.id, code) : '';
-  if (!applicant || applicant.assessment_completed === true || expired || attempts >= 5 || suppliedHash !== applicant.login_otp_hash) {
-    if (applicant && attempts < 5) {
-      await base44.asServiceRole.entities.Applicant.update(applicant.id, { login_otp_attempts: attempts + 1 });
+  if (!applicant || applicant.assessment_completed === true) {
+    return Response.json({ error: 'Invalid or expired code.' }, { status: 401 });
+  }
+  const latest = await getLatestOtp(base44, applicant.id);
+  const attempts = latest?.attempts || 0;
+  const expired = !latest?.expires_at || new Date(latest.expires_at).getTime() < Date.now();
+  const consumed = !!latest?.consumed_at;
+  const suppliedHash = latest ? await hashApplicantOtp(applicant.id, code) : '';
+  if (!latest || consumed || expired || attempts >= 5 || suppliedHash !== latest.otp_hash) {
+    if (latest && !consumed && attempts < 5) {
+      await base44.asServiceRole.entities.ApplicantLoginOtp.update(latest.id, { attempts: attempts + 1 });
     }
     return Response.json({ error: 'Invalid or expired code.' }, { status: 401 });
   }
-  await base44.asServiceRole.entities.Applicant.update(applicant.id, {
-    login_otp_hash: '', login_otp_expires_at: '', login_otp_attempts: 0,
-    last_applicant_login_at: new Date().toISOString(),
+  await base44.asServiceRole.entities.ApplicantLoginOtp.update(latest.id, {
+    consumed_at: new Date().toISOString(),
+    attempts: 0,
   });
   return Response.json({ applicantId: applicant.id, sessionToken: await createApplicantSession(applicant.id, applicant.email) });
 }
