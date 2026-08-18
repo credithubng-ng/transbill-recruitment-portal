@@ -1,5 +1,53 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { createApplicantSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
+import { createApplicantSession, getApplicationDeadline, hashApplicantOtp } from '../_shared/applicantSession.ts';
+
+const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://jobs.transbill.ng';
+
+async function requestLoginOtp(base44, email: string) {
+  const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
+  const applicant = applicants?.[0];
+  const publicResult = { success: true, message: 'If an incomplete application exists, a code has been sent.' };
+  if (!applicant || applicant.assessment_completed === true) return Response.json(publicResult);
+
+  const lastSent = applicant.login_otp_sent_at ? new Date(applicant.login_otp_sent_at).getTime() : 0;
+  if (lastSent && Date.now() - lastSent < 60_000) return Response.json(publicResult);
+
+  const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, '0');
+  await base44.asServiceRole.entities.Applicant.update(applicant.id, {
+    login_otp_hash: await hashApplicantOtp(applicant.id, code),
+    login_otp_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+    login_otp_sent_at: new Date().toISOString(),
+    login_otp_attempts: 0,
+  });
+  const firstName = applicant.full_name?.split(' ')[0] || 'Applicant';
+  await base44.asServiceRole.integrations.Core.SendEmail({
+    to: email,
+    from_name: 'Transbill Programme Team',
+    subject: 'Your Transbill application login code',
+    body: `Hello ${firstName},\n\nYour one-time login code is: ${code}\n\nThis code expires in 10 minutes. Use it at ${APP_DOMAIN}/login to continue your incomplete assessment before the call for applications closes.\n\nIf you did not request this code, you can ignore this email.\n\nTransbill Programme Team`,
+  });
+  return Response.json(publicResult);
+}
+
+async function verifyLoginOtp(base44, email: string, code: string) {
+  if (!/^\d{6}$/.test(code)) return Response.json({ error: 'Invalid or expired code.' }, { status: 400 });
+  const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
+  const applicant = applicants?.[0];
+  const attempts = applicant?.login_otp_attempts || 0;
+  const expired = !applicant?.login_otp_expires_at || new Date(applicant.login_otp_expires_at).getTime() < Date.now();
+  const suppliedHash = applicant ? await hashApplicantOtp(applicant.id, code) : '';
+  if (!applicant || applicant.assessment_completed === true || expired || attempts >= 5 || suppliedHash !== applicant.login_otp_hash) {
+    if (applicant && attempts < 5) {
+      await base44.asServiceRole.entities.Applicant.update(applicant.id, { login_otp_attempts: attempts + 1 });
+    }
+    return Response.json({ error: 'Invalid or expired code.' }, { status: 401 });
+  }
+  await base44.asServiceRole.entities.Applicant.update(applicant.id, {
+    login_otp_hash: '', login_otp_expires_at: '', login_otp_attempts: 0,
+    last_applicant_login_at: new Date().toISOString(),
+  });
+  return Response.json({ applicantId: applicant.id, sessionToken: await createApplicantSession(applicant.id, applicant.email) });
+}
 
 async function findLasrraRecord(body) {
   const endpoint = Deno.env.get('LASRRA_VERIFICATION_URL');
@@ -29,13 +77,15 @@ Deno.serve(async (req) => {
     const body = await req.json();
 
     const email = body.email?.trim().toLowerCase();
-    if (!email) {
-      return Response.json({ error: 'Email is required.' }, { status: 400 });
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return Response.json({ error: 'A valid email is required.' }, { status: 400 });
     }
     const deadline = await getApplicationDeadline(base44);
     if (deadline && Date.now() > deadline) {
       return Response.json({ error: 'The call for applications has closed.' }, { status: 403 });
     }
+    if (body.action === 'request_login_otp') return requestLoginOtp(base44, email);
+    if (body.action === 'verify_login_otp') return verifyLoginOtp(base44, email, String(body.code || '').trim());
     if (body.lagos_resident !== 'Yes') {
       return Response.json({ error: 'This programme is open to current Lagos State residents only.' }, { status: 400 });
     }

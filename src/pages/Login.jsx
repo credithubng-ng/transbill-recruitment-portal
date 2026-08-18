@@ -19,7 +19,10 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await base44.functions.invoke('requestApplicantOtp', { email: email.trim().toLowerCase() });
+      await base44.functions.invoke('submitApplication', {
+        action: 'request_login_otp',
+        email: email.trim().toLowerCase(),
+      });
       setCodeSent(true);
     } catch (err) {
       setError(err?.response?.data?.error || err?.message || 'Unable to send a code. Please try again.');
@@ -32,7 +35,8 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const response = await base44.functions.invoke('verifyApplicantOtp', {
+      const response = await base44.functions.invoke('submitApplication', {
+        action: 'verify_login_otp',
         email: email.trim().toLowerCase(),
         code,
       });
