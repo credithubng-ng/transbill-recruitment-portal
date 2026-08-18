@@ -1,7 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { createApplicantSession, getApplicationDeadline, hashApplicantOtp } from '../_shared/applicantSession.ts';
 
 const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://jobs.transbill.ng';
+
+// Inlined from base44/functions/_shared/applicantSession.ts (Base44 cannot bundle sibling relative imports)
+const _encoder = new TextEncoder();
+const _toBase64Url = (value: string) => btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function _hmac(value: string, secret: string) {
+  const key = await crypto.subtle.importKey('raw', _encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const bytes = await crypto.subtle.sign('HMAC', key, _encoder.encode(value));
+  return Array.from(new Uint8Array(bytes)).map(byte => byte.toString(16).padStart(2, '0')).join('');
+}
+function _getApplicantSecret() {
+  const secret = Deno.env.get('APPLICANT_SESSION_SECRET') || Deno.env.get('ASSESSMENT_SIGNING_SECRET') || '';
+  if (secret.length < 32) throw new Error('Applicant session secret is not configured');
+  return secret;
+}
+async function createApplicantSession(applicantId: string, email: string, expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000) {
+  const payload = _toBase64Url(JSON.stringify({ applicantId, email: email.toLowerCase(), expiresAt, purpose: 'applicant-session' }));
+  return `${payload}.${await _hmac(payload, _getApplicantSecret())}`;
+}
+async function hashApplicantOtp(applicantId: string, code: string) {
+  return _hmac(`applicant-otp:${applicantId}:${code}`, _getApplicantSecret());
+}
+async function getApplicationDeadline(base44) {
+  const settings = await base44.asServiceRole.entities.AppSettings.filter({ settings_id: 'main' });
+  const value = settings?.[0]?.application_closes_at;
+  const timestamp = value ? new Date(value).getTime() : null;
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
 
 async function requestLoginOtp(base44, email: string) {
   const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
