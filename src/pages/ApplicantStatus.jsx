@@ -4,6 +4,7 @@ import TransbillLogo from '../components/TransbillLogo';
 import InterviewSlotPicker from '../components/status/InterviewSlotPicker';
 import { CheckCircle2, Clock, XCircle, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
 import ProgressionLetter from '../components/status/ProgressionLetter';
+import CaseStudyBrief from '../components/status/CaseStudyBrief';
 import BookAiInterview from './BookAiInterview';
 import Interview from './Interview';
 
@@ -323,7 +324,18 @@ function ApplicantStatusDashboard() {
                     </div>
                     <p className="text-xs text-[#7A7A8A] mt-3">Need a human-led alternative or have accessibility concerns? Reschedule and contact the recruitment team.</p>
                   </>
-                ) : bookingLoading ? (
+                ) : null}
+                {aiBooking?.case_title ? (
+                  <div className="mt-5">
+                    <CaseStudyBrief
+                      caseTitle={aiBooking.case_title}
+                      caseScenario={aiBooking.case_scenario}
+                      caseCommonRules={aiBooking.case_common_rules}
+                      caseSlides={aiBooking.case_slides}
+                    />
+                  </div>
+                ) : null}
+                {aiBooking ? null : bookingLoading ? (
                   <div className="flex items-center gap-2 text-sm text-[#7A7A8A]">
                     <div className="w-4 h-4 border-2 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin" />
                     Loading your appointment details...

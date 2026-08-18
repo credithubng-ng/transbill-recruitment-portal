@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
+import CaseStudyBrief from '../components/status/CaseStudyBrief';
 import { Clock, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export default function BookAiInterview() {
@@ -72,15 +73,25 @@ export default function BookAiInterview() {
 
       <div className="max-w-2xl mx-auto px-4 py-8">
         {confirmed ? (
-          <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-8 text-center">
-            <CheckCircle2 className="w-14 h-14 text-[#2D6A2F] mx-auto mb-4" />
-            <h1 className="font-extrabold text-xl text-[#1A1A1A] mb-2">Selection Interview Booked</h1>
-            <p className="text-[#555555] text-sm mb-1">Your AI-led selection interview is scheduled for:</p>
-            <p className="font-bold text-[#2D6A2F] mb-4">{booking && new Date(booking.slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' })}</p>
-            <p className="text-xs text-[#7A7A8A] mb-6">A confirmation email has been sent. Return to your status page at the appointment time to start the interview.</p>
-            <a href="/status" className="inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
-              Back to Status
-            </a>
+          <div className="space-y-6">
+            <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-8 text-center">
+              <CheckCircle2 className="w-14 h-14 text-[#2D6A2F] mx-auto mb-4" />
+              <h1 className="font-extrabold text-xl text-[#1A1A1A] mb-2">Selection Interview Booked</h1>
+              <p className="text-[#555555] text-sm mb-1">Your Transbill Digital Selection Interview is scheduled for:</p>
+              <p className="font-bold text-[#2D6A2F] mb-4">{booking && new Date(booking.slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' })}</p>
+              <p className="text-xs text-[#7A7A8A] mb-6">A confirmation email has been sent. Return to your status page at the appointment time to start the interview.</p>
+              <a href="/status" className="inline-flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
+                Back to Status
+              </a>
+            </div>
+            {booking?.case_title && (
+              <CaseStudyBrief
+                caseTitle={booking.case_title}
+                caseScenario={booking.case_scenario}
+                caseCommonRules={booking.case_common_rules}
+                caseSlides={booking.case_slides}
+              />
+            )}
           </div>
         ) : (
           <>

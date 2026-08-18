@@ -1,5 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
-import { getApplicantFromSession, sendBrevoEmail } from '../../shared/interviewSession.ts';
+import { getApplicantFromSession, sendBrevoEmail, candidateSafeCaseFields } from '../../shared/interviewSession.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -45,17 +45,27 @@ Deno.serve(async (req) => {
     });
     await base44.asServiceRole.entities.Applicant.updateMany({ id: applicantId }, { $set: { candidate_stage: 'AI Interview Scheduled' } });
 
+    // Fetch the candidate's already-assigned case and extract only candidate-safe
+    // preparation fields for the confirmation email and the on-screen brief.
+    const caseRec = await base44.asServiceRole.entities.InterviewCase.filter({ variant_id: variantId }, '-created_date', 1);
+    const safeCase = candidateSafeCaseFields(caseRec[0]);
+
     try {
       const firstName = applicant.full_name?.split(' ')[0] || 'Applicant';
       const local = new Date(slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' });
+      let caseSection = '';
+      if (safeCase) {
+        const slidesText = (safeCase.case_slides || []).map((s: string, i: number) => `  ${i + 1}. ${s}`).join('\n');
+        caseSection = `\n=== YOUR ASSIGNED CASE STUDY ===\nTitle: ${safeCase.case_title}\n\nBackground & Scenario:\n${safeCase.case_scenario}\n\nYour Presentation Task — prepare a concise presentation covering:\n${slidesText}\n\nGuidelines & Constraints:\n${safeCase.case_common_rules}\n\nReview the case, prepare your plan, and expect 3–5 follow-up questions during the interview.\n=================================\n\n`;
+      }
       await sendBrevoEmail({
         to: applicant.email,
         subject: 'Your Selection Interview is Booked – Transbill Programme',
-        body: `Hello ${firstName},\n\nYour Transbill Digital Selection Interview is booked for:\n${local} (Lagos time).\n\nAt the appointment time, sign in and open your application status to start the interview. This is a structured, digitally facilitated interview lasting 15–20 minutes. Your responses will be recorded as a transcript and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff.\n\nIf you need a human-led alternative or have accessibility/connectivity concerns, you can reschedule from your status page.\n\nTransbill Programme Team`,
+        body: `Hello ${firstName},\n\nYour Transbill Digital Selection Interview is booked for:\n${local} (Lagos time).\n\nAt the appointment time, sign in and open your application status to start the interview. This is a structured, digitally facilitated interview lasting 15–20 minutes. Your responses will be recorded as a transcript and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff.\n\n${caseSection}If you need a human-led alternative or have accessibility/connectivity concerns, you can reschedule from your status page.\n\nTransbill Programme Team`,
       });
     } catch (_e) { /* email best-effort */ }
 
-    return Response.json({ success: true, booking_id: booking.id, slot_datetime });
+    return Response.json({ success: true, booking_id: booking.id, slot_datetime, ...(safeCase || {}) });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

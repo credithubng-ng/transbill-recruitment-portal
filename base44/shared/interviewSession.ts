@@ -61,6 +61,18 @@ export async function verifyAdmin(token: string) {
   return sig === expected;
 }
 
+// Extracts only candidate-safe preparation fields from an InterviewCase record.
+// Never includes follow_up_questions, rubric_focus, competency weights, or other variants.
+export function candidateSafeCaseFields(caseRec: any) {
+  if (!caseRec) return null;
+  return {
+    case_title: caseRec.title,
+    case_scenario: caseRec.scenario,
+    case_common_rules: caseRec.common_rules,
+    case_slides: Array.isArray(caseRec.slides) ? caseRec.slides : [],
+  };
+}
+
 export async function sendBrevoEmail({ to, subject, body }: { to: string; subject: string; body: string }) {
   const apiKey = Deno.env.get('BREVO_API_KEY');
   const fromEmail = Deno.env.get('BREVO_FROM_EMAIL');
