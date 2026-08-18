@@ -60,7 +60,7 @@ export default function BookAiInterview() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAF8]">
+    <div className="min-h-screen bg-[#F8FAF8]" data-release="ai-interview-auth-v2">
       <div className="bg-white border-b border-[#E2E8E2]">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <TransbillLogo />
