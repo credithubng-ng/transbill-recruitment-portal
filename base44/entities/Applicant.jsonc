@@ -85,6 +85,18 @@
     },
     "years_experience": {
       "type": "string",
+      "description": "Years of digital marketing experience",
+      "enum": [
+        "No formal experience",
+        "Less than 1 year",
+        "1\u20133 years",
+        "3\u20135 years",
+        "5+ years"
+      ]
+    },
+    "direct_sales_experience": {
+      "type": "string",
+      "description": "Years of direct sales, field sales, agent banking or affiliate recruitment experience",
       "enum": [
         "No formal experience",
         "Less than 1 year",
@@ -235,6 +247,34 @@
     "assessment_completed_at": {
       "type": "string",
       "description": "ISO timestamp when assessment was completed"
+    },
+    "common_core_score": {
+      "type": "number",
+      "description": "v2: correct count on common-core questions (null for legacy v1 attempts)"
+    },
+    "common_core_max": {
+      "type": "number"
+    },
+    "digital_validation_score": {
+      "type": "number",
+      "description": "v2: correct count on digital-experience validation questions"
+    },
+    "digital_validation_max": {
+      "type": "number"
+    },
+    "sales_validation_score": {
+      "type": "number",
+      "description": "v2: correct count on direct-sales validation questions"
+    },
+    "sales_validation_max": {
+      "type": "number"
+    },
+    "learning_agility_score": {
+      "type": "number",
+      "description": "v2: correct count on learning-agility questions"
+    },
+    "learning_agility_max": {
+      "type": "number"
     },
     "login_otp_hash": {
       "type": "string",

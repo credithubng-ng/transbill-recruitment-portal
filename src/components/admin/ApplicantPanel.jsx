@@ -93,7 +93,8 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
             <InfoRow label="Lagos Resident" value={applicant.lagos_resident} />
             <InfoRow label="Education" value={applicant.education} />
             <InfoRow label="Employment" value={applicant.employment_status} />
-            <InfoRow label="Experience" value={applicant.years_experience} />
+            <InfoRow label="Digital Marketing Experience" value={applicant.years_experience} />
+            <InfoRow label="Direct Sales Experience" value={applicant.direct_sales_experience || '—'} />
             <InfoRow label="Platforms" value={applicant.social_platforms?.join(', ')} />
             <InfoRow label="Affiliate Exp." value={applicant.affiliate_experience} />
             {applicant.affiliate_experience_desc && <InfoRow label="Exp. Details" value={applicant.affiliate_experience_desc} />}
@@ -137,6 +138,15 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
                   <InfoRow label="Affiliate recruitment" value={`${applicant.assessment_category_scores.affiliate || 0}/${applicant.assessment_category_maximums?.affiliate || 0}`} />
                   <InfoRow label="Performance" value={`${applicant.assessment_category_scores.performance || 0}/${applicant.assessment_category_maximums?.performance || 0}`} />
                   <InfoRow label="Recommendation" value={applicant.screening_recommendation} />
+                </div>
+              )}
+
+              {applicant.common_core_max != null && (
+                <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                  <InfoRow label="Common core" value={`${applicant.common_core_score ?? 0}/${applicant.common_core_max}`} />
+                  <InfoRow label="Digital validation" value={`${applicant.digital_validation_score ?? 0}/${applicant.digital_validation_max}`} />
+                  <InfoRow label="Sales validation" value={`${applicant.sales_validation_score ?? 0}/${applicant.sales_validation_max}`} />
+                  <InfoRow label="Learning agility" value={`${applicant.learning_agility_score ?? 0}/${applicant.learning_agility_max}`} />
                 </div>
               )}
 

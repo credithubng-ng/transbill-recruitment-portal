@@ -157,7 +157,8 @@ export default function ApplicantStatus() {
               <Row label="Email" value={applicant.email} />
               <Row label="Phone" value={applicant.phone} />
               <Row label="Education" value={applicant.education} />
-              <Row label="Experience" value={applicant.years_experience} />
+              <Row label="Digital Marketing Experience" value={applicant.years_experience} />
+              <Row label="Direct Sales Experience" value={applicant.direct_sales_experience} />
               <Row label="Lagos Resident" value={applicant.lagos_resident} />
               <Row label="Residency Verification" value={applicant.lasrra_verified ? 'LASRRA record found — physical verification pending' : 'Evidence pending before training'} />
               <Row label="Two-Week Availability" value={applicant.availability_2_weeks} />

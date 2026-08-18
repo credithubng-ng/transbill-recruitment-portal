@@ -16,7 +16,7 @@ export default function Apply() {
 
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', gender: '', date_of_birth: '', state_of_origin: '', current_lga: '', lasrra_id: '',
-    lagos_resident: '', education: '', employment_status: '', years_experience: '',
+    lagos_resident: '', education: '', employment_status: '', years_experience: '', direct_sales_experience: '',
     social_platforms: [], affiliate_experience: '', affiliate_experience_desc: '',
     availability_2_weeks: '', has_smartphone: '', has_laptop: '', internet_access: '',
     willing_affiliate_role: '', motivation: '', linkedin_url: '', referral_source: '', data_processing_consent: false
@@ -65,6 +65,7 @@ export default function Apply() {
     if (!form.education) errs.education = 'Required';
     if (!form.employment_status) errs.employment_status = 'Required';
     if (!form.years_experience) errs.years_experience = 'Required';
+    if (!form.direct_sales_experience) errs.direct_sales_experience = 'Required';
     if (form.social_platforms.length === 0) errs.social_platforms = 'Select at least one';
     if (!form.affiliate_experience) errs.affiliate_experience = 'Required';
     if (!form.availability_2_weeks) errs.availability_2_weeks = 'Required';
@@ -221,6 +222,9 @@ export default function Apply() {
           </Field>
           <Field label="Years of digital marketing experience" error={errors.years_experience}>
             <RadioGroup options={EXPERIENCE_OPTIONS} value={form.years_experience} onChange={v => handleChange('years_experience', v)} />
+          </Field>
+          <Field label="Years of direct sales, field sales, agent banking or affiliate recruitment experience" error={errors.direct_sales_experience}>
+            <RadioGroup options={EXPERIENCE_OPTIONS} value={form.direct_sales_experience} onChange={v => handleChange('direct_sales_experience', v)} />
           </Field>
           <Field label="Which digital platforms have you used?" error={errors.social_platforms}>
             <div className="flex flex-wrap gap-2">

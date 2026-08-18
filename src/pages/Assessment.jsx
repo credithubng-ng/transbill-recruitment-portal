@@ -160,7 +160,7 @@ export default function Assessment() {
             <h2 className="font-extrabold text-xl sm:text-2xl tracking-[-0.5px] text-[#1A1A1A] mb-4">Before You Begin</h2>
             <ul className="space-y-3 text-[#333333] text-[15px]">
               {[
-                '30 multiple-choice pre-screening questions selected from a 100-question bank',
+                '30 multiple-choice pre-screening questions selected from a 120-question bank',
                 '30-minute countdown timer',
                 'One correct answer per question',
                 'You cannot go back to a previous question',
@@ -173,7 +173,7 @@ export default function Assessment() {
               ))}
             </ul>
             <p className="mt-4 text-xs text-[#7A7A8A] font-medium">
-              The questions cover digital marketing knowledge, trainability, Affiliate Banker recruitment and performance management.
+              The questions cover digital marketing, direct sales, Affiliate Banker recruitment, performance management and learning agility, and assess knowledge relevant to your declared experience.
             </p>
             {submitError && <p className="mt-4 text-sm text-[#D32F2F] font-medium">{submitError}</p>}
             <button onClick={handleStart} disabled={loadingQuestions}
@@ -190,8 +190,10 @@ export default function Assessment() {
   const progress = ((currentQ + 1) / sessionQuestions.length) * 100;
   const catLabel = {
     digital: 'Digital Marketing',
-    content: 'Content Creation & Lead Generation',
+    content: 'Content & Lead Generation',
+    sales: 'Direct Sales & Prospect Qualification',
     learnability: 'Learning Agility & Trainability',
+    learning: 'Learning Agility, Integrity & Compliance',
     affiliate: 'Affiliate Banker Recruitment',
     performance: 'Performance Management',
   }[q.category] || q.category;

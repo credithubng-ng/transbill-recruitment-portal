@@ -163,6 +163,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Applicants must be between 18 and 36 years old.' }, { status: 400 });
     }
     const required = ['full_name', 'phone', 'current_lga', 'education', 'employment_status', 'years_experience',
+      'direct_sales_experience',
       'availability_2_weeks', 'has_smartphone', 'has_laptop', 'internet_access', 'willing_affiliate_role',
       'affiliate_experience', 'motivation', 'referral_source'];
     if (required.some(field => !body[field])) {
@@ -192,6 +193,7 @@ Deno.serve(async (req) => {
       education: body.education,
       employment_status: body.employment_status,
       years_experience: body.years_experience,
+      direct_sales_experience: body.direct_sales_experience,
       is_3mtt: body.is_3mtt,
       is_sail: body.is_sail,
       social_platforms: Array.isArray(body.social_platforms) ? body.social_platforms : [],
