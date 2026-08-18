@@ -9,7 +9,7 @@ import ApplicantTable from '../components/admin/ApplicantTable';
 import ApplicantPanel from '../components/admin/ApplicantPanel';
 import SettingsPanel from '../components/admin/SettingsPanel';
 import ScheduleView from './ScheduleView';
-import { Download, LogOut, Settings, CalendarDays } from 'lucide-react';
+import { Download, LogOut, Settings, CalendarDays, Mail } from 'lucide-react';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -31,6 +31,8 @@ export default function Admin() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
   const [settingsRecord, setSettingsRecord] = useState(null);
+  const [sendingReminders, setSendingReminders] = useState(false);
+  const [reminderMessage, setReminderMessage] = useState('');
   const [filters, setFilters] = useState({
     search: '', status: 'all', displayStatus: 'all', lagos: 'all', available: 'all', affiliateRole: 'all', score: 'all', flags: 'all', stage: 'all'
   });
@@ -133,6 +135,22 @@ export default function Admin() {
     setSelectedApplicant(updated);
   };
 
+  const sendIncompleteReminders = async () => {
+    if (!confirm('Send a reminder email to all incomplete applicants who have not received one in the last 24 hours?')) return;
+    setSendingReminders(true);
+    setReminderMessage('');
+    try {
+      const response = await base44.functions.invoke('sendRegistrationReminder', {
+        token: sessionStorage.getItem('transbill_admin_token'),
+      });
+      setReminderMessage(`${response.data.reminders_sent || 0} reminder email(s) sent.`);
+    } catch (error) {
+      setReminderMessage(error?.response?.data?.error || 'Reminder emails could not be sent.');
+    } finally {
+      setSendingReminders(false);
+    }
+  };
+
   if (verifying) return (
     <div className="fixed inset-0 flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin" />
@@ -161,6 +179,9 @@ export default function Admin() {
         <div className="flex items-center justify-between">
           <h1 className="font-extrabold text-2xl tracking-[-0.5px] text-[#1A1A1A]">Recruitment Dashboard</h1>
           <div className="flex items-center gap-2">
+            <button onClick={sendIncompleteReminders} disabled={sendingReminders} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] disabled:opacity-50 font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
+              <Mail className="w-4 h-4" /> {sendingReminders ? 'Sending...' : 'Remind Incomplete'}
+            </button>
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule
             </button>
@@ -172,6 +193,12 @@ export default function Admin() {
             </button>
           </div>
         </div>
+
+        {reminderMessage && (
+          <div className="bg-[#EBF5EB] border border-[#2D6A2F]/30 text-[#245C27] rounded-lg px-4 py-3 text-sm font-medium">
+            {reminderMessage}
+          </div>
+        )}
 
         {applicants.length >= 9500 && (
           <div className="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-4 py-3 text-sm font-medium">

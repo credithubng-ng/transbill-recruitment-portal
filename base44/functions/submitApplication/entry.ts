@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { createApplicantSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
 
 async function findLasrraRecord(body) {
   const endpoint = Deno.env.get('LASRRA_VERIFICATION_URL');
@@ -30,6 +31,10 @@ Deno.serve(async (req) => {
     const email = body.email?.trim().toLowerCase();
     if (!email) {
       return Response.json({ error: 'Email is required.' }, { status: 400 });
+    }
+    const deadline = await getApplicationDeadline(base44);
+    if (deadline && Date.now() > deadline) {
+      return Response.json({ error: 'The call for applications has closed.' }, { status: 403 });
     }
     if (body.lagos_resident !== 'Yes') {
       return Response.json({ error: 'This programme is open to current Lagos State residents only.' }, { status: 400 });
@@ -119,7 +124,7 @@ Deno.serve(async (req) => {
         to: email,
         from_name: 'Transbill Programme Team',
         subject: 'Application Received – Digital Marketing & Workforce Development Programme',
-        body: `Dear ${firstName},\n\nThank you for applying to the free Digital Marketing & Workforce Development Programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.\n\nYour application has been received. The next step is a short pre-screening covering digital marketing knowledge, learning potential, Affiliate Banker recruitment and performance management.\n\nImportant: if selected, you must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1. Online record confirmation does not complete physical verification.\n\nTraining does not guarantee employment. Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project. Successful candidates will be employed by Transbill, not Lagos Innovates, LSETF or FirstBank.\n\nWarm regards,\nTransbill Programme Team`
+        body: `Dear ${firstName},\n\nThank you for applying to the free Digital Marketing & Workforce Development Programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.\n\nYour registration details have been received and you can proceed immediately to the pre-screening assessment. If you leave before completing it, return to https://jobs.transbill.ng/login and enter this email address. We will send you a one-time login code so you can continue before the call for applications closes.\n\nThe pre-screening covers digital marketing knowledge, learning potential, Affiliate Banker recruitment and performance management.\n\nImportant: if selected, you must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1. Online record confirmation does not complete physical verification.\n\nTraining does not guarantee employment. Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project. Successful candidates will be employed by Transbill, not Lagos Innovates, LSETF or FirstBank.\n\nWarm regards,\nTransbill Programme Team`
       });
     } catch (_emailErr) {
       // Email failed silently — applicant record still created
@@ -169,7 +174,10 @@ Deno.serve(async (req) => {
       // Sheet write failed silently — applicant record still created
     }
 
-    return Response.json({ id: applicant.id });
+    return Response.json({
+      id: applicant.id,
+      sessionToken: await createApplicantSession(applicant.id, email),
+    });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

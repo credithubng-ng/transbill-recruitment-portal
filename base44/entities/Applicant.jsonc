@@ -236,6 +236,30 @@
       "type": "string",
       "description": "ISO timestamp when assessment was completed"
     },
+    "login_otp_hash": {
+      "type": "string",
+      "description": "Server-generated HMAC of the temporary applicant login code"
+    },
+    "login_otp_expires_at": {
+      "type": "string"
+    },
+    "login_otp_sent_at": {
+      "type": "string"
+    },
+    "login_otp_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "last_applicant_login_at": {
+      "type": "string"
+    },
+    "registration_reminder_sent_at": {
+      "type": "string"
+    },
+    "registration_reminder_count": {
+      "type": "number",
+      "default": 0
+    },
     "assessment_email_sent": {
       "type": "boolean",
       "default": false

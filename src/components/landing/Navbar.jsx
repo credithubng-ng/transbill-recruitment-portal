@@ -13,10 +13,10 @@ export default function Navbar() {
         <TransbillLogo />
         <div className="flex items-center gap-2">
           <a
-            href="/status"
+            href="/login"
             className="text-sm font-semibold text-[#3A7D3C] border border-[#3A7D3C] px-4 py-2 rounded-full hover:bg-[#EBF5EB] transition-all"
           >
-            Already Applied? Check Status
+            Continue Assessment
           </a>
           <button
             onClick={scrollToForm}

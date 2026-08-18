@@ -6,6 +6,7 @@ import SlotManager from './SlotManager';
 import InterviewerManager from './InterviewerManager';
 
 const DEFAULTS = {
+  application_closes_at: '',
   interview_ready_min: 23,
   reserve_list_min: 18,
   rapid_minutes: 7,
@@ -123,8 +124,8 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
       const prevStage = a.candidate_stage || '';
       if ((prevStage === 'Closed – Not Progressed' || prevStage === 'Closed \u2013 Not Progressed') &&
           (newStatus === 'Interview Ready' || newStatus === 'Reserve List')) {
-        candidate_stage = 'Awaiting Registration';
-      } else if ((prevStage === 'Awaiting Registration' || prevStage === 'Email Sent') &&
+        candidate_stage = 'Interview Scheduling';
+      } else if ((prevStage === 'Interview Scheduling' || prevStage === 'Email Sent') &&
           newStatus === 'Not Progressed') {
         candidate_stage = 'Closed \u2013 Not Progressed';
       }
@@ -156,6 +157,19 @@ export default function SettingsPanel({ onClose, applicants, settingsRecord, onS
         </div>
 
         <div className="px-5 py-5 space-y-8">
+
+          <Section title="Application Window">
+            <label className="block">
+              <span className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Applications close</span>
+              <input
+                type="datetime-local"
+                value={s.application_closes_at ? s.application_closes_at.slice(0, 16) : ''}
+                onChange={event => set('application_closes_at', event.target.value ? new Date(event.target.value).toISOString() : '')}
+                className="w-full px-3 py-2 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm"
+              />
+              <span className="block text-xs text-[#7A7A8A] mt-1">After this time, new applications, OTP login and assessment submission are blocked.</span>
+            </label>
+          </Section>
 
           {/* SECTION 1 — PASS THRESHOLDS */}
           <Section title="Pass Thresholds (out of 30)">

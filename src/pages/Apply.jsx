@@ -4,8 +4,6 @@ import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
 import Footer from '../components/landing/Footer';
 import { NIGERIA_STATES } from '../lib/nigeriaStates';
-import { CheckCircle2 } from 'lucide-react';
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const SOCIAL_PLATFORMS = ['WhatsApp Business', 'Instagram', 'Facebook', 'TikTok', 'X (Twitter)', 'LinkedIn', 'YouTube', 'Others'];
 const EDUCATION_OPTIONS = ['SSCE', 'OND', 'HND', 'BSc', 'MSc', 'PhD', 'Professional Certification', 'Other'];
@@ -25,16 +23,6 @@ export default function Apply() {
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [applicantId, setApplicantId] = useState(null);
-  // Registration step after application
-  const [showRegister, setShowRegister] = useState(false);
-  const [regPassword, setRegPassword] = useState('');
-  const [regConfirm, setRegConfirm] = useState('');
-  const [regError, setRegError] = useState('');
-  const [regLoading, setRegLoading] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
 
   const wordCount = form.motivation.trim().split(/\s+/).filter(Boolean).length;
 
@@ -108,9 +96,8 @@ export default function Apply() {
         setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });
         return;
       }
-      setApplicantId(res.data.id);
-      setSubmitted(true);
-      setShowRegister(true);
+      sessionStorage.setItem('transbill_applicant_session', res.data.sessionToken);
+      window.location.href = `/assessment?id=${res.data.id}`;
     } catch (err) {
       const msg = err?.response?.data?.error || err?.message || '';
       if (msg === 'duplicate' || err?.response?.status === 409) {
@@ -123,123 +110,12 @@ export default function Apply() {
     }
   };
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    setRegError('');
-    if (regPassword !== regConfirm) { setRegError('Passwords do not match'); return; }
-    if (regPassword.length < 6) { setRegError('Password must be at least 6 characters'); return; }
-    setRegLoading(true);
-    try {
-      await base44.auth.register({ email: form.email.trim().toLowerCase(), password: regPassword });
-      setShowOtp(true);
-    } catch (err) {
-      setRegError(err.message || 'Registration failed. Please try again.');
-    } finally {
-      setRegLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    setRegError('');
-    setRegLoading(true);
-    try {
-      const result = await base44.auth.verifyOtp({ email: form.email.trim().toLowerCase(), otpCode });
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
-      }
-      window.location.href = `/assessment?id=${applicantId}&exp=${encodeURIComponent(form.years_experience)}`;
-    } catch (err) {
-      setRegError(err.message || 'Invalid code. Please try again.');
-    } finally {
-      setRegLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setRegError('');
-    try { await base44.auth.resendOtp(form.email.trim().toLowerCase()); } catch {}
-  };
-
-  if (submitted && showRegister) {
-    const firstName = form.full_name.split(' ')[0];
-
-    if (showOtp) {
-      return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-16">
-          <TransbillLogo />
-          <div className="w-full max-w-sm mt-10">
-            <div className="text-center mb-8">
-              <div className="w-14 h-14 rounded-full bg-[#EBF5EB] flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-7 h-7 text-[#2D6A2F]" />
-              </div>
-              <h2 className="font-extrabold text-xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Verify your email</h2>
-              <p className="text-[#7A7A8A] text-sm">We sent a 6-digit code to <strong>{form.email}</strong></p>
-            </div>
-            {regError && <p className="text-[#D32F2F] text-sm text-center mb-4 font-medium">{regError}</p>}
-            <div className="flex justify-center mb-6">
-              <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} autoFocus>
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            <button onClick={handleVerifyOtp} disabled={regLoading || otpCode.length < 6}
-              className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md">
-              {regLoading ? 'Verifying...' : 'Verify & Start Assessment →'}
-            </button>
-            <p className="text-center text-sm text-[#7A7A8A] mt-4">
-              Didn't receive the code?{' '}
-              <button onClick={handleResendOtp} className="text-[#2D6A2F] font-medium hover:underline">Resend</button>
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 py-16">
-        <TransbillLogo />
-        <div className="w-full max-w-sm mt-10">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-full bg-[#2D6A2F] flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-7 h-7 text-white" />
-            </div>
-            <h2 className="font-extrabold text-xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Application Received, {firstName}!</h2>
-            <p className="text-[#7A7A8A] text-sm leading-relaxed">Create a password to save your progress and access your assessment results anytime.</p>
-          </div>
-          {regError && <p className="text-[#D32F2F] text-sm text-center mb-4 font-medium">{regError}</p>}
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Email</label>
-              <input className="form-input bg-[#F8FAF8] text-[#7A7A8A]" value={form.email} disabled />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Create a Password</label>
-              <input className="form-input" type="password" placeholder="Minimum 6 characters"
-                value={regPassword} onChange={e => setRegPassword(e.target.value)} required />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1.5">Confirm Password</label>
-              <input className="form-input" type="password" placeholder="Re-enter your password"
-                value={regConfirm} onChange={e => setRegConfirm(e.target.value)} required />
-            </div>
-            <button type="submit" disabled={regLoading}
-              className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold text-base py-3.5 rounded-full transition-all shadow-md mt-2">
-              {regLoading ? 'Creating account...' : 'Create Account & Continue →'}
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#E2E8E2]">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <TransbillLogo />
-          <a href="/login" className="text-sm text-[#2D6A2F] font-medium hover:underline">Already applied? Check status →</a>
+          <a href="/login" className="text-sm text-[#2D6A2F] font-medium hover:underline">Already applied? Continue →</a>
         </div>
       </div>
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4">

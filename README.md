@@ -47,9 +47,12 @@ Configure these values in the Base44 deployment environment before opening appli
 
 - `APP_DOMAIN`: the public application origin, for example `https://jobs.transbill.ng`.
 - `ASSESSMENT_SIGNING_SECRET`: a random value of at least 32 characters used to sign each applicant's randomised assessment attempt. Generate it once and keep it private.
+- `APPLICANT_SESSION_SECRET`: an optional separate random value of at least 32 characters used for applicant OTP hashes and resumable sessions. If omitted, `ASSESSMENT_SIGNING_SECRET` is used.
 - `ADMIN_PASSWORD`: the administrator credential used by the existing admin functions.
 - `GOOGLE_SHEET_ID`: the destination spreadsheet used for application exports.
 - `LASRRA_VERIFICATION_URL`: the authorised LASRRA/LSETF verification endpoint.
 - `LASRRA_API_KEY`: the credential issued for that verification service.
 
 The application intentionally fails closed when `ASSESSMENT_SIGNING_SECRET` is missing or too short.
+
+Set the application closing date in **Admin → Settings → Application Window**. New submissions, OTP resume login and assessment completion are blocked after that time.

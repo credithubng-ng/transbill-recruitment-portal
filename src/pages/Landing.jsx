@@ -6,6 +6,7 @@ import WhatYouDoSection from '../components/landing/WhatYouDoSection';
 import RequirementsSection from '../components/landing/RequirementsSection';
 import BenefitsSection from '../components/landing/BenefitsSection';
 import CTASection from '../components/landing/CTASection';
+import FlierSection from '../components/landing/FlierSection';
 import Footer from '../components/landing/Footer';
 
 export default function Landing() {
@@ -17,6 +18,7 @@ export default function Landing() {
       <WhatYouDoSection />
       <RequirementsSection />
       <BenefitsSection />
+      <FlierSection />
       <CTASection />
       <Footer />
     </div>

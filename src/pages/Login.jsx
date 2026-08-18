@@ -1,128 +1,92 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
+import React, { useState } from 'react';
+import { base44 } from '@/api/base44Client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { LogIn, Mail, Loader2 } from 'lucide-react';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
+import AuthLayout from '@/components/AuthLayout';
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const rawNext = new URLSearchParams(window.location.search).get('next') || '/status';
-  const nextUrl = /^\/[^\/].*/.test(rawNext) ? rawNext : '/status';
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
+  const requestCode = async (event) => {
+    event?.preventDefault();
+    setError('');
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = nextUrl;
+      await base44.functions.invoke('requestApplicantOtp', { email: email.trim().toLowerCase() });
+      setCodeSent(true);
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      setError(err?.response?.data?.error || err?.message || 'Unable to send a code. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", nextUrl);
+  const verifyCode = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const response = await base44.functions.invoke('verifyApplicantOtp', {
+        email: email.trim().toLowerCase(),
+        code,
+      });
+      sessionStorage.setItem('transbill_applicant_session', response.data.sessionToken);
+      window.location.href = `/assessment?id=${response.data.applicantId}`;
+    } catch (err) {
+      setError(err?.response?.data?.error || err?.message || 'Invalid or expired code.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AuthLayout
-      icon={LogIn}
-      title="Welcome back"
-      subtitle="Log in to check your application status"
-      footer={
-        <>
-          Applied but no account?{" "}
-          <Link to="/apply" className="text-primary font-medium hover:underline">
-            Apply here
-          </Link>
-        </>
-      }
+      icon={codeSent ? Mail : LogIn}
+      title={codeSent ? 'Enter your login code' : 'Continue your application'}
+      subtitle={codeSent ? `We sent a 6-digit code to ${email}` : 'Use the email address submitted with your application'}
+      footer={<a href="/apply" className="text-primary font-medium hover:underline">Start a new application</a>}
     >
-      <Button
-        variant="outline"
-        className="w-full h-12 text-sm font-medium mb-6"
-        onClick={handleGoogle}
-      >
-        <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
-      </Button>
+      {error && <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>}
 
-      <div className="relative mb-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-card px-3 text-muted-foreground">or</span>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-          {error}
+      {!codeSent ? (
+        <form onSubmit={requestCode} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
+              <Input id="email" type="email" autoComplete="email" autoFocus placeholder="you@example.com"
+                value={email} onChange={event => setEmail(event.target.value)} className="pl-10 h-12" required />
+            </div>
+          </div>
+          <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Sending code...</> : 'Email me a login code'}
+          </Button>
+          <p className="text-xs text-muted-foreground text-center">No password is required. The code expires after 10 minutes.</p>
+        </form>
+      ) : (
+        <div>
+          <div className="flex justify-center mb-6">
+            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus autoComplete="one-time-code">
+              <InputOTPGroup>
+                {[0, 1, 2, 3, 4, 5].map(index => <InputOTPSlot key={index} index={index} />)}
+              </InputOTPGroup>
+            </InputOTP>
+          </div>
+          <Button className="w-full h-12 font-medium" onClick={verifyCode} disabled={loading || code.length !== 6}>
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Verifying...</> : 'Verify & Continue Assessment'}
+          </Button>
+          <div className="flex justify-center gap-4 mt-4 text-sm">
+            <button onClick={requestCode} disabled={loading} className="text-primary font-medium hover:underline">Resend code</button>
+            <button onClick={() => { setCodeSent(false); setCode(''); setError(''); }} className="text-muted-foreground hover:underline">Change email</button>
+          </div>
         </div>
       )}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              autoFocus
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 h-12"
-              required
-            />
-          </div>
-        </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
-            </>
-          ) : (
-            "Log in"
-          )}
-        </Button>
-      </form>
     </AuthLayout>
   );
 }

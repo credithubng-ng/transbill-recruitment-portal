@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { BANK_VERSION, QUESTION_BY_ID } from '../_shared/screeningQuestionBank.ts';
+import { getApplicantFromSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
 
 const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://your-app-domain';
 const SUCCESS_EMAIL_SUBJECT = 'Pre-screening Successful – Transbill Digital Marketing Programme';
@@ -28,14 +29,14 @@ async function verifyAttempt(token: string, secret: string) {
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { applicantId, finalAnswers, attemptToken, completionTime } = await req.json();
+    const { applicantId, finalAnswers, attemptToken, completionTime, applicantSessionToken } = await req.json();
 
     if (!applicantId) {
       return Response.json({ error: 'applicantId is required' }, { status: 400 });
     }
 
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const deadline = await getApplicationDeadline(base44);
+    if (deadline && Date.now() > deadline) return Response.json({ error: 'The call for applications has closed.' }, { status: 403 });
 
     const attempt = await verifyAttempt(attemptToken, Deno.env.get('ASSESSMENT_SIGNING_SECRET') || '');
     if (!attempt || attempt.applicantId !== applicantId) return Response.json({ error: 'Invalid or expired assessment attempt' }, { status: 403 });
@@ -64,11 +65,13 @@ Deno.serve(async (req) => {
     let status = 'Not Progressed';
 
     // Fetch applicant for email/name
-    const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
-    if (!applicant) return Response.json({ error: 'Applicant not found' }, { status: 404 });
-    if (applicant.email?.toLowerCase() !== user.email?.toLowerCase()) {
-      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    let applicant = await getApplicantFromSession(base44, applicantId, applicantSessionToken);
+    if (!applicant) {
+      const user = await base44.auth.me().catch(() => null);
+      const legacyApplicant = user ? await base44.asServiceRole.entities.Applicant.get(applicantId) : null;
+      if (legacyApplicant?.email?.toLowerCase() === user?.email?.toLowerCase()) applicant = legacyApplicant;
     }
+    if (!applicant) return Response.json({ error: 'Applicant not found' }, { status: 404 });
     if (applicant.lagos_resident !== 'Yes') {
       return Response.json({ error: 'This programme is open to Lagos residents only' }, { status: 403 });
     }
@@ -206,7 +209,6 @@ Deno.serve(async (req) => {
       assessment_email_sent,
       assessment_email_sent_at,
       candidate_stage,
-      registration_completed: false,
       ...(booking_token ? {
         booking_token,
         booking_token_expires_at,

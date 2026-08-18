@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { ASSESSMENT_BLUEPRINT, BANK_VERSION, SCREENING_QUESTION_BANK } from '../_shared/screeningQuestionBank.ts';
+import { getApplicantFromSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
 
 const encoder = new TextEncoder();
 const toBase64Url = (value: string) => btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -24,11 +25,16 @@ Deno.serve(async (req) => {
     const secret = Deno.env.get('ASSESSMENT_SIGNING_SECRET');
     if (!secret || secret.length < 32) return Response.json({ error: 'Assessment signing secret is not configured' }, { status: 500 });
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    const { applicantId } = await req.json();
-    const applicant = await base44.asServiceRole.entities.Applicant.get(applicantId);
-    if (!applicant || applicant.email?.toLowerCase() !== user.email?.toLowerCase()) return Response.json({ error: 'Forbidden' }, { status: 403 });
+    const { applicantId, applicantSessionToken } = await req.json();
+    const deadline = await getApplicationDeadline(base44);
+    if (deadline && Date.now() > deadline) return Response.json({ error: 'The call for applications has closed.' }, { status: 403 });
+    let applicant = await getApplicantFromSession(base44, applicantId, applicantSessionToken);
+    if (!applicant) {
+      const user = await base44.auth.me().catch(() => null);
+      const legacyApplicant = user ? await base44.asServiceRole.entities.Applicant.get(applicantId) : null;
+      if (legacyApplicant?.email?.toLowerCase() === user?.email?.toLowerCase()) applicant = legacyApplicant;
+    }
+    if (!applicant) return Response.json({ error: 'Your session has expired. Request a new email code to continue.' }, { status: 401 });
     if (applicant.assessment_completed) return Response.json({ error: 'Assessment already completed' }, { status: 409 });
 
     const selected = Object.entries(ASSESSMENT_BLUEPRINT).flatMap(([category, count]) =>

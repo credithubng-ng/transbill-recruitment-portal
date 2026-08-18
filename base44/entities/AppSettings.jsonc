@@ -36,6 +36,10 @@
     },
     "reserve_list_email_body": {
       "type": "string"
+    },
+    "application_closes_at": {
+      "type": "string",
+      "description": "ISO date/time after which new and resumed applications are blocked"
     }
   },
   "required": [],

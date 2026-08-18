@@ -3,14 +3,13 @@ import { base44 } from '@/api/base44Client';
 import TransbillLogo from '../components/TransbillLogo';
 import ProgressIndicator from '../components/ProgressIndicator';
 import { Clock } from 'lucide-react';
-import { useAuth } from '@/lib/AuthContext';
 
 const TOTAL_TIME = 30 * 60;
 
 export default function Assessment() {
-  const { user, isLoadingAuth } = useAuth();
   const urlParams = new URLSearchParams(window.location.search);
   const applicantId = urlParams.get('id');
+  const applicantSessionToken = sessionStorage.getItem('transbill_applicant_session') || '';
   const [sessionQuestions, setSessionQuestions] = useState([]);
   const [attemptToken, setAttemptToken] = useState('');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -26,12 +25,12 @@ export default function Assessment() {
   const [submitError, setSubmitError] = useState(null);
   const [result, setResult] = useState(null);
 
-  // Redirect to login if not authenticated
+  // Returning applicants request a fresh email OTP when their session has expired.
   useEffect(() => {
-    if (!isLoadingAuth && !user) {
+    if (!applicantSessionToken) {
       window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
     }
-  }, [isLoadingAuth, user]);
+  }, [applicantSessionToken]);
 
   // Prevent back navigation during test
   useEffect(() => {
@@ -60,8 +59,10 @@ export default function Assessment() {
         finalAnswers,
         attemptToken,
         completionTime,
+        applicantSessionToken,
       });
 
+      sessionStorage.removeItem('transbill_applicant_session');
       setResult({ score: res.data.score, status: res.data.status });
     } catch {
       setSubmitted(false);
@@ -69,7 +70,7 @@ export default function Assessment() {
     } finally {
       setSubmitting(false);
     }
-  }, [applicantId, attemptToken, submitted, startTime]);
+  }, [applicantId, applicantSessionToken, attemptToken, submitted, startTime]);
 
   // Timer
   useEffect(() => {
@@ -91,7 +92,7 @@ export default function Assessment() {
     setLoadingQuestions(true);
     setSubmitError(null);
     try {
-      const res = await base44.functions.invoke('startAssessment', { applicantId });
+      const res = await base44.functions.invoke('startAssessment', { applicantId, applicantSessionToken });
       const questions = res.data.questions || [];
       setSessionQuestions(questions);
       setAttemptToken(res.data.attemptToken);
@@ -127,7 +128,7 @@ export default function Assessment() {
 
   const timerColor = timeLeft < 300 ? 'text-[#D32F2F]' : timeLeft < 600 ? 'text-[#F57C00]' : 'text-[#2D6A2F]';
 
-  if (isLoadingAuth || !user) {
+  if (!applicantSessionToken) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin"></div>
