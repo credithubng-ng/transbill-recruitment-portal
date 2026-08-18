@@ -64,9 +64,15 @@ export default function Assessment() {
 
       sessionStorage.removeItem('transbill_applicant_session');
       setResult({ score: res.data.score, status: res.data.status });
-    } catch {
+    } catch (error) {
       setSubmitted(false);
-      setSubmitError('Submission failed. Please try again.');
+      const serverError = error?.response?.data?.error;
+      // Surface the safe server message when available; never expose stack traces or secrets.
+      const safe = typeof serverError === 'string'
+        && serverError.length > 0
+        && serverError.length < 300
+        && !serverError.includes('    at ');
+      setSubmitError(safe ? serverError : 'Submission failed. Please try again.');
     } finally {
       setSubmitting(false);
     }

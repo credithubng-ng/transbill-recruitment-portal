@@ -84,8 +84,6 @@ Deno.serve(async (req) => {
     let candidate_stage;
     let emailSubject;
     let emailBody;
-    let assessment_email_sent = false;
-    let assessment_email_sent_at = null;
     let booking_token = null;
     let booking_token_expires_at = null;
     let bookingUrl = null;
@@ -247,25 +245,14 @@ Deno.serve(async (req) => {
 </div>`;
     }
 
-    // Send email (wrapped so it never blocks the record update)
-    if (email) {
-      try {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: email,
-          subject: emailSubject,
-          body: emailBody,
-        });
-        assessment_email_sent = true;
-        assessment_email_sent_at = now;
-        if (status === 'Interview Ready' || status === 'Reserve List') {
-          candidate_stage = 'Interview Scheduling';
-        }
-      } catch (emailErr) {
-        console.error('Email send failed:', emailErr.message);
-      }
-    }
-
-    await base44.asServiceRole.entities.Applicant.update(applicantId, {
+    // Persist completion FIRST using updateMany + $set, which patches only the supplied
+    // fields and bypasses full-document schema validation. Legacy applicant records
+    // created before fields were added to the schema `required` list are missing those
+    // fields, so a plain `update` fails with "Field required" errors and the submission
+    // crashes at persistence. Persisting before the email side-effect also makes retries
+    // idempotent: any retry hits the `assessment_completed` 409 guard above, so the email
+    // can never be sent twice and the record cannot be double-completed.
+    await base44.asServiceRole.entities.Applicant.updateMany({ id: applicantId }, { $set: {
       assessment_score: score,
       assessment_answers: finalAnswers,
       assessment_question_ids: questionIds,
@@ -284,8 +271,8 @@ Deno.serve(async (req) => {
       experience_inflation_flag,
       duplicate_signature_flag: false,
       review_required_flag,
-      assessment_email_sent,
-      assessment_email_sent_at,
+      assessment_email_sent: false,
+      assessment_email_sent_at: null,
       candidate_stage,
       common_core_score,
       common_core_max,
@@ -299,9 +286,31 @@ Deno.serve(async (req) => {
         booking_token,
         booking_token_expires_at,
         booking_used: false,
-        booking_link_sent_at: assessment_email_sent ? now : null,
+        booking_link_sent_at: null,
       } : {}),
-    });
+    } });
+
+    // Send the outcome email (best-effort). Retries are blocked by the 409 guard, so
+    // this runs at most once per applicant.
+    if (email) {
+      try {
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: email,
+          subject: emailSubject,
+          body: emailBody,
+        });
+        await base44.asServiceRole.entities.Applicant.updateMany({ id: applicantId }, { $set: {
+          assessment_email_sent: true,
+          assessment_email_sent_at: new Date().toISOString(),
+          ...(status === 'Interview Ready' || status === 'Reserve List'
+            ? { candidate_stage: 'Interview Scheduling' }
+            : {}),
+          ...(booking_token ? { booking_link_sent_at: new Date().toISOString() } : {}),
+        } });
+      } catch (emailErr) {
+        console.error('Email send failed:', emailErr.message);
+      }
+    }
 
     return Response.json({ success: true, score, status });
   } catch (error) {
