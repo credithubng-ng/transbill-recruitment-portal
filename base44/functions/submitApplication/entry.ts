@@ -29,6 +29,21 @@ async function getApplicationDeadline(base44) {
   return Number.isFinite(timestamp) ? timestamp : null;
 }
 
+// Brevo transactional email helper — reaches external (non-registered) applicant addresses.
+// Never logs secrets or provider response bodies; surfaces a generic message on failure.
+async function sendBrevoEmail({ to, subject, body }) {
+  const apiKey = Deno.env.get('BREVO_API_KEY');
+  const fromEmail = Deno.env.get('BREVO_FROM_EMAIL');
+  const fromName = Deno.env.get('BREVO_FROM_NAME') || 'Transbill Programme Team';
+  if (!apiKey || !fromEmail) throw new Error('Email delivery is not configured.');
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': apiKey, 'Content-Type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({ sender: { name: fromName, email: fromEmail }, to: [{ email: to }], subject, textContent: body }),
+  });
+  if (!response.ok) throw new Error('Email delivery failed. Please try again.');
+}
+
 async function requestLoginOtp(base44, email: string) {
   const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
   const applicant = applicants?.[0];
@@ -46,9 +61,8 @@ async function requestLoginOtp(base44, email: string) {
     login_otp_attempts: 0,
   });
   const firstName = applicant.full_name?.split(' ')[0] || 'Applicant';
-  await base44.asServiceRole.integrations.Core.SendEmail({
+  await sendBrevoEmail({
     to: email,
-    from_name: 'Transbill Programme Team',
     subject: 'Your Transbill application login code',
     body: `Hello ${firstName},\n\nYour one-time login code is: ${code}\n\nThis code expires in 10 minutes. Use it at ${APP_DOMAIN}/login to continue your incomplete assessment before the call for applications closes.\n\nIf you did not request this code, you can ignore this email.\n\nTransbill Programme Team`,
   });
@@ -196,9 +210,8 @@ Deno.serve(async (req) => {
     // Send confirmation email (best-effort — don't block submission if it fails)
     const firstName = (body.full_name || '').split(' ')[0] || 'Applicant';
     try {
-      await base44.asServiceRole.integrations.Core.SendEmail({
+      await sendBrevoEmail({
         to: email,
-        from_name: 'Transbill Programme Team',
         subject: 'Application Received – Digital Marketing & Workforce Development Programme',
         body: `Dear ${firstName},\n\nThank you for applying to the free Digital Marketing & Workforce Development Programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.\n\nYour registration details have been received and you can proceed immediately to the pre-screening assessment. If you leave before completing it, return to https://jobs.transbill.ng/login and enter this email address. We will send you a one-time login code so you can continue before the call for applications closes.\n\nThe pre-screening covers digital marketing knowledge, learning potential, Affiliate Banker recruitment and performance management.\n\nImportant: if selected, you must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1. Online record confirmation does not complete physical verification.\n\nTraining does not guarantee employment. Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project. Successful candidates will be employed by Transbill, not Lagos Innovates, LSETF or FirstBank.\n\nWarm regards,\nTransbill Programme Team`
       });
