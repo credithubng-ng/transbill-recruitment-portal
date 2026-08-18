@@ -30,7 +30,10 @@ export async function verifyApplicantSession(token: string) {
   const expected = await hmac(payload, getApplicantSecret());
   if (supplied !== expected) return null;
   const session = JSON.parse(fromBase64Url(payload));
-  if (session.purpose !== 'applicant-session' || session.expiresAt < Date.now()) return null;
+  // Accept both the full applicant-session token (incomplete applicants) and the
+  // narrowly scoped completed-status token (completed applicants shortlisted for
+  // the AI interview). Both are signed with APPLICANT_SESSION_SECRET.
+  if (!['applicant-session', 'completed-status'].includes(session.purpose) || session.expiresAt < Date.now()) return null;
   return session;
 }
 

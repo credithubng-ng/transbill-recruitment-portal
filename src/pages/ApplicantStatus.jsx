@@ -49,6 +49,7 @@ function ApplicantStatusDashboard() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [aiBooking, setAiBooking] = useState(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -90,13 +91,21 @@ function ApplicantStatusDashboard() {
 
   useEffect(() => {
     if (!applicant?.id) return;
-    if (['AI Interview Shortlisted', 'AI Interview Scheduled'].includes(applicant.candidate_stage)) {
-      const token = sessionStorage.getItem('transbill_applicant_session');
-      if (!token) return;
-      base44.functions.invoke('getMyInterviewBooking', { applicantId: applicant.id, applicantSessionToken: token })
-        .then(res => setAiBooking(res.data?.booking || null))
-        .catch(() => setAiBooking(null));
+    if (!['AI Interview Shortlisted', 'AI Interview Scheduled'].includes(applicant.candidate_stage)) {
+      setAiBooking(null);
+      setBookingLoading(false);
+      return;
     }
+    const token = sessionStorage.getItem('transbill_applicant_session');
+    if (!token) {
+      setAiBooking(null);
+      setBookingLoading(false);
+      return;
+    }
+    setBookingLoading(true);
+    base44.functions.invoke('getMyInterviewBooking', { applicantId: applicant.id, applicantSessionToken: token })
+      .then(res => { setAiBooking(res.data?.booking || null); setBookingLoading(false); })
+      .catch(() => { setAiBooking(null); setBookingLoading(false); });
   }, [applicant?.id, applicant?.candidate_stage]);
 
   const handleLogout = async () => {
@@ -287,27 +296,41 @@ function ApplicantStatusDashboard() {
               </div>
             )}
 
-            {/* AI Interview – scheduled: appointment + start */}
-            {applicant.candidate_stage === 'AI Interview Scheduled' && aiBooking && (
+            {/* AI Interview – scheduled: appointment + start.
+                Render on stage alone so the card always appears for a scheduled
+                selection interview; aiBooking supplies date/time + start window. */}
+            {applicant.candidate_stage === 'AI Interview Scheduled' && (
               <div className="bg-[#EBF5EB] rounded-[14px] border border-[#2D6A2F]/20 p-6">
                 <p className="text-xs font-semibold text-[#2D6A2F] uppercase tracking-wide mb-3">Selection Interview Scheduled</p>
-                <Row label="Date & Time" value={aiBooking.label} />
-                <Row label="Case" value={aiBooking.case_title} />
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {aiBooking.can_start ? (
-                    <a href={`/status?view=interview&booking=${aiBooking.booking_id}&id=${applicant.id}`}
-                      className="inline-flex items-center gap-2 bg-[#2D6A2F] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
-                      Start Interview →
-                    </a>
-                  ) : (
-                    <span className="text-xs text-[#7A7A8A] font-medium">Return at the scheduled time to start your interview.</span>
-                  )}
-                  <a href={`/status?view=book-interview&id=${applicant.id}`}
-                    className="inline-flex items-center gap-2 border border-[#2D6A2F]/40 text-[#2D6A2F] font-bold text-sm px-5 py-3 rounded-full hover:bg-[#EBF5EB] transition-all">
-                    Reschedule
-                  </a>
-                </div>
-                <p className="text-xs text-[#7A7A8A] mt-3">Need a human-led alternative or have accessibility concerns? Reschedule and contact the recruitment team.</p>
+                {aiBooking ? (
+                  <>
+                    <Row label="Date & Time" value={aiBooking.label} />
+                    <Row label="Status" value="Booked" />
+                    <Row label="Case" value={aiBooking.case_title} />
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      {aiBooking.can_start ? (
+                        <a href={`/status?view=interview&booking=${aiBooking.booking_id}&id=${applicant.id}`}
+                          className="inline-flex items-center gap-2 bg-[#2D6A2F] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
+                          Start Your Selection Interview →
+                        </a>
+                      ) : (
+                        <span className="text-xs text-[#7A7A8A] font-medium">Return at the scheduled time to start your interview.</span>
+                      )}
+                      <a href={`/status?view=book-interview&id=${applicant.id}`}
+                        className="inline-flex items-center gap-2 border border-[#2D6A2F]/40 text-[#2D6A2F] font-bold text-sm px-5 py-3 rounded-full hover:bg-[#EBF5EB] transition-all">
+                        Reschedule
+                      </a>
+                    </div>
+                    <p className="text-xs text-[#7A7A8A] mt-3">Need a human-led alternative or have accessibility concerns? Reschedule and contact the recruitment team.</p>
+                  </>
+                ) : bookingLoading ? (
+                  <div className="flex items-center gap-2 text-sm text-[#7A7A8A]">
+                    <div className="w-4 h-4 border-2 border-[#E2E8E2] border-t-[#2D6A2F] rounded-full animate-spin" />
+                    Loading your appointment details...
+                  </div>
+                ) : (
+                  <p className="text-sm text-[#7A7A8A]">Your selection interview is booked. Return at the scheduled time to start your interview.</p>
+                )}
               </div>
             )}
 
