@@ -34,15 +34,12 @@ Deno.serve(async (req) => {
     if (body.lagos_resident !== 'Yes') {
       return Response.json({ error: 'This programme is open to current Lagos State residents only.' }, { status: 400 });
     }
-    if (!body.lasrra_id?.trim()) {
-      return Response.json({ error: 'LASRRA/LAG-ID is required.' }, { status: 400 });
-    }
-    const lasrraId = body.lasrra_id.trim().toUpperCase();
-    if (!/^LA[A-Z0-9]{10}$/.test(lasrraId)) {
+    const lasrraId = body.lasrra_id?.trim().toUpperCase() || '';
+    if (lasrraId && !/^LA[A-Z0-9]{10}$/.test(lasrraId)) {
       return Response.json({ error: 'Enter a valid LASRRA ID in the format LA0F10020751.' }, { status: 400 });
     }
     if (body.data_processing_consent !== true) {
-      return Response.json({ error: 'Consent is required to verify residency and process the application.' }, { status: 400 });
+      return Response.json({ error: 'Consent is required to process the application and verify eligibility.' }, { status: 400 });
     }
     const dob = new Date(body.date_of_birth);
     const today = new Date();
@@ -59,8 +56,8 @@ Deno.serve(async (req) => {
     if (required.some(field => !body[field])) {
       return Response.json({ error: 'Please complete all required fields.' }, { status: 400 });
     }
-    const lasrraRecordFound = await findLasrraRecord(body);
-    if (!lasrraRecordFound) {
+    const lasrraRecordFound = lasrraId ? await findLasrraRecord(body) : false;
+    if (lasrraId && !lasrraRecordFound) {
       return Response.json({ error: 'We could not find this LASRRA/LAG-ID. Check the number and try again.' }, { status: 422 });
     }
 
@@ -105,8 +102,8 @@ Deno.serve(async (req) => {
       candidate_stage: 'Assessment Started',
       assessment_completed: false,
       lasrra_id: lasrraId,
-      lasrra_verified: true,
-      lasrra_verified_at: new Date().toISOString(),
+      lasrra_verified: lasrraRecordFound,
+      ...(lasrraRecordFound ? { lasrra_verified_at: new Date().toISOString() } : {}),
       lasrra_physical_card_verified: false,
       data_processing_consent: true,
       data_processing_consented_at: new Date().toISOString(),
@@ -122,7 +119,7 @@ Deno.serve(async (req) => {
         to: email,
         from_name: 'Transbill Programme Team',
         subject: 'Application Received – Digital Marketing & Workforce Development Programme',
-        body: `Dear ${firstName},\n\nThank you for applying to the free Digital Marketing & Workforce Development Programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.\n\nYour application has been received. The next step is a short pre-screening covering digital marketing knowledge, learning potential, Affiliate Banker recruitment and performance management.\n\nImportant: you must bring your original physical LASRRA card for verification before training begins on Day 1. Finding your record online does not complete identity verification. Failure to present a valid card may result in withdrawal of your training place.\n\nTraining does not guarantee employment. Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project. Successful candidates will be employed by Transbill, not Lagos Innovates, LSETF or FirstBank.\n\nWarm regards,\nTransbill Programme Team`
+        body: `Dear ${firstName},\n\nThank you for applying to the free Digital Marketing & Workforce Development Programme delivered by Transbill Solutions Limited with funding support from Lagos Innovates | LSETF.\n\nYour application has been received. The next step is a short pre-screening covering digital marketing knowledge, learning potential, Affiliate Banker recruitment and performance management.\n\nImportant: if selected, you must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1. Online record confirmation does not complete physical verification.\n\nTraining does not guarantee employment. Only participants who successfully complete the programme and meet Transbill's employment selection requirements will be offered employment by Transbill to support the FirstBank SME Account Acquisition Project. Successful candidates will be employed by Transbill, not Lagos Innovates, LSETF or FirstBank.\n\nWarm regards,\nTransbill Programme Team`
       });
     } catch (_emailErr) {
       // Email failed silently — applicant record still created
@@ -141,7 +138,7 @@ Deno.serve(async (req) => {
         body.state_of_origin || '',
         body.current_lga || '',
         lasrraId,
-        'Record found — physical card pending',
+        lasrraRecordFound ? 'Record found — physical verification pending' : 'Not provided — residency evidence pending',
         body.lagos_resident || '',
         body.education || '',
         body.employment_status || '',

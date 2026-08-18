@@ -159,7 +159,7 @@ export default function ApplicantStatus() {
               <Row label="Education" value={applicant.education} />
               <Row label="Experience" value={applicant.years_experience} />
               <Row label="Lagos Resident" value={applicant.lagos_resident} />
-              <Row label="LASRRA Record" value={applicant.lasrra_verified ? 'Found — physical card pending' : 'Pending'} />
+              <Row label="Residency Verification" value={applicant.lasrra_verified ? 'LASRRA record found — physical verification pending' : 'Evidence pending before training'} />
               <Row label="Two-Week Availability" value={applicant.availability_2_weeks} />
               <Row label="Applied" value={applicant.created_date ? new Date(applicant.created_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
             </div>

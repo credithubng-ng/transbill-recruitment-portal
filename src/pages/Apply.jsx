@@ -70,8 +70,8 @@ export default function Apply() {
     }
     if (!form.state_of_origin) errs.state_of_origin = 'Required';
     if (!form.current_lga) errs.current_lga = 'Required';
-    if (!/^LA[A-Z0-9]{10}$/.test(form.lasrra_id.trim().toUpperCase())) {
-    errs.lasrra_id = 'Enter a valid 12-character LASRRA ID (starts with LA followed by 10 characters)';
+    if (form.lasrra_id.trim() && !/^LA[A-Z0-9]{10}$/.test(form.lasrra_id.trim().toUpperCase())) {
+      errs.lasrra_id = 'Enter a valid 12-character LASRRA ID (starts with LA followed by 10 characters)';
     }
     if (form.lagos_resident !== 'Yes') errs.lagos_resident = 'This programme is open to current Lagos State residents only.';
     if (!form.education) errs.education = 'Required';
@@ -300,7 +300,7 @@ export default function Apply() {
               {LAGOS_LGAS.map(lga => <option key={lga} value={lga}>{lga}</option>)}
             </select>
           </Field>
-          <Field label="LASRRA / LAG-ID Number" error={errors.lasrra_id}>
+          <Field label="LASRRA / LAG-ID Number (optional)" error={errors.lasrra_id}>
             <input
               className="form-input uppercase"
               value={form.lasrra_id}
@@ -311,7 +311,7 @@ export default function Apply() {
               autoComplete="off"
             />
             <p className="text-[#7A7A8A] text-xs mt-1">
-              Use the 12-character format shown on your resident record. You can first{' '}
+              You can apply without a LASRRA ID. If you have one, use the 12-character format shown on your resident record and you may first{' '}
               <a
                 href="https://registration.lagosresidents.gov.ng/validation/"
                 target="_blank"
@@ -320,10 +320,10 @@ export default function Apply() {
               >
                 confirm that LASRRA finds your record
               </a>.
-              {' '}Your application will continue if the record is found. This does not complete identity verification.
+              {' '}Providing it now helps us confirm your record, but it is not required to submit your application.
             </p>
             <div className="mt-3 rounded-lg border border-[#F0B429] bg-[#FFF8E1] p-3 text-sm text-[#5D4700]">
-              <strong>Physical card required:</strong> If selected, you must bring your original LASRRA card for verification before training begins on Day 1. Failure to present a valid card may result in withdrawal of your training place.
+              <strong>Residency verification before training:</strong> If selected, you must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1.
             </div>
           </Field>
           <Field label="Are you currently resident in Lagos State?" error={errors.lagos_resident}>
@@ -405,7 +405,7 @@ export default function Apply() {
                 onChange={e => handleChange('data_processing_consent', e.target.checked)}
               />
               <span className="text-sm text-[#333333] leading-relaxed">
-                I consent to Transbill processing my application information and checking whether my LASRRA/LAG-ID record exists. I understand that I must present my original physical LASRRA card for verification before training begins on Day 1. I also understand that training does not guarantee employment and that employment offers from Transbill will be made only to successful participants who meet Transbill&apos;s selection requirements.
+                I consent to Transbill processing my application information and, if I provide a LASRRA/LAG-ID, checking whether the record exists. I understand that I must present approved proof of Lagos residency before training begins on Day 1. I also understand that training does not guarantee employment and that employment offers from Transbill will be made only to successful participants who meet Transbill&apos;s selection requirements.
               </span>
             </label>
           </Field>

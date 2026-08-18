@@ -61,7 +61,7 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                 <td className="px-4 py-3 text-[#555555] hidden md:table-cell">{a.phone}</td>
                 <td className="px-4 py-3 text-[#555555] hidden lg:table-cell">{a.email}</td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">{a.lagos_resident === 'Yes' ? '✅' : '❌'}</td>
-                <td className="px-4 py-3 text-center hidden sm:table-cell">{a.lasrra_verified ? '✅' : '❌'}</td>
+                <td className="px-4 py-3 text-center hidden sm:table-cell" title={a.lasrra_verified ? 'Record found; physical verification pending' : 'LASRRA not provided; residency evidence pending'}>{a.lasrra_verified ? '✅' : '⚠️'}</td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">{a.availability_2_weeks === 'Yes' ? '✅' : '❌'}</td>
                 <td className="px-4 py-3 text-center hidden sm:table-cell">{a.willing_affiliate_role === 'Yes' ? '✅' : '❌'}</td>
                 <td className="px-4 py-3 text-center font-bold">

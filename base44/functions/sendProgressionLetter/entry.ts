@@ -24,6 +24,7 @@ function buildLetterHtml(name) {
     <p>Please note that:</p>
     <ul>
       <li>Participation in the Two-Week Hybrid Training Programme is mandatory.</li>
+      <li>You must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1.</li>
       <li>Training participation does not guarantee employment.</li>
       <li>Transbill will determine any employment selection based on training performance, conduct, attendance, business need and overall suitability.</li>
       <li>Successful candidates will be employed by Transbill Solutions Limited, not Lagos Innovates, LSETF or FirstBank.</li>

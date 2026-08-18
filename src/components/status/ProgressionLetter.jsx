@@ -52,7 +52,7 @@ export default function ProgressionLetter({ name }) {
           <p className="font-bold text-[#BF360C] mb-2">⚠️ Important Notice</p>
           <ul className="list-disc ml-5 space-y-1 text-[#5D3F00]">
             <li>Participation in the Two-Week Hybrid Training Programme is mandatory.</li>
-            <li>You must bring your original physical LASRRA card for verification before training begins on Day 1. Failure to present a valid card may result in withdrawal of your training place.</li>
+            <li>You must present your original LASRRA card, LASRRA printout or another approved proof of Lagos residency before training begins on Day 1.</li>
             <li>Training participation does not guarantee employment.</li>
             <li>Any employment selection will depend on training performance, conduct, attendance, business need and overall suitability.</li>
             <li>Successful candidates will be employed by Transbill Solutions Limited, not Lagos Innovates, LSETF or FirstBank.</li>

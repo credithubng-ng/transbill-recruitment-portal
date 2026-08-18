@@ -88,8 +88,8 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
             <InfoRow label="Gender" value={applicant.gender} />
             <InfoRow label="State of Origin" value={applicant.state_of_origin} />
             <InfoRow label="LGA" value={applicant.current_lga} />
-            <InfoRow label="LASRRA ID" value={applicant.lasrra_id} />
-            <InfoRow label="LASRRA Record" value={applicant.lasrra_verified ? 'Found — physical card pending' : 'Not found'} />
+            <InfoRow label="LASRRA ID" value={applicant.lasrra_id || 'Not provided'} />
+            <InfoRow label="LASRRA Record" value={applicant.lasrra_verified ? 'Found — physical verification pending' : 'Residency evidence pending'} />
             <InfoRow label="Lagos Resident" value={applicant.lagos_resident} />
             <InfoRow label="Education" value={applicant.education} />
             <InfoRow label="Employment" value={applicant.employment_status} />
