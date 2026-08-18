@@ -2,7 +2,7 @@ import React from 'react';
 
 const requirements = [
   { icon: '📍', title: 'Lagos Resident', desc: 'You must currently live in Lagos State and be able to provide accurate residence information' },
-  { icon: '🔞', title: '18 Years or Older', desc: 'Applicants must be at least 18 years old when applying' },
+  { icon: '🔞', title: '18–36 Years Old', desc: 'Applicants must be between 18 and 36 years old when applying' },
   { icon: '📚', title: 'Ready to Learn', desc: 'Prior digital marketing exposure is useful, but strong learning potential and commitment are central to selection' },
   { icon: '🗓️', title: 'Two-Week Availability', desc: 'You must be able to participate fully in the intensive practical training and complete assignments' },
   { icon: '📱', title: 'Digital Access', desc: 'Reliable access to a smartphone and internet is required; laptop access should be declared in your application' },

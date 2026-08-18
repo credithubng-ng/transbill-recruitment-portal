@@ -66,7 +66,7 @@ export default function Apply() {
       let age = today.getFullYear() - dob.getFullYear();
       const m = today.getMonth() - dob.getMonth();
       if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-      if (age < 18) errs.date_of_birth = 'You must be at least 18 years old to apply.';
+      if (age < 18 || age > 36) errs.date_of_birth = 'Applicants must be between 18 and 36 years old.';
     }
     if (!form.state_of_origin) errs.state_of_origin = 'Required';
     if (!form.current_lga) errs.current_lga = 'Required';
@@ -255,7 +255,7 @@ export default function Apply() {
           <div>
             <p className="font-bold text-[#BF360C] text-sm mb-1">Age Requirement & LASRRA Verification Notice</p>
             <p className="text-[#5D3F00] text-sm leading-relaxed">
-              Applicants must be <strong>18 years or older</strong> and currently resident in <strong>Lagos State</strong>. Eligibility information may be verified before admission to the programme.
+              Applicants must be <strong>between 18 and 36 years old</strong> and currently resident in <strong>Lagos State</strong>. Eligibility information may be verified before admission to the programme.
             </p>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function Apply() {
               let age = today.getFullYear() - dob.getFullYear();
               const m = today.getMonth() - dob.getMonth();
               if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-              if (age >= 18) return <p className="text-[#2D6A2F] text-xs mt-1 font-medium">Age: {age} years ✓</p>;
+              if (age >= 18 && age <= 36) return <p className="text-[#2D6A2F] text-xs mt-1 font-medium">Age: {age} years ✓</p>;
               return null;
             })()}
           </Field>

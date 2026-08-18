@@ -47,8 +47,8 @@ Deno.serve(async (req) => {
     const birthdayPassed = today.getUTCMonth() > dob.getUTCMonth() ||
       (today.getUTCMonth() === dob.getUTCMonth() && today.getUTCDate() >= dob.getUTCDate());
     if (!birthdayPassed) age--;
-    if (!Number.isFinite(dob.getTime()) || age < 18) {
-      return Response.json({ error: 'Applicants must be at least 18 years old.' }, { status: 400 });
+    if (!Number.isFinite(dob.getTime()) || age < 18 || age > 36) {
+      return Response.json({ error: 'Applicants must be between 18 and 36 years old.' }, { status: 400 });
     }
     const required = ['full_name', 'phone', 'current_lga', 'education', 'employment_status', 'years_experience',
       'availability_2_weeks', 'has_smartphone', 'has_laptop', 'internet_access', 'willing_affiliate_role',

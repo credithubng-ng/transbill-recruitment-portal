@@ -9,7 +9,7 @@ export default function CTASection() {
           Ready to <span className="text-[#2D6A2F]">Apply</span>?
         </h2>
         <p className="text-[#555555] text-base mb-8">
-          If you are a Lagos resident aged 18 or above and ready for two weeks of practical learning, complete the application and pre-screening.
+          If you are a Lagos resident aged 18 to 36 and ready for two weeks of practical learning, complete the application and pre-screening.
         </p>
         <Link
           to="/apply"
