@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { BANK_VERSION, QUESTION_BY_ID } from '../_shared/screeningQuestionBank.ts';
-import { getApplicantFromSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
+import { BANK_VERSION, QUESTION_BY_ID } from './screeningQuestionBank.ts';
+import { getApplicantFromSession, getApplicationDeadline } from './applicantSession.ts';
 
 const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://your-app-domain';
 const SUCCESS_EMAIL_SUBJECT = 'Pre-screening Successful – Transbill Digital Marketing Programme';

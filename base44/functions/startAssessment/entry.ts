@@ -1,6 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { ASSESSMENT_BLUEPRINT, BANK_VERSION, SCREENING_QUESTION_BANK } from '../_shared/screeningQuestionBank.ts';
-import { getApplicantFromSession, getApplicationDeadline } from '../_shared/applicantSession.ts';
+import { ASSESSMENT_BLUEPRINT, BANK_VERSION, SCREENING_QUESTION_BANK } from './screeningQuestionBank.ts';
+import { getApplicantFromSession, getApplicationDeadline } from './applicantSession.ts';
 
 const encoder = new TextEncoder();
 const toBase64Url = (value: string) => btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
