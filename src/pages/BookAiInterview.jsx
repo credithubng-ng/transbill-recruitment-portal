@@ -17,7 +17,7 @@ export default function BookAiInterview() {
 
   useEffect(() => {
     if (!applicantSessionToken) {
-      window.location.href = `/login?next=${encodeURIComponent('/book-ai-interview?id=' + applicantId)}`;
+      window.location.href = `/login?next=${encodeURIComponent('/status?view=book-interview&id=' + applicantId)}`;
       return;
     }
     loadSlots();

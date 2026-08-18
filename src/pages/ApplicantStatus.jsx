@@ -4,6 +4,8 @@ import TransbillLogo from '../components/TransbillLogo';
 import InterviewSlotPicker from '../components/status/InterviewSlotPicker';
 import { CheckCircle2, Clock, XCircle, AlertCircle, LogOut, ChevronRight } from 'lucide-react';
 import ProgressionLetter from '../components/status/ProgressionLetter';
+import BookAiInterview from './BookAiInterview';
+import Interview from './Interview';
 
 const STAGE_CONFIG = {
   'Assessment Started': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: Clock, label: 'Assessment In Progress' },
@@ -42,7 +44,7 @@ function getActiveStep(stage, status, assessmentCompleted) {
   return 0;
 }
 
-export default function ApplicantStatus() {
+function ApplicantStatusDashboard() {
   const [applicant, setApplicant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
@@ -278,7 +280,7 @@ export default function ApplicantStatus() {
               <div className="bg-[#E3F2FD] rounded-[14px] border border-[#1565C0]/30 p-6 text-center">
                 <p className="font-bold text-[#0D47A1] text-sm mb-1">You've been shortlisted for an AI interview</p>
                 <p className="text-[#555555] text-sm mb-4">Book a 15–20 minute AI-led selection interview at a time that suits you.</p>
-                <a href={`/book-ai-interview?id=${applicant.id}`}
+                <a href={`/status?view=book-interview&id=${applicant.id}`}
                   className="inline-flex items-center gap-2 bg-[#1565C0] hover:bg-[#0D47A1] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
                   Book AI Interview →
                 </a>
@@ -293,14 +295,14 @@ export default function ApplicantStatus() {
                 <Row label="Case" value={aiBooking.case_title} />
                 <div className="mt-4 flex flex-wrap gap-3">
                   {aiBooking.can_start ? (
-                    <a href={`/interview?booking=${aiBooking.booking_id}&id=${applicant.id}`}
+                    <a href={`/status?view=interview&booking=${aiBooking.booking_id}&id=${applicant.id}`}
                       className="inline-flex items-center gap-2 bg-[#2D6A2F] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
                       Start Interview →
                     </a>
                   ) : (
                     <span className="text-xs text-[#7A7A8A] font-medium">Return at the scheduled time to start your interview.</span>
                   )}
-                  <a href={`/book-ai-interview?id=${applicant.id}`}
+                  <a href={`/status?view=book-interview&id=${applicant.id}`}
                     className="inline-flex items-center gap-2 border border-[#2D6A2F]/40 text-[#2D6A2F] font-bold text-sm px-5 py-3 rounded-full hover:bg-[#EBF5EB] transition-all">
                     Reschedule
                   </a>
@@ -357,4 +359,11 @@ function Row({ label, value }) {
       <span className="text-xs text-[#333333]">{value || '—'}</span>
     </div>
   );
+}
+
+export default function ApplicantStatus() {
+  const view = new URLSearchParams(window.location.search).get('view');
+  if (view === 'book-interview') return <BookAiInterview />;
+  if (view === 'interview') return <Interview />;
+  return <ApplicantStatusDashboard />;
 }
