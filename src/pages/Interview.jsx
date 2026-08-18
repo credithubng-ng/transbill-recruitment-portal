@@ -330,17 +330,17 @@ function ConsentScreen({ caseData, onConsent }) {
   const [checked, setChecked] = useState(false);
   return (
     <div className="max-w-xl mx-auto py-8">
-      <h1 className="font-extrabold text-2xl text-[#1A1A1A] mb-4">Before your AI interview</h1>
+      <h1 className="font-extrabold text-2xl text-[#1A1A1A] mb-4">Before your Selection Interview</h1>
       <div className="bg-[#F8FAF8] border border-[#E2E8E2] rounded-[14px] p-6 space-y-3 text-sm text-[#333333]">
-        <p>• This interview is <strong>AI-led</strong> and your spoken answers are recorded as a <strong>written transcript</strong>. Audio is not stored.</p>
-        <p>• It lasts <strong>15–20 minutes</strong>: a case presentation, 3 core follow-ups, and up to 2 adaptive questions.</p>
+        <p>• This is a structured, digitally facilitated interview lasting <strong>15–20 minutes</strong>: a case presentation, 3 core follow-ups, and up to 2 adaptive questions. Your responses are recorded as a <strong>written transcript</strong> and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff. Audio is not stored.</p>
+        <p>• This interview uses <strong>AI-assisted technology</strong> to present questions and organise your responses. AI does not make the final recruitment decision.</p>
         <p>• A <strong>human reviewer makes the final decision</strong>. The AI cannot hire, reject, or contact you itself.</p>
         <p>• The AI evaluates only your written answers. It does not score accent, emotion, confidence, gender, ethnicity, appearance, age, or background noise.</p>
         <p>• If you have accessibility or connectivity concerns, you may <a href="/status" className="text-[#2D6A2F] underline">reschedule or request a human-led alternative</a> from your status page.</p>
       </div>
       <label className="flex items-start gap-3 mt-5 text-sm text-[#333333] cursor-pointer">
         <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} className="mt-1 w-5 h-5 accent-[#2D6A2F]" />
-        <span>I consent to this AI-led, transcript-recorded interview and understand a human reviewer makes the final decision.</span>
+        <span>I consent to this transcript-recorded selection interview and understand a human reviewer makes the final decision. This interview uses AI-assisted technology; AI does not make the final recruitment decision.</span>
       </label>
       <button onClick={onConsent} disabled={!checked} className="w-full mt-6 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-40 text-white font-bold text-base py-3.5 rounded-full transition-all">
         I consent — continue

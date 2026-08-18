@@ -31,7 +31,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
   const [shortlistMsg, setShortlistMsg] = useState(null);
 
   const handleShortlist = async () => {
-    if (!confirm('Shortlist this applicant for an AI interview? This checks eligibility, integrity flags and role-fit, then assigns a case variant.')) return;
+    if (!confirm('Shortlist this applicant for the Selection Interview? This checks eligibility, integrity flags and role-fit, then assigns a case variant.')) return;
     setShortlisting(true);
     setShortlistMsg(null);
     try {
@@ -185,18 +185,18 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           {/* AI Interview shortlist */}
           {applicant.assessment_completed && !['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
             <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-4">
-              <div className="flex items-center gap-1.5 text-[#0D47A1] font-bold text-xs mb-2"><Bot className="w-4 h-4" /> AI Interview</div>
-              <p className="text-xs text-[#555555] mb-3">Shortlist this applicant for an AI-led interview. The server verifies eligibility, integrity flags and role-fit (≥3 of 6 areas) before assigning a case variant.</p>
+              <div className="flex items-center gap-1.5 text-[#0D47A1] font-bold text-xs mb-2"><Bot className="w-4 h-4" /> Selection Interview</div>
+              <p className="text-xs text-[#555555] mb-3">Shortlist this applicant for the Transbill Digital Selection Interview. The server verifies eligibility, integrity flags and role-fit (≥3 of 6 areas) before assigning a case variant.</p>
               <button onClick={handleShortlist} disabled={shortlisting}
                 className="w-full bg-[#1565C0] hover:bg-[#0D47A1] disabled:opacity-50 text-white font-bold text-sm py-2.5 rounded-full transition-all">
-                {shortlisting ? 'Checking...' : 'Shortlist for AI Interview'}
+                {shortlisting ? 'Checking...' : 'Shortlist for Selection Interview'}
               </button>
               {shortlistMsg && <p className="text-xs text-[#0D47A1] mt-2 font-medium">{shortlistMsg}</p>}
             </div>
           )}
           {['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
             <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-3 text-xs text-[#0D47A1] font-medium">
-              AI interview stage: <strong>{applicant.candidate_stage}</strong>{applicant.ai_interview_variant_id ? ` · Case ${applicant.ai_interview_variant_id}` : ''}
+              Selection interview stage: <strong>{applicant.candidate_stage}</strong>{applicant.ai_interview_variant_id ? ` · Case ${applicant.ai_interview_variant_id}` : ''}
             </div>
           )}
 

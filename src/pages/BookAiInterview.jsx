@@ -74,7 +74,7 @@ export default function BookAiInterview() {
         {confirmed ? (
           <div className="bg-white rounded-[14px] border border-[#E2E8E2] p-8 text-center">
             <CheckCircle2 className="w-14 h-14 text-[#2D6A2F] mx-auto mb-4" />
-            <h1 className="font-extrabold text-xl text-[#1A1A1A] mb-2">AI Interview Booked</h1>
+            <h1 className="font-extrabold text-xl text-[#1A1A1A] mb-2">Selection Interview Booked</h1>
             <p className="text-[#555555] text-sm mb-1">Your AI-led selection interview is scheduled for:</p>
             <p className="font-bold text-[#2D6A2F] mb-4">{booking && new Date(booking.slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' })}</p>
             <p className="text-xs text-[#7A7A8A] mb-6">A confirmation email has been sent. Return to your status page at the appointment time to start the interview.</p>
@@ -84,12 +84,12 @@ export default function BookAiInterview() {
           </div>
         ) : (
           <>
-            <h1 className="font-extrabold text-2xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Book Your AI Interview</h1>
+            <h1 className="font-extrabold text-2xl tracking-[-0.5px] text-[#1A1A1A] mb-1">Book Your Selection Interview</h1>
             <p className="text-[#7A7A8A] text-sm mb-6 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Times shown in Lagos time (Africa/Lagos)</p>
 
             <div className="bg-amber-50 border border-amber-200 rounded-[12px] p-4 mb-6">
               <p className="text-xs text-amber-800 leading-relaxed">
-                <strong>About your AI interview:</strong> It is AI-led, recorded as a written transcript, and lasts 15–20 minutes. A human reviewer makes the final decision — the AI cannot. If you have accessibility or connectivity concerns, you may reschedule or request a human-led alternative from your status page.
+                This is a structured, digitally facilitated interview lasting 15–20 minutes. Your responses will be recorded as a transcript and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff. If you have accessibility or connectivity concerns, you may reschedule or request a human-led alternative from your status page.
               </p>
             </div>
 

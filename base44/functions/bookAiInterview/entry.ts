@@ -50,8 +50,8 @@ Deno.serve(async (req) => {
       const local = new Date(slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' });
       await sendBrevoEmail({
         to: applicant.email,
-        subject: 'Your AI Interview is Booked – Transbill Programme',
-        body: `Hello ${firstName},\n\nYour AI-led selection interview is booked for:\n${local} (Lagos time).\n\nAt the appointment time, sign in and open your application status to start the interview. The interview lasts 15–20 minutes, is AI-led, recorded as a transcript, and a human reviewer makes the final decision.\n\nIf you need a human-led alternative or have accessibility/connectivity concerns, you can reschedule from your status page.\n\nTransbill Programme Team`,
+        subject: 'Your Selection Interview is Booked – Transbill Programme',
+        body: `Hello ${firstName},\n\nYour Transbill Digital Selection Interview is booked for:\n${local} (Lagos time).\n\nAt the appointment time, sign in and open your application status to start the interview. This is a structured, digitally facilitated interview lasting 15–20 minutes. Your responses will be recorded as a transcript and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff.\n\nIf you need a human-led alternative or have accessibility/connectivity concerns, you can reschedule from your status page.\n\nTransbill Programme Team`,
       });
     } catch (_e) { /* email best-effort */ }
 

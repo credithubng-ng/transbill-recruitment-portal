@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
       success: true,
       variant_id: variantId,
       role_fit: { passedCount: fit.passedCount, areas: fit.areas },
-      message: 'Applicant shortlisted for AI interview.',
+      message: 'Applicant shortlisted for the Selection Interview.',
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

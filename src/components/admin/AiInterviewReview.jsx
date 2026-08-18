@@ -105,7 +105,7 @@ export default function AiInterviewReview({ onBack }) {
           <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-[#7A7A8A] hover:text-[#1A1A1A]">
             <ArrowLeft className="w-4 h-4" /> Back to dashboard
           </button>
-          <h1 className="font-extrabold text-lg text-[#1A1A1A]">AI Interview Review</h1>
+          <h1 className="font-extrabold text-lg text-[#1A1A1A]">Selection Interview Review</h1>
         </div>
       </div>
 

@@ -186,7 +186,7 @@ export default function Admin() {
               <Mail className="w-4 h-4" /> {sendingReminders ? 'Sending...' : 'Remind Incomplete'}
             </button>
             <button onClick={() => setShowAiReview(true)} className="bg-[#1565C0] hover:bg-[#0D47A1] text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all">
-              <Bot className="w-4 h-4" /> AI Interviews
+              <Bot className="w-4 h-4" /> Selection Interviews
             </button>
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule
