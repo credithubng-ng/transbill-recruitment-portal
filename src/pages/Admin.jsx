@@ -89,6 +89,10 @@ export default function Admin() {
         if (['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(ds) && a.status !== ds) return false;
       }
       return true;
+    }).sort((a, b) => {
+      const aTime = a.created_date ? new Date(a.created_date).getTime() : 0;
+      const bTime = b.created_date ? new Date(b.created_date).getTime() : 0;
+      return bTime - aTime;
     });
   }, [applicants, filters]);
 

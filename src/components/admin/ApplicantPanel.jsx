@@ -12,6 +12,17 @@ function formatTime(seconds) {
   return `${m}m ${s}s`;
 }
 
+function formatApplicationDate(value) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '—';
+  return new Intl.DateTimeFormat('en-GB', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+    timeZone: 'Africa/Lagos',
+  }).format(date);
+}
+
 export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
   const [notes, setNotes] = useState(applicant.admin_notes || '');
   const [status, setStatus] = useState(applicant.status);
@@ -71,6 +82,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
 
           {/* Application details */}
           <Section title="Application Details">
+            <InfoRow label="Applied On" value={formatApplicationDate(applicant.created_date)} />
             <InfoRow label="Email" value={applicant.email} />
             <InfoRow label="Phone" value={applicant.phone} />
             <InfoRow label="Gender" value={applicant.gender} />

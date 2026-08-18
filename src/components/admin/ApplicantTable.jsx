@@ -25,6 +25,11 @@ const deriveDisplayStatus = (a) => {
 };
 
 export default function ApplicantTable({ applicants, onSelectApplicant }) {
+  const isFresh = (createdDate) => {
+    const createdAt = createdDate ? new Date(createdDate).getTime() : NaN;
+    return Number.isFinite(createdAt) && Date.now() - createdAt < 24 * 60 * 60 * 1000;
+  };
+
   return (
     <div className="bg-white border border-[#E2E8E2] rounded-[14px] overflow-hidden">
       <div className="overflow-x-auto">
@@ -42,12 +47,12 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Status</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A]">Flags</th>
               <th className="text-center px-4 py-3 font-semibold text-[#1A1A1A] hidden md:table-cell">Booking</th>
-              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A] hidden lg:table-cell">Date</th>
+              <th className="text-left px-4 py-3 font-semibold text-[#1A1A1A]">Applied</th>
             </tr>
           </thead>
           <tbody>
             {applicants.length === 0 && (
-              <tr><td colSpan={9} className="text-center py-12 text-[#7A7A8A]">No applicants found</td></tr>
+              <tr><td colSpan={12} className="text-center py-12 text-[#7A7A8A]">No applicants found</td></tr>
             )}
             {applicants.map(a => (
               <tr key={a.id} onClick={() => onSelectApplicant(a)}
@@ -73,8 +78,16 @@ export default function ApplicantTable({ applicants, onSelectApplicant }) {
                 <td className="px-4 py-3 text-center hidden md:table-cell">
                   <BookingStatusBadge applicant={a} />
                 </td>
-                <td className="px-4 py-3 text-[#7A7A8A] text-xs hidden lg:table-cell">
-                  {a.created_date ? format(new Date(a.created_date), 'MMM d, yyyy') : '—'}
+                <td className="px-4 py-3 text-xs whitespace-nowrap">
+                  {a.created_date ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-semibold text-[#1A1A1A]">{format(new Date(a.created_date), 'dd MMM yyyy')}</span>
+                      <span className="text-[#7A7A8A]">{format(new Date(a.created_date), 'h:mm a')}</span>
+                      {isFresh(a.created_date) && (
+                        <span className="w-fit rounded-full bg-[#E8F5E9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-[#2D6A2F]">New</span>
+                      )}
+                    </div>
+                  ) : '—'}
                 </td>
               </tr>
             ))}
