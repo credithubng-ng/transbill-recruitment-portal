@@ -1,0 +1,103 @@
+{
+  "name": "InterviewSession",
+  "type": "object",
+  "properties": {
+    "booking_id": {
+      "type": "string"
+    },
+    "applicant_id": {
+      "type": "string"
+    },
+    "variant_id": {
+      "type": "number"
+    },
+    "case_id": {
+      "type": "string",
+      "description": "InterviewCase id assigned to this session"
+    },
+    "nonce": {
+      "type": "string",
+      "description": "Client-generated idempotency key preventing duplicate official sessions"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_progress",
+        "completed",
+        "abandoned",
+        "technical_failure"
+      ],
+      "default": "in_progress"
+    },
+    "consent_given": {
+      "type": "boolean",
+      "default": false
+    },
+    "consent_at": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "completed_at": {
+      "type": "string"
+    },
+    "completion_time_seconds": {
+      "type": "number"
+    },
+    "adaptive_question_count": {
+      "type": "number",
+      "default": 0
+    },
+    "last_adaptive_at": {
+      "type": "string",
+      "description": "Rate-limit anchor for adaptive-question calls"
+    },
+    "technical_interruptions": {
+      "type": "number",
+      "default": 0
+    },
+    "paused_at": {
+      "type": "string",
+      "description": "Set when the clock is paused for a detected technical interruption"
+    },
+    "reconnect_count": {
+      "type": "number",
+      "default": 0
+    },
+    "audio_recorded": {
+      "type": "boolean",
+      "default": false
+    },
+    "result_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "applicant_id",
+    "status",
+    "nonce"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

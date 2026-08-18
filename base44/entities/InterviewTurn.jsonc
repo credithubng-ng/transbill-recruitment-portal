@@ -1,0 +1,60 @@
+{
+  "name": "InterviewTurn",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "applicant_id": {
+      "type": "string"
+    },
+    "turn_index": {
+      "type": "number"
+    },
+    "question": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "string"
+    },
+    "turn_type": {
+      "type": "string",
+      "enum": [
+        "case_presentation",
+        "follow_up",
+        "adaptive"
+      ]
+    },
+    "is_adaptive": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "session_id",
+    "question",
+    "turn_type"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

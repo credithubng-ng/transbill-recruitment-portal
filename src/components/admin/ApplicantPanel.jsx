@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, AlertTriangle, Clock } from 'lucide-react';
+import { X, AlertTriangle, Clock, Bot } from 'lucide-react';
 import InterviewSection from './InterviewSection';
 
 const STATUS_OPTIONS = ['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'];
@@ -27,6 +27,25 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
   const [notes, setNotes] = useState(applicant.admin_notes || '');
   const [status, setStatus] = useState(applicant.status);
   const [saving, setSaving] = useState(false);
+  const [shortlisting, setShortlisting] = useState(false);
+  const [shortlistMsg, setShortlistMsg] = useState(null);
+
+  const handleShortlist = async () => {
+    if (!confirm('Shortlist this applicant for an AI interview? This checks eligibility, integrity flags and role-fit, then assigns a case variant.')) return;
+    setShortlisting(true);
+    setShortlistMsg(null);
+    try {
+      const token = sessionStorage.getItem('transbill_admin_token');
+      const res = await base44.functions.invoke('shortlistForAiInterview', { token, applicant_id: applicant.id });
+      if (res.data?.error) throw new Error(res.data.error);
+      setShortlistMsg(`Shortlisted — Case ${res.data.variant_id} assigned. Role-fit: ${res.data.role_fit?.passedCount}/6 areas.`);
+      onUpdate({ ...applicant, candidate_stage: 'AI Interview Shortlisted', ai_interview_variant_id: res.data.variant_id });
+    } catch (e) {
+      setShortlistMsg(e?.response?.data?.error || e?.message || 'Unable to shortlist.');
+    } finally {
+      setShortlisting(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -162,6 +181,24 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
 
           {/* Interview Section */}
           <InterviewSection applicant={applicant} onUpdate={onUpdate} />
+
+          {/* AI Interview shortlist */}
+          {applicant.assessment_completed && !['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
+            <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-4">
+              <div className="flex items-center gap-1.5 text-[#0D47A1] font-bold text-xs mb-2"><Bot className="w-4 h-4" /> AI Interview</div>
+              <p className="text-xs text-[#555555] mb-3">Shortlist this applicant for an AI-led interview. The server verifies eligibility, integrity flags and role-fit (≥3 of 6 areas) before assigning a case variant.</p>
+              <button onClick={handleShortlist} disabled={shortlisting}
+                className="w-full bg-[#1565C0] hover:bg-[#0D47A1] disabled:opacity-50 text-white font-bold text-sm py-2.5 rounded-full transition-all">
+                {shortlisting ? 'Checking...' : 'Shortlist for AI Interview'}
+              </button>
+              {shortlistMsg && <p className="text-xs text-[#0D47A1] mt-2 font-medium">{shortlistMsg}</p>}
+            </div>
+          )}
+          {['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
+            <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-3 text-xs text-[#0D47A1] font-medium">
+              AI interview stage: <strong>{applicant.candidate_stage}</strong>{applicant.ai_interview_variant_id ? ` · Case ${applicant.ai_interview_variant_id}` : ''}
+            </div>
+          )}
 
           {/* Admin notes */}
           <div>

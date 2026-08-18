@@ -19,6 +19,10 @@ const STAGE_CONFIG = {
   'Interview Outcome – Hold': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: AlertCircle, label: 'Interview – On Hold' },
   'Final Hiring Decision': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: Clock, label: 'Final Hiring Decision' },
   'Closed – Not Progressed': { color: 'text-[#9E9E9E]', bg: 'bg-[#F5F5F5]', icon: XCircle, label: 'Application Closed' },
+  'AI Interview Shortlisted': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: CheckCircle2, label: 'AI Interview – Shortlisted' },
+  'AI Interview Scheduled': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: Clock, label: 'AI Interview Scheduled' },
+  'AI Interview Completed': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: Clock, label: 'AI Interview – Awaiting Review' },
+  'AI Interview Reviewed': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'AI Interview Reviewed' },
 };
 
 const STEPS = [
@@ -42,6 +46,7 @@ export default function ApplicantStatus() {
   const [applicant, setApplicant] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [aiBooking, setAiBooking] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -80,6 +85,17 @@ export default function ApplicantStatus() {
     }
     load();
   }, []);
+
+  useEffect(() => {
+    if (!applicant?.id) return;
+    if (['AI Interview Shortlisted', 'AI Interview Scheduled'].includes(applicant.candidate_stage)) {
+      const token = sessionStorage.getItem('transbill_applicant_session');
+      if (!token) return;
+      base44.functions.invoke('getMyInterviewBooking', { applicantId: applicant.id, applicantSessionToken: token })
+        .then(res => setAiBooking(res.data?.booking || null))
+        .catch(() => setAiBooking(null));
+    }
+  }, [applicant?.id, applicant?.candidate_stage]);
 
   const handleLogout = async () => {
     sessionStorage.removeItem('transbill_applicant_session');
@@ -254,6 +270,52 @@ export default function ApplicantStatus() {
                     }));
                   }}
                 />
+              </div>
+            )}
+
+            {/* AI Interview – shortlisted: book */}
+            {applicant.candidate_stage === 'AI Interview Shortlisted' && (
+              <div className="bg-[#E3F2FD] rounded-[14px] border border-[#1565C0]/30 p-6 text-center">
+                <p className="font-bold text-[#0D47A1] text-sm mb-1">You've been shortlisted for an AI interview</p>
+                <p className="text-[#555555] text-sm mb-4">Book a 15–20 minute AI-led selection interview at a time that suits you.</p>
+                <a href={`/book-ai-interview?id=${applicant.id}`}
+                  className="inline-flex items-center gap-2 bg-[#1565C0] hover:bg-[#0D47A1] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
+                  Book AI Interview →
+                </a>
+              </div>
+            )}
+
+            {/* AI Interview – scheduled: appointment + start */}
+            {applicant.candidate_stage === 'AI Interview Scheduled' && aiBooking && (
+              <div className="bg-[#EBF5EB] rounded-[14px] border border-[#2D6A2F]/20 p-6">
+                <p className="text-xs font-semibold text-[#2D6A2F] uppercase tracking-wide mb-3">AI Interview Scheduled</p>
+                <Row label="Date & Time" value={aiBooking.label} />
+                <Row label="Case" value={aiBooking.case_title} />
+                <div className="mt-4 flex flex-wrap gap-3">
+                  {aiBooking.can_start ? (
+                    <a href={`/interview?booking=${aiBooking.booking_id}&id=${applicant.id}`}
+                      className="inline-flex items-center gap-2 bg-[#2D6A2F] hover:bg-[#4A9A4D] text-white font-bold text-sm px-6 py-3 rounded-full transition-all">
+                      Start Interview →
+                    </a>
+                  ) : (
+                    <span className="text-xs text-[#7A7A8A] font-medium">Return at the scheduled time to start your interview.</span>
+                  )}
+                  <a href={`/book-ai-interview?id=${applicant.id}`}
+                    className="inline-flex items-center gap-2 border border-[#2D6A2F]/40 text-[#2D6A2F] font-bold text-sm px-5 py-3 rounded-full hover:bg-[#EBF5EB] transition-all">
+                    Reschedule
+                  </a>
+                </div>
+                <p className="text-xs text-[#7A7A8A] mt-3">Need a human-led alternative or have accessibility concerns? Reschedule and contact the recruitment team.</p>
+              </div>
+            )}
+
+            {/* AI Interview – completed / reviewed */}
+            {(applicant.candidate_stage === 'AI Interview Completed' || applicant.candidate_stage === 'AI Interview Reviewed') && (
+              <div className="bg-[#E3F2FD] rounded-[14px] border border-[#1565C0]/30 p-6 text-center">
+                <p className="font-bold text-[#0D47A1] text-sm">
+                  {applicant.candidate_stage === 'AI Interview Completed' ? 'Your AI interview is under human review.' : 'Your AI interview has been reviewed.'}
+                </p>
+                <p className="text-[#555555] text-xs mt-1">A human reviewer makes the final decision. You'll be contacted about the outcome.</p>
               </div>
             )}
 

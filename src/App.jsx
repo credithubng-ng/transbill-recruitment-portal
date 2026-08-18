@@ -12,6 +12,8 @@ import Assessment from '@/pages/Assessment';
 import Admin from '@/pages/Admin';
 import ApplicantStatus from '@/pages/ApplicantStatus';
 import BookInterview from '@/pages/BookInterview';
+import BookAiInterview from '@/pages/BookAiInterview';
+import Interview from '@/pages/Interview';
 import ScheduleView from '@/pages/ScheduleView';
 import Login from '@/pages/Login';
 
@@ -42,6 +44,8 @@ const AuthenticatedApp = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/status" element={<ApplicantStatus />} />
       <Route path="/book-interview" element={<BookInterview />} />
+      <Route path="/book-ai-interview" element={<BookAiInterview />} />
+      <Route path="/interview" element={<Interview />} />
       <Route path="/schedule" element={<ScheduleView onBack={() => window.history.back()} />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

@@ -9,7 +9,8 @@ import ApplicantTable from '../components/admin/ApplicantTable';
 import ApplicantPanel from '../components/admin/ApplicantPanel';
 import SettingsPanel from '../components/admin/SettingsPanel';
 import ScheduleView from './ScheduleView';
-import { Download, LogOut, Settings, CalendarDays, Mail } from 'lucide-react';
+import AiInterviewReview from '../components/admin/AiInterviewReview';
+import { Download, LogOut, Settings, CalendarDays, Mail, Bot } from 'lucide-react';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -30,6 +31,7 @@ export default function Admin() {
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [showAiReview, setShowAiReview] = useState(false);
   const [settingsRecord, setSettingsRecord] = useState(null);
   const [sendingReminders, setSendingReminders] = useState(false);
   const [reminderMessage, setReminderMessage] = useState('');
@@ -160,6 +162,7 @@ export default function Admin() {
   if (!authenticated) return <AdminLogin onLogin={() => setAuthenticated(true)} />;
 
   if (showSchedule) return <ScheduleView onBack={() => setShowSchedule(false)} />;
+  if (showAiReview) return <AiInterviewReview onBack={() => setShowAiReview(false)} />;
 
   return (
     <div className="min-h-screen bg-[#F8FAF8]">
@@ -181,6 +184,9 @@ export default function Admin() {
           <div className="flex items-center gap-2">
             <button onClick={sendIncompleteReminders} disabled={sendingReminders} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] disabled:opacity-50 font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <Mail className="w-4 h-4" /> {sendingReminders ? 'Sending...' : 'Remind Incomplete'}
+            </button>
+            <button onClick={() => setShowAiReview(true)} className="bg-[#1565C0] hover:bg-[#0D47A1] text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all">
+              <Bot className="w-4 h-4" /> AI Interviews
             </button>
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule

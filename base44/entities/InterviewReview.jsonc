@@ -1,0 +1,63 @@
+{
+  "name": "InterviewReview",
+  "type": "object",
+  "properties": {
+    "result_id": {
+      "type": "string"
+    },
+    "applicant_id": {
+      "type": "string"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "description": "Admin identity (email) who performed the review"
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "approved_successful",
+        "second_review",
+        "human_interview",
+        "hold",
+        "not_successful"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "audit_event": {
+      "type": "string",
+      "description": "Immutable description of the review action for audit trail"
+    },
+    "reviewed_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "result_id",
+    "decision",
+    "reviewed_by"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

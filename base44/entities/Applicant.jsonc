@@ -198,7 +198,7 @@
     "assessment_bank_version": {
       "type": "string"
     },
-    "screening_recommendation": {
+    "screening_recommendations": {
       "type": "string",
       "enum": [
         "Ready for training",
@@ -340,7 +340,11 @@
         "Interview Outcome \u2013 Pass",
         "Interview Outcome \u2013 Hold",
         "Final Hiring Decision",
-        "Closed \u2013 Not Progressed"
+        "Closed \u2013 Not Progressed",
+        "AI Interview Shortlisted",
+        "AI Interview Scheduled",
+        "AI Interview Completed",
+        "AI Interview Reviewed"
       ]
     },
     "admin_notes": {
@@ -365,6 +369,14 @@
     "review_required_flag": {
       "type": "boolean",
       "default": false
+    },
+    "ai_interview_variant_id": {
+      "type": "number",
+      "description": "Locked AI interview case variant (1-8) assigned at shortlist time"
+    },
+    "ai_interview_shortlisted_at": {
+      "type": "string",
+      "description": "ISO timestamp when the applicant was shortlisted for the AI interview"
     },
     "interview_scheduled_at": {
       "type": "string",

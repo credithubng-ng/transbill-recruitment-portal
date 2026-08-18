@@ -1,0 +1,122 @@
+{
+  "name": "InterviewResult",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string"
+    },
+    "applicant_id": {
+      "type": "string"
+    },
+    "variant_id": {
+      "type": "number"
+    },
+    "overall_score": {
+      "type": "number",
+      "description": "Weighted rubric score 0-100"
+    },
+    "dimension_scores": {
+      "type": "object",
+      "description": "Map of dimension key to 1-5 score"
+    },
+    "dimension_evidence": {
+      "type": "object",
+      "description": "Map of dimension key to specific evidence quote/summary"
+    },
+    "strengths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "concerns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "calculation_errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "integrity_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Any integrity flag forces mandatory human escalation, never automatic rejection"
+    },
+    "technical_flags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "ai_recommendation": {
+      "type": "string",
+      "enum": [
+        "Recommended",
+        "Borderline",
+        "Not recommended"
+      ]
+    },
+    "recommendation_score": {
+      "type": "number"
+    },
+    "admin_decision": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved_successful",
+        "second_review",
+        "human_interview",
+        "hold",
+        "not_successful"
+      ],
+      "default": "pending"
+    },
+    "outcome_letter_status": {
+      "type": "string",
+      "enum": [
+        "not_required",
+        "queued",
+        "sent"
+      ],
+      "default": "not_required"
+    }
+  },
+  "required": [
+    "session_id",
+    "applicant_id"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
