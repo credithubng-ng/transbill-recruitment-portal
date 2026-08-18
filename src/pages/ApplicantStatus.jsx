@@ -45,6 +45,24 @@ export default function ApplicantStatus() {
 
   useEffect(() => {
     async function load() {
+      // Path 1: applicant session token (completed-status or applicant-session) stored at login.
+      // Verified server-side by getApplicantStatus — no plain-ID auth, no RLS bypass.
+      const sessionToken = sessionStorage.getItem('transbill_applicant_session');
+      if (sessionToken) {
+        try {
+          const res = await base44.functions.invoke('getApplicantStatus', { sessionToken });
+          if (res.data?.applicant) {
+            setApplicant(res.data.applicant);
+            setUser({ full_name: res.data.applicant.full_name, email: res.data.applicant.email });
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // Invalid/expired token — clear it and fall through to platform auth.
+          sessionStorage.removeItem('transbill_applicant_session');
+        }
+      }
+      // Path 2: platform auth (existing behaviour for registered users / admins).
       const authed = await base44.auth.isAuthenticated();
       if (!authed) {
         window.location.href = '/login?next=/status';
@@ -63,8 +81,14 @@ export default function ApplicantStatus() {
     load();
   }, []);
 
-  const handleLogout = () => {
-    base44.auth.logout('/');
+  const handleLogout = async () => {
+    sessionStorage.removeItem('transbill_applicant_session');
+    const authed = await base44.auth.isAuthenticated().catch(() => false);
+    if (authed) {
+      base44.auth.logout('/');
+    } else {
+      window.location.href = '/';
+    }
   };
 
   if (loading) {

@@ -19,6 +19,13 @@ async function createApplicantSession(applicantId: string, email: string, expire
   const payload = _toBase64Url(JSON.stringify({ applicantId, email: email.toLowerCase(), expiresAt, purpose: 'applicant-session' }));
   return `${payload}.${await _hmac(payload, _getApplicantSecret())}`;
 }
+async function createCompletedStatusSession(applicantId: string, email: string) {
+  // Narrowly scoped: distinct purpose so it cannot start/submit an assessment
+  // (those require purpose: 'applicant-session'). 24h expiry for status viewing.
+  const expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  const payload = _toBase64Url(JSON.stringify({ applicantId, email: email.toLowerCase(), expiresAt, purpose: 'completed-status' }));
+  return `${payload}.${await _hmac(payload, _getApplicantSecret())}`;
+}
 async function hashApplicantOtp(applicantId: string, code: string) {
   return _hmac(`applicant-otp:${applicantId}:${code}`, _getApplicantSecret());
 }
@@ -57,8 +64,22 @@ async function requestLoginOtp(base44, email: string) {
   const applicants = await base44.asServiceRole.entities.Applicant.filter({ email });
   const applicant = applicants?.[0];
   const publicResult = { success: true, message: 'If an incomplete application exists, a code has been sent.' };
-  if (!applicant || applicant.assessment_completed === true) return Response.json(publicResult);
+  // Anti-enumeration: unknown email returns the generic code-sent message (no OTP, no Brevo).
+  if (!applicant) return Response.json(publicResult);
 
+  // Completed applicant: do NOT send an OTP or call Brevo. Return a narrowly scoped,
+  // signed completed-status session token so the applicant can view their status. This
+  // token cannot start/submit an assessment (those require purpose: 'applicant-session').
+  // No score/result/id is disclosed beyond the fact that the application is complete.
+  if (applicant.assessment_completed === true) {
+    return Response.json({
+      completed: true,
+      redirectTo: '/status',
+      sessionToken: await createCompletedStatusSession(applicant.id, email),
+    });
+  }
+
+  // Incomplete applicant: existing OTP + Brevo flow (unchanged).
   const latest = await getLatestOtp(base44, applicant.id);
   const lastSent = latest?.sent_at ? new Date(latest.sent_at).getTime() : 0;
   if (lastSent && Date.now() - lastSent < 60_000) return Response.json(publicResult);
