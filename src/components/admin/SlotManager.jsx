@@ -193,6 +193,12 @@ export default function SlotManager() {
     }
   };
 
+  // Display only current/future slots. A slot that has already started is past.
+  // Comparison is by instant (UTC ms); Africa/Lagos is the display timezone.
+  const now = Date.now();
+  const visibleSlots = slots.filter(s => new Date(s.slot_datetime).getTime() >= now);
+  const hiddenCount = slots.length - visibleSlots.length;
+
   return (
     <div className="space-y-4">
 
@@ -316,15 +322,21 @@ export default function SlotManager() {
         </div>
       )}
 
-      {/* Slot list */}
+      {/* Slot list — past slots are hidden, not deleted */}
       {loading ? (
         <p className="text-sm text-[#7A7A8A]">Loading slots…</p>
-      ) : slots.length === 0 ? (
-        <p className="text-sm text-[#7A7A8A] text-center py-4">No slots created yet.</p>
+      ) : visibleSlots.length === 0 ? (
+        <div className="space-y-1">
+          <p className="text-sm text-[#7A7A8A] text-center py-4">{slots.length > 0 ? 'No current or upcoming slots.' : 'No slots created yet.'}</p>
+          {hiddenCount > 0 && <p className="text-[10px] text-[#7A7A8A] text-center">Past slots are hidden ({hiddenCount}).</p>}
+        </div>
       ) : (
         <div className="space-y-2">
-          <p className="text-[10px] text-[#7A7A8A] font-semibold uppercase tracking-wide">{slots.length} slot{slots.length !== 1 ? 's' : ''} total</p>
-          {slots.map(slot => (
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-[#7A7A8A] font-semibold uppercase tracking-wide">{visibleSlots.length} slot{visibleSlots.length !== 1 ? 's' : ''} upcoming</p>
+            {hiddenCount > 0 && <p className="text-[10px] text-[#7A7A8A]">Past slots are hidden ({hiddenCount})</p>}
+          </div>
+          {visibleSlots.map(slot => (
             <div key={slot.id} className={`flex items-start justify-between p-3 rounded-[10px] border text-sm ${
               slot.is_booked ? 'bg-[#F5F5F5] border-[#E2E8E2] opacity-60' : 'bg-white border-[#E2E8E2]'
             }`}>
