@@ -135,18 +135,16 @@ export default function SlotManager() {
     setSingleError('');
     setAdding(true);
     try {
-      const iso = lagosToUtc(newDate, newTime);
-      // Prevent duplicates: same datetime + same interviewer
-      const existing = await base44.entities.InterviewSlot.filter({ slot_datetime: iso });
-      const dup = existing.find(s => (s.interviewer || '') === (newInterviewer || '').trim());
-      if (dup) {
-        setSingleError('A slot already exists for this date, time, and interviewer.');
+      const res = await base44.functions.invoke('adminSlotManagement', {
+        action: 'create',
+        token: sessionStorage.getItem('transbill_admin_token'),
+        date: newDate, time: newTime,
+        interviewer: newInterviewer, location: newLocation,
+      });
+      if (!res?.data?.success) {
+        setSingleError(res?.data?.error || 'Unable to create slot.');
         return;
       }
-      await base44.entities.InterviewSlot.create({
-        slot_datetime: iso, location: newLocation,
-        interviewer: newInterviewer.trim(), is_booked: false,
-      });
       setNewDate(''); setNewTime(''); setNewLocation(''); setNewInterviewer('');
       await loadSlots();
     } catch (e) {
@@ -163,15 +161,18 @@ export default function SlotManager() {
     if (!bulkPreview.length) return;
     setBulkAdding(true);
     try {
-      // Check for duplicates among existing slots
-      const allSlots = await base44.entities.InterviewSlot.list('slot_datetime', 1000);
-      const existingKeys = new Set(allSlots.map(s => `${s.slot_datetime}|${(s.interviewer || '').trim()}`));
-      const duplicates = bulkPreview.filter(p => existingKeys.has(`${p.slot_datetime}|${(p.interviewer || '').trim()}`));
-      if (duplicates.length) {
-        setBulkError(`${duplicates.length} slot(s) already exist with the same datetime and interviewer. Please remove duplicates or change the times.`);
+      const res = await base44.functions.invoke('adminSlotManagement', {
+        action: 'bulkCreate',
+        token: sessionStorage.getItem('transbill_admin_token'),
+        dateFrom: bulkDateFrom, dateTo: bulkDateTo,
+        fromTime: bulkFrom, toTime: bulkTo,
+        intervalMins: Number(bulkInterval),
+        interviewers: bulkInterviewers, location: bulkLocation,
+      });
+      if (!res?.data?.success) {
+        setBulkError(res?.data?.error || 'Unable to create slots.');
         return;
       }
-      await base44.entities.InterviewSlot.bulkCreate(bulkPreview);
       setBulkDateFrom(''); setBulkDateTo(''); setBulkFrom('09:00'); setBulkTo('17:00');
       setBulkInterval(30); setBulkInterviewers(''); setBulkLocation('');
       setBulkPreview([]);
@@ -186,10 +187,18 @@ export default function SlotManager() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this slot?')) return;
     try {
-      await base44.entities.InterviewSlot.delete(id);
+      const res = await base44.functions.invoke('adminSlotManagement', {
+        action: 'delete',
+        token: sessionStorage.getItem('transbill_admin_token'),
+        slotId: id,
+      });
+      if (!res?.data?.success) {
+        alert(res?.data?.error || 'Unable to delete slot.');
+        return;
+      }
       setSlots(s => s.filter(x => x.id !== id));
-    } catch (_e) {
-      alert('Unable to delete slot. Please try again.');
+    } catch (e) {
+      alert(e?.response?.data?.error || e?.message || 'Unable to delete slot. Please try again.');
     }
   };
 
