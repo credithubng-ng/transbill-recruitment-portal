@@ -1,29 +1,25 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-import { getApplicationDeadline } from '../_shared/applicantSession.ts';
+import { verifyAdmin } from '../../shared/interviewSession.ts';
 
 const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://jobs.transbill.ng';
 
-async function hmac(data: string, secret: string) {
-  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
-  return Array.from(new Uint8Array(signature)).map(byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-async function validAdminToken(token: string, secret: string) {
-  if (!token || !secret) return false;
-  const separator = token.lastIndexOf('.');
-  if (separator < 1) return false;
-  const payload = token.substring(0, separator);
-  const expiresAt = Number(payload.split(':')[1]);
-  return expiresAt > Date.now() && token.substring(separator + 1) === await hmac(payload, secret);
+async function getApplicationDeadline(base44) {
+  const settings = await base44.asServiceRole.entities.AppSettings.filter({ settings_id: 'main' });
+  const value = settings?.[0]?.application_closes_at;
+  const timestamp = value ? new Date(value).getTime() : null;
+  return Number.isFinite(timestamp) ? timestamp : null;
 }
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { token } = await req.json();
-    if (!await validAdminToken(token, Deno.env.get('ADMIN_PASSWORD') || '')) {
+    const admin = await verifyAdmin(token);
+    if (!admin) {
       return Response.json({ error: 'Admin access required' }, { status: 403 });
+    }
+    if (admin.role === 'read_only') {
+      return Response.json({ error: 'Read-only users cannot send reminders.' }, { status: 403 });
     }
 
     const deadline = await getApplicationDeadline(base44);

@@ -1,0 +1,62 @@
+{
+  "name": "AdminUser",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Normalised lowercase email of the pre-approved admin user"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Human-friendly name shown in the admin UI"
+    },
+    "role": {
+      "type": "string",
+      "enum": [
+        "owner",
+        "admin",
+        "read_only"
+      ],
+      "default": "read_only"
+    },
+    "active": {
+      "type": "boolean",
+      "default": false
+    },
+    "approved_at": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string",
+      "description": "Email of the owner who approved this admin user"
+    },
+    "last_login_at": {
+      "type": "string"
+    },
+    "otp_hash": {
+      "type": "string",
+      "description": "HMAC-SHA256 of the current one-time login code; plaintext is never persisted. Cleared after successful verification."
+    },
+    "otp_expires_at": {
+      "type": "string"
+    },
+    "otp_sent_at": {
+      "type": "string",
+      "description": "Timestamp of the most recent OTP dispatch; used to enforce resend cooldown"
+    },
+    "otp_attempts": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "email",
+    "role"
+  ],
+  "rls": {
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false
+  }
+}

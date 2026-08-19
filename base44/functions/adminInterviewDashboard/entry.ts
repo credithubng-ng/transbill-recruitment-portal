@@ -5,7 +5,8 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { token } = await req.json();
-    if (!await verifyAdmin(token)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const admin = await verifyAdmin(token);
+    if (!admin) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const results = await base44.asServiceRole.entities.InterviewResult.list('-created_date', 500);
     const sessions = await base44.asServiceRole.entities.InterviewSession.list('-created_date', 500);

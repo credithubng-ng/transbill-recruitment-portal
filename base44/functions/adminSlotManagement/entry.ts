@@ -15,9 +15,13 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { token, action } = body;
 
-    // Authenticate via the shared admin-token verifier (HMAC over admin:<exp>).
-    if (!(await verifyAdmin(token))) {
+    // Authenticate via the shared admin-session verifier (returns uid/email/role).
+    const admin = await verifyAdmin(token);
+    if (!admin) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (admin.role === 'read_only') {
+      return Response.json({ error: 'Read-only users cannot manage slots.' }, { status: 403 });
     }
 
     // ---- DELETE (unbooked only) ----

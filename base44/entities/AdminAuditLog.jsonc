@@ -1,0 +1,42 @@
+{
+  "name": "AdminAuditLog",
+  "type": "object",
+  "properties": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "add",
+        "deactivate",
+        "activate",
+        "role_change"
+      ]
+    },
+    "target_email": {
+      "type": "string"
+    },
+    "target_role": {
+      "type": "string"
+    },
+    "performed_by": {
+      "type": "string",
+      "description": "Email of the admin user who performed the action"
+    },
+    "performed_at": {
+      "type": "string"
+    },
+    "details": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "action",
+    "target_email",
+    "performed_by"
+  ],
+  "rls": {
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false
+  }
+}

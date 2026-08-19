@@ -10,11 +10,14 @@ import ApplicantPanel from '../components/admin/ApplicantPanel';
 import SettingsPanel from '../components/admin/SettingsPanel';
 import ScheduleView from './ScheduleView';
 import AiInterviewReview from '../components/admin/AiInterviewReview';
-import { Download, LogOut, Settings, CalendarDays, Mail, Bot } from 'lucide-react';
+import AdminUsersPanel from '../components/admin/AdminUsersPanel';
+import { Download, LogOut, Settings, CalendarDays, Mail, Bot, Users } from 'lucide-react';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
   const [verifying, setVerifying] = useState(true);
+  const [adminInfo, setAdminInfo] = useState(null);
+  const [showAdminUsers, setShowAdminUsers] = useState(false);
 
   // Verify stored token server-side on every page load
   useEffect(() => {
@@ -22,10 +25,18 @@ export default function Admin() {
     if (!token) { setVerifying(false); return; }
     base44.functions.invoke('adminAuth', { action: 'verify', token })
       .then(res => {
-        if (res.data?.valid) setAuthenticated(true);
-        else sessionStorage.removeItem('transbill_admin_token');
+        if (res.data?.valid) {
+          setAuthenticated(true);
+          setAdminInfo(res.data.admin || JSON.parse(sessionStorage.getItem('transbill_admin_info') || 'null'));
+        } else {
+          sessionStorage.removeItem('transbill_admin_token');
+          sessionStorage.removeItem('transbill_admin_info');
+        }
       })
-      .catch(() => sessionStorage.removeItem('transbill_admin_token'))
+      .catch(() => {
+        sessionStorage.removeItem('transbill_admin_token');
+        sessionStorage.removeItem('transbill_admin_info');
+      })
       .finally(() => setVerifying(false));
   }, []);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
@@ -127,7 +138,9 @@ export default function Admin() {
   const handleLogout = () => {
     if (!confirm('Are you sure you want to log out?')) return;
     sessionStorage.removeItem('transbill_admin_token');
+    sessionStorage.removeItem('transbill_admin_info');
     setAuthenticated(false);
+    setAdminInfo(null);
   };
 
   const handleApplicantUpdate = (updated) => {
@@ -159,7 +172,7 @@ export default function Admin() {
     </div>
   );
 
-  if (!authenticated) return <AdminLogin onLogin={() => setAuthenticated(true)} />;
+  if (!authenticated) return <AdminLogin onLogin={(info) => { setAuthenticated(true); setAdminInfo(info); }} />;
 
   if (showSchedule) return <ScheduleView onBack={() => setShowSchedule(false)} />;
   if (showAiReview) return <AiInterviewReview onBack={() => setShowAiReview(false)} />;
@@ -171,6 +184,12 @@ export default function Admin() {
           <div className="flex items-center gap-3">
             <TransbillLogo />
             <span className="text-xs font-bold text-[#7A7A8A] bg-[#F8FAF8] px-2 py-0.5 rounded-full">ADMIN</span>
+            {adminInfo && (
+              <div className="hidden sm:flex items-center gap-2 text-xs">
+                <span className="text-[#7A7A8A]">{adminInfo.email}</span>
+                <span className="bg-[#EBF5EB] text-[#2D6A2F] px-2 py-0.5 rounded-full font-bold uppercase">{adminInfo.role.replace('_', ' ')}</span>
+              </div>
+            )}
           </div>
           <button onClick={handleLogout} className="text-[#7A7A8A] hover:text-[#1A1A1A] flex items-center gap-1.5 text-sm">
             <LogOut className="w-4 h-4" /> Logout
@@ -191,6 +210,11 @@ export default function Admin() {
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule
             </button>
+            {adminInfo?.role === 'owner' && (
+              <button onClick={() => setShowAdminUsers(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
+                <Users className="w-4 h-4" /> Admin Users
+              </button>
+            )}
             <button onClick={() => setShowSettings(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <Settings className="w-4 h-4" /> Settings
             </button>
@@ -248,6 +272,10 @@ export default function Admin() {
             setSettingsRecord(prev => ({ ...prev, ...saved }));
           }}
         />
+      )}
+
+      {showAdminUsers && (
+        <AdminUsersPanel onClose={() => setShowAdminUsers(false)} />
       )}
     </div>
   );

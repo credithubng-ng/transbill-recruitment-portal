@@ -1,28 +1,16 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
-
-async function verifyToken(token, secret) {
-  if (!token) return false;
-  const dotIndex = token.lastIndexOf('.');
-  if (dotIndex === -1) return false;
-  const payload = token.substring(0, dotIndex);
-  const sig = token.substring(dotIndex + 1);
-  const exp = parseInt(payload.split(':')[1], 10);
-  if (!exp || Date.now() > exp) return false;
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey('raw', encoder.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const sigBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(payload));
-  const expected = Array.from(new Uint8Array(sigBytes)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return sig === expected;
-}
+import { verifyAdmin } from '../../shared/interviewSession.ts';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { applicantId, outcome, notes, token } = await req.json();
-    const adminPassword = Deno.env.get('ADMIN_PASSWORD');
-    const valid = await verifyToken(token, adminPassword);
-    if (!valid) {
+    const admin = await verifyAdmin(token);
+    if (!admin) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+    if (admin.role === 'read_only') {
+      return Response.json({ error: 'Read-only users cannot record interview outcomes.' }, { status: 403 });
     }
     if (!['Pass', 'Fail', 'Hold'].includes(outcome)) {
       return Response.json({ error: 'Invalid interview outcome' }, { status: 400 });

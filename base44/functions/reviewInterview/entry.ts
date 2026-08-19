@@ -8,7 +8,9 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { token, result_id, decision, notes, reviewer } = await req.json();
-    if (!await verifyAdmin(token)) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    const admin = await verifyAdmin(token);
+    if (!admin) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (admin.role === 'read_only') return Response.json({ error: 'Read-only users cannot review interviews.' }, { status: 403 });
     if (!result_id || !DECISIONS.includes(decision)) return Response.json({ error: 'A valid decision is required.' }, { status: 400 });
     if (ADVERSE.includes(decision) && (!notes || notes.trim().length < 5)) {
       return Response.json({ error: 'Reviewer notes are required for this action.' }, { status: 400 });
