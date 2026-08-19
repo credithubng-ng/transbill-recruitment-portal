@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StatsCards({ applicants }) {
+export default function StatsCards({ applicants, onOutcomeClick }) {
   const total = applicants.length;
   const assessed = applicants.filter(a => a.assessment_completed).length;
   const interviewReady = applicants.filter(a => a.status === 'Interview Ready').length;
@@ -38,20 +38,12 @@ export default function StatsCards({ applicants }) {
       {/* Interview outcomes */}
       {(interviewPass + interviewFail + interviewHold) > 0 && (
         <div className="bg-white border border-[#E2E8E2] rounded-[14px] p-4">
-          <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes</p>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="text-center bg-[#EBF5EB] rounded-[10px] p-3">
-              <p className="text-[10px] text-[#2D6A2F] font-semibold mb-1">✓ Pass</p>
-              <p className="text-2xl font-extrabold text-[#2D6A2F]">{interviewPass}</p>
-            </div>
-            <div className="text-center bg-red-50 rounded-[10px] p-3">
-              <p className="text-[10px] text-[#D32F2F] font-semibold mb-1">✗ Fail</p>
-              <p className="text-2xl font-extrabold text-[#D32F2F]">{interviewFail}</p>
-            </div>
-            <div className="text-center bg-amber-50 rounded-[10px] p-3">
-              <p className="text-[10px] text-amber-600 font-semibold mb-1">⏸ Hold</p>
-              <p className="text-2xl font-extrabold text-amber-600">{interviewHold}</p>
-            </div>
+          <p className="text-xs font-bold text-[#7A7A8A] mb-3">Interview Outcomes — click any count to see applicants</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <OutcomeCard label="Total" count={interviewPass + interviewFail + interviewHold} outcomeKey="total" onClick={onOutcomeClick} />
+            <OutcomeCard label="✓ Pass" count={interviewPass} outcomeKey="Pass" onClick={onOutcomeClick} color="text-[#2D6A2F]" bg="bg-[#EBF5EB]" />
+            <OutcomeCard label="✗ Fail" count={interviewFail} outcomeKey="Fail" onClick={onOutcomeClick} color="text-[#D32F2F]" bg="bg-red-50" />
+            <OutcomeCard label="⏸ Hold" count={interviewHold} outcomeKey="Hold" onClick={onOutcomeClick} color="text-amber-600" bg="bg-amber-50" />
           </div>
         </div>
       )}
@@ -90,5 +82,19 @@ function StatCard({ label, value, color }) {
         )}
       </div>
     </div>
+  );
+}
+
+function OutcomeCard({ label, count, outcomeKey, onClick, color, bg }) {
+  const disabled = count === 0 || !onClick;
+  return (
+    <button
+      onClick={() => !disabled && onClick(outcomeKey)}
+      disabled={disabled}
+      className={`${bg || 'bg-[#F8FAF8]'} rounded-[10px] p-3 text-center transition-all ${disabled ? 'opacity-50 cursor-default' : 'hover:ring-2 hover:ring-[#2D6A2F]/30 cursor-pointer'}`}
+    >
+      <p className={`text-[10px] font-semibold mb-1 ${color || 'text-[#7A7A8A]'}`}>{label}</p>
+      <p className={`text-2xl font-extrabold ${color || 'text-[#1A1A1A]'}`}>{count}</p>
+    </button>
   );
 }

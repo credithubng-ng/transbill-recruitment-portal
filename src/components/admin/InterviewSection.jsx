@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Calendar, CheckCircle2, XCircle, PauseCircle, ChevronDown, ChevronUp, Link2, RefreshCw, Video, RotateCcw } from 'lucide-react';
 
-export default function InterviewSection({ applicant, onUpdate }) {
+export default function InterviewSection({ applicant, onUpdate, readOnly }) {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showOutcome, setShowOutcome] = useState(false);
 
@@ -161,7 +161,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
                   <Video className="w-3 h-3" /> Join Google Meet
                 </a>
               )}
-              <button onClick={handleResetBooking} disabled={resetting}
+              <button onClick={handleResetBooking} disabled={resetting || readOnly}
                 className="flex items-center gap-1.5 text-xs text-[#D32F2F] hover:text-[#B71C1C] font-semibold mt-1 disabled:opacity-50">
                 <RotateCcw className="w-3 h-3" /> {resetting ? 'Resetting...' : 'Reset Booking'}
               </button>
@@ -172,7 +172,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
             <p className="text-[#7A7A8A]">Awaiting booking</p>
           )}
           <div className="pt-1">
-            <button onClick={handleResendBookingLink} disabled={resending}
+            <button onClick={handleResendBookingLink} disabled={resending || readOnly}
               className="flex items-center gap-1.5 text-xs text-[#3A7D3C] hover:text-[#2D6A2F] font-semibold disabled:opacity-50">
               <RefreshCw className="w-3 h-3" /> {resending ? 'Sending...' : 'Resend Booking Link'}
             </button>
@@ -238,7 +238,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
           {schedError && <p className="text-[#D32F2F] text-xs font-medium">{schedError}</p>}
           <button
             onClick={handleSchedule}
-            disabled={scheduling}
+            disabled={scheduling || readOnly}
             className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold py-2.5 rounded-full text-sm transition-all"
           >
             {scheduling ? 'Scheduling...' : 'Schedule & Send Email'}
@@ -299,7 +299,7 @@ export default function InterviewSection({ applicant, onUpdate }) {
           {outcomeError && <p className="text-[#D32F2F] text-xs font-medium">{outcomeError}</p>}
           <button
             onClick={handleRecordOutcome}
-            disabled={recording || !outcome}
+            disabled={recording || !outcome || readOnly}
             className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold py-2.5 rounded-full text-sm transition-all"
           >
             {recording ? 'Saving...' : 'Record Outcome'}

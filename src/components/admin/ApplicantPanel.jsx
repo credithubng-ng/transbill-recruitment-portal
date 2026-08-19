@@ -23,7 +23,7 @@ function formatApplicationDate(value) {
   }).format(date);
 }
 
-export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
+export default function ApplicantPanel({ applicant, onClose, onUpdate, readOnly }) {
   const [notes, setNotes] = useState(applicant.admin_notes || '');
   const [status, setStatus] = useState(applicant.status);
   const [saving, setSaving] = useState(false);
@@ -93,8 +93,8 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           {/* Status */}
           <div>
             <label className="text-xs font-semibold text-[#7A7A8A] mb-1 block">Status</label>
-            <select value={status} onChange={e => setStatus(e.target.value)}
-              className="w-full px-3 py-2 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm">
+            <select value={status} onChange={e => setStatus(e.target.value)} disabled={readOnly}
+              className="w-full px-3 py-2 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm disabled:opacity-60">
               {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
@@ -180,14 +180,14 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           )}
 
           {/* Interview Section */}
-          <InterviewSection applicant={applicant} onUpdate={onUpdate} />
+          <InterviewSection applicant={applicant} onUpdate={onUpdate} readOnly={readOnly} />
 
           {/* AI Interview shortlist */}
           {applicant.assessment_completed && !['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
             <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-4">
               <div className="flex items-center gap-1.5 text-[#0D47A1] font-bold text-xs mb-2"><Bot className="w-4 h-4" /> Selection Interview</div>
               <p className="text-xs text-[#555555] mb-3">Shortlist this applicant for the Transbill Digital Selection Interview. The server verifies eligibility, integrity flags and role-fit (≥3 of 6 areas) before assigning a case variant.</p>
-              <button onClick={handleShortlist} disabled={shortlisting}
+              <button onClick={handleShortlist} disabled={shortlisting || readOnly}
                 className="w-full bg-[#1565C0] hover:bg-[#0D47A1] disabled:opacity-50 text-white font-bold text-sm py-2.5 rounded-full transition-all">
                 {shortlisting ? 'Checking...' : 'Shortlist for Selection Interview'}
               </button>
@@ -203,12 +203,12 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate }) {
           {/* Admin notes */}
           <div>
             <label className="text-xs font-semibold text-[#7A7A8A] mb-1 block">Admin Notes</label>
-            <textarea value={notes} onChange={e => setNotes(e.target.value)}
-              className="w-full px-3 py-2 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm min-h-[80px]"
+            <textarea value={notes} onChange={e => setNotes(e.target.value)} disabled={readOnly}
+              className="w-full px-3 py-2 rounded-[10px] border-[1.5px] border-[#E2E8E2] focus:border-[#2D6A2F] outline-none text-sm min-h-[80px] disabled:opacity-60"
               placeholder="Add notes about this candidate..." />
           </div>
 
-          <button onClick={handleSave} disabled={saving}
+          <button onClick={handleSave} disabled={saving || readOnly}
             className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white font-bold py-3 rounded-full transition-all">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>

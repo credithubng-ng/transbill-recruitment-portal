@@ -11,6 +11,7 @@ import SettingsPanel from '../components/admin/SettingsPanel';
 import ScheduleView from './ScheduleView';
 import AiInterviewReview from '../components/admin/AiInterviewReview';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
+import InterviewOutcomeDrilldown from '../components/admin/InterviewOutcomeDrilldown';
 import { Download, LogOut, Settings, CalendarDays, Mail, Bot, Users } from 'lucide-react';
 
 export default function Admin() {
@@ -18,6 +19,7 @@ export default function Admin() {
   const [verifying, setVerifying] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
   const [showAdminUsers, setShowAdminUsers] = useState(false);
+  const [outcomeDrilldown, setOutcomeDrilldown] = useState(null);
 
   // Verify stored token server-side on every page load
   useEffect(() => {
@@ -51,17 +53,19 @@ export default function Admin() {
   });
   const queryClient = useQueryClient();
 
-  const { data: applicants = [], isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['applicants'],
     queryFn: async () => {
       const token = sessionStorage.getItem('transbill_admin_token');
       const res = await base44.functions.invoke('adminGetApplicants', { token });
       if (res.data?.error) throw new Error(res.data.error);
-      return res.data?.applicants || [];
+      return { applicants: res.data?.applicants || [], interviewResults: res.data?.interviewResults || {} };
     },
     enabled: authenticated,
     retry: false,
   });
+  const applicants = data?.applicants || [];
+  const interviewResults = data?.interviewResults || {};
 
   // Load settings when authenticated
   useEffect(() => {
@@ -110,6 +114,14 @@ export default function Admin() {
       return bTime - aTime;
     });
   }, [applicants, filters]);
+
+  const drilldownApplicants = useMemo(() => {
+    if (!outcomeDrilldown) return [];
+    if (outcomeDrilldown === 'total') {
+      return applicants.filter(a => ['Pass', 'Fail', 'Hold'].includes(a.interview_outcome));
+    }
+    return applicants.filter(a => a.interview_outcome === outcomeDrilldown);
+  }, [outcomeDrilldown, applicants]);
 
   const exportCSV = () => {
     const headers = ['Full Name', 'Phone', 'Email', 'Lagos Resident', 'LASRRA ID', 'LASRRA Record Found', 'Employment Status', 'Two-Week Availability', 'Smartphone', 'Laptop', 'Internet', 'Willing Affiliate Role', 'Eligibility', 'Score %', 'Digital', 'Content & Leads', 'Trainability', 'Affiliate Recruitment', 'Performance', 'Recommendation', 'Status', 'Candidate Stage', 'Email Sent', 'Email Sent At', 'Gender', 'State', 'LGA', 'Education', 'Experience', 'Referral Source', 'Date Applied'];
@@ -248,7 +260,7 @@ export default function Admin() {
           </div>
         ) : !isError && (
           <>
-            <StatsCards applicants={applicants} />
+            <StatsCards applicants={applicants} onOutcomeClick={setOutcomeDrilldown} />
             <ApplicantFilters filters={filters} setFilters={setFilters} />
             <ApplicantTable applicants={filtered} onSelectApplicant={setSelectedApplicant} />
           </>
@@ -260,6 +272,18 @@ export default function Admin() {
           applicant={selectedApplicant}
           onClose={() => setSelectedApplicant(null)}
           onUpdate={handleApplicantUpdate}
+          readOnly={adminInfo?.role === 'read_only'}
+        />
+      )}
+
+      {outcomeDrilldown && (
+        <InterviewOutcomeDrilldown
+          title={outcomeDrilldown === 'total' ? 'All Interview Outcomes' : `Interview Outcome: ${outcomeDrilldown}`}
+          count={drilldownApplicants.length}
+          applicants={drilldownApplicants}
+          interviewResults={interviewResults}
+          onSelectApplicant={(a) => { setOutcomeDrilldown(null); setSelectedApplicant(a); }}
+          onClose={() => setOutcomeDrilldown(null)}
         />
       )}
 
