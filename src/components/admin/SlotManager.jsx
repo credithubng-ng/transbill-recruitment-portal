@@ -10,7 +10,17 @@ function formatSlot(iso) {
   });
 }
 
-// Generate ISO strings for all slots in the bulk config across a date range
+// Lagos timezone offset: UTC+1. All date/time inputs are interpreted as
+// Africa/Lagos regardless of the admin's browser-local timezone.
+const LAGOS_OFFSET = '+01:00';
+
+// Build an ISO UTC string from a YYYY-MM-DD date + HH:MM time interpreted as Lagos time.
+function lagosToUtc(dateStr, timeStr) {
+  return new Date(`${dateStr}T${timeStr}:00${LAGOS_OFFSET}`).toISOString();
+}
+
+// Generate slot objects for all slots in the bulk config across a date range.
+// All times are interpreted as Africa/Lagos (UTC+1), not browser-local.
 function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, interviewers, location }) {
   const slots = [];
   const [fH, fM] = fromTime.split(':').map(Number);
@@ -18,15 +28,16 @@ function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, i
   const startMins = fH * 60 + fM;
   const endMins = tH * 60 + tM;
 
-  // Iterate each date in range
-  const start = new Date(dateFrom + 'T12:00:00');
-  const end = new Date(dateTo + 'T12:00:00');
+  // Iterate each date in range. Date strings are YYYY-MM-DD; we use T00:00:00
+  // purely to iterate calendar days — the time portion is not used for slots.
+  const start = new Date(dateFrom + 'T00:00:00');
+  const end = new Date(dateTo + 'T00:00:00');
   for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
     const dateStr = d.toISOString().slice(0, 10);
     for (let mins = startMins; mins + intervalMins <= endMins; mins += intervalMins) {
       const h = String(Math.floor(mins / 60)).padStart(2, '0');
       const m = String(mins % 60).padStart(2, '0');
-      const iso = new Date(`${dateStr}T${h}:${m}:00`).toISOString();
+      const iso = lagosToUtc(dateStr, `${h}:${m}`);
       interviewers.forEach(interviewer => {
         slots.push({ slot_datetime: iso, location, interviewer: interviewer.trim(), is_booked: false });
       });
@@ -35,10 +46,36 @@ function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, i
   return slots;
 }
 
+// Validate single slot fields. Returns an error string or null.
+function validateSingle(date, time) {
+  if (!date) return 'Please select a date.';
+  if (!time) return 'Please select a time.';
+  const iso = lagosToUtc(date, time);
+  if (new Date(iso) <= new Date()) return 'Cannot create a slot in the past. Please choose a future date and time.';
+  return null;
+}
+
+// Validate bulk fields. Returns an error string or null.
+function validateBulk(dateFrom, dateTo, fromTime, toTime, intervalMins, interviewers) {
+  if (!dateFrom) return 'Please select a From Date.';
+  if (!dateTo) return 'Please select a To Date.';
+  if (dateTo < dateFrom) return 'To Date must be on or after From Date.';
+  if (!fromTime) return 'Please set a From time.';
+  if (!toTime) return 'Please set a To time.';
+  const [fH, fM] = fromTime.split(':').map(Number);
+  const [tH, tM] = toTime.split(':').map(Number);
+  if (fH * 60 + fM >= tH * 60 + tM) return 'To time must be after From time.';
+  if (!intervalMins || intervalMins < 1) return 'Interval must be at least 1 minute.';
+  if (!interviewers.trim()) return 'Please enter at least one interviewer.';
+  const firstIso = lagosToUtc(dateFrom, fromTime);
+  if (new Date(firstIso) <= new Date()) return 'The first slot would be in the past. Please choose a future From Date or time.';
+  return null;
+}
+
 export default function SlotManager() {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState('single'); // 'single' | 'bulk'
+  const [mode, setMode] = useState('single');
 
   // Single slot state
   const [newDate, setNewDate] = useState('');
@@ -46,6 +83,7 @@ export default function SlotManager() {
   const [newLocation, setNewLocation] = useState('');
   const [newInterviewer, setNewInterviewer] = useState('');
   const [adding, setAdding] = useState(false);
+  const [singleError, setSingleError] = useState('');
 
   // Bulk state
   const [bulkDateFrom, setBulkDateFrom] = useState('');
@@ -57,11 +95,20 @@ export default function SlotManager() {
   const [bulkLocation, setBulkLocation] = useState('');
   const [bulkPreview, setBulkPreview] = useState([]);
   const [bulkAdding, setBulkAdding] = useState(false);
+  const [bulkError, setBulkError] = useState('');
+
+  // Today's date in Lagos for the min attribute on date inputs.
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Lagos' });
 
   const loadSlots = async () => {
-    const all = await base44.entities.InterviewSlot.list('slot_datetime', 1000);
-    setSlots(all);
-    setLoading(false);
+    try {
+      const all = await base44.entities.InterviewSlot.list('slot_datetime', 1000);
+      setSlots(all);
+    } catch (_e) {
+      // Load errors don't block the form — slots list stays empty.
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { loadSlots(); }, []);
@@ -83,33 +130,67 @@ export default function SlotManager() {
   }, [bulkDateFrom, bulkDateTo, bulkFrom, bulkTo, bulkInterval, bulkInterviewers, bulkLocation]);
 
   const handleAddSingle = async () => {
-    if (!newDate || !newTime) return;
+    const err = validateSingle(newDate, newTime);
+    if (err) { setSingleError(err); return; }
+    setSingleError('');
     setAdding(true);
-    const iso = new Date(`${newDate}T${newTime}:00`).toISOString();
-    await base44.entities.InterviewSlot.create({
-      slot_datetime: iso, location: newLocation,
-      interviewer: newInterviewer, is_booked: false,
-    });
-    setNewDate(''); setNewTime(''); setNewLocation(''); setNewInterviewer('');
-    await loadSlots();
-    setAdding(false);
+    try {
+      const iso = lagosToUtc(newDate, newTime);
+      // Prevent duplicates: same datetime + same interviewer
+      const existing = await base44.entities.InterviewSlot.filter({ slot_datetime: iso });
+      const dup = existing.find(s => (s.interviewer || '') === (newInterviewer || '').trim());
+      if (dup) {
+        setSingleError('A slot already exists for this date, time, and interviewer.');
+        return;
+      }
+      await base44.entities.InterviewSlot.create({
+        slot_datetime: iso, location: newLocation,
+        interviewer: newInterviewer.trim(), is_booked: false,
+      });
+      setNewDate(''); setNewTime(''); setNewLocation(''); setNewInterviewer('');
+      await loadSlots();
+    } catch (e) {
+      setSingleError(e?.response?.data?.error || e?.message || 'Unable to create slot. Please try again.');
+    } finally {
+      setAdding(false);
+    }
   };
 
   const handleAddBulk = async () => {
+    const err = validateBulk(bulkDateFrom, bulkDateTo, bulkFrom, bulkTo, bulkInterval, bulkInterviewers);
+    if (err) { setBulkError(err); return; }
+    setBulkError('');
     if (!bulkPreview.length) return;
     setBulkAdding(true);
-    await base44.entities.InterviewSlot.bulkCreate(bulkPreview);
-    setBulkDateFrom(''); setBulkDateTo(''); setBulkFrom('09:00'); setBulkTo('17:00');
-    setBulkInterval(30); setBulkInterviewers(''); setBulkLocation('');
-    setBulkPreview([]);
-    await loadSlots();
-    setBulkAdding(false);
+    try {
+      // Check for duplicates among existing slots
+      const allSlots = await base44.entities.InterviewSlot.list('slot_datetime', 1000);
+      const existingKeys = new Set(allSlots.map(s => `${s.slot_datetime}|${(s.interviewer || '').trim()}`));
+      const duplicates = bulkPreview.filter(p => existingKeys.has(`${p.slot_datetime}|${(p.interviewer || '').trim()}`));
+      if (duplicates.length) {
+        setBulkError(`${duplicates.length} slot(s) already exist with the same datetime and interviewer. Please remove duplicates or change the times.`);
+        return;
+      }
+      await base44.entities.InterviewSlot.bulkCreate(bulkPreview);
+      setBulkDateFrom(''); setBulkDateTo(''); setBulkFrom('09:00'); setBulkTo('17:00');
+      setBulkInterval(30); setBulkInterviewers(''); setBulkLocation('');
+      setBulkPreview([]);
+      await loadSlots();
+    } catch (e) {
+      setBulkError(e?.response?.data?.error || e?.message || 'Unable to create slots. Please try again.');
+    } finally {
+      setBulkAdding(false);
+    }
   };
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this slot?')) return;
-    await base44.entities.InterviewSlot.delete(id);
-    setSlots(s => s.filter(x => x.id !== id));
+    try {
+      await base44.entities.InterviewSlot.delete(id);
+      setSlots(s => s.filter(x => x.id !== id));
+    } catch (_e) {
+      alert('Unable to delete slot. Please try again.');
+    }
   };
 
   return (
@@ -132,13 +213,13 @@ export default function SlotManager() {
         <div className="bg-[#F8FAF8] rounded-[10px] p-4 space-y-3 border border-[#E2E8E2]">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-[#7A7A8A] font-medium">Date</label>
-              <input type="date" value={newDate} onChange={e => setNewDate(e.target.value)}
+              <label className="text-[10px] text-[#7A7A8A] font-medium">Date (Lagos)</label>
+              <input type="date" value={newDate} min={todayStr} onChange={e => { setNewDate(e.target.value); setSingleError(''); }}
                 className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
             </div>
             <div>
               <label className="text-[10px] text-[#7A7A8A] font-medium">Time (WAT)</label>
-              <input type="time" value={newTime} onChange={e => setNewTime(e.target.value)}
+              <input type="time" value={newTime} onChange={e => { setNewTime(e.target.value); setSingleError(''); }}
                 className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
             </div>
           </div>
@@ -154,6 +235,7 @@ export default function SlotManager() {
               placeholder="e.g. 5 Broad St or https://meet.google.com/..."
               className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
           </div>
+          {singleError && <p className="text-xs text-[#D32F2F] font-medium">{singleError}</p>}
           <button onClick={handleAddSingle} disabled={adding || !newDate || !newTime}
             className="flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-full transition-all">
             <Plus className="w-4 h-4" /> {adding ? 'Adding...' : 'Add Slot'}
@@ -164,16 +246,16 @@ export default function SlotManager() {
       {/* Bulk form */}
       {mode === 'bulk' && (
         <div className="bg-[#F8FAF8] rounded-[10px] p-4 space-y-3 border border-[#E2E8E2]">
-          <p className="text-xs text-[#7A7A8A]">Generate many slots at once across a date range. One slot per interviewer per time block per day.</p>
+          <p className="text-xs text-[#7A7A8A]">Generate many slots at once across a date range. All times are in Lagos time (WAT / UTC+1). One slot per interviewer per time block per day.</p>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-[#7A7A8A] font-medium">From Date</label>
-              <input type="date" value={bulkDateFrom} onChange={e => setBulkDateFrom(e.target.value)}
+              <label className="text-[10px] text-[#7A7A8A] font-medium">From Date (Lagos)</label>
+              <input type="date" value={bulkDateFrom} min={todayStr} onChange={e => { setBulkDateFrom(e.target.value); setBulkError(''); }}
                 className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
             </div>
             <div>
-              <label className="text-[10px] text-[#7A7A8A] font-medium">To Date</label>
-              <input type="date" value={bulkDateTo} min={bulkDateFrom} onChange={e => setBulkDateTo(e.target.value)}
+              <label className="text-[10px] text-[#7A7A8A] font-medium">To Date (Lagos)</label>
+              <input type="date" value={bulkDateTo} min={bulkDateFrom || todayStr} onChange={e => { setBulkDateTo(e.target.value); setBulkError(''); }}
                 className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
             </div>
           </div>
@@ -224,6 +306,8 @@ export default function SlotManager() {
               </div>
             </div>
           )}
+
+          {bulkError && <p className="text-xs text-[#D32F2F] font-medium">{bulkError}</p>}
 
           <button onClick={handleAddBulk} disabled={bulkAdding || bulkPreview.length === 0}
             className="flex items-center gap-2 bg-[#3A7D3C] hover:bg-[#4A9A4D] disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-full transition-all">
