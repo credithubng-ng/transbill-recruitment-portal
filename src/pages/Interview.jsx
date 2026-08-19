@@ -26,9 +26,15 @@ export default function Interview() {
   const [paused, setPaused] = useState(false);
   const [techInterruptions, setTechInterruptions] = useState(0);
   const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
+  const [playbackError, setPlaybackError] = useState(null);
+  const [micError, setMicError] = useState(null);
   const recognitionRef = useRef(null);
   const startTimeRef = useRef(Date.now());
   const pausedAtRef = useRef(null);
+  const voicesRef = useRef([]);
+  const playGenRef = useRef(0);
+  const recLangRef = useRef('en-NG');
 
   // Load session
   useEffect(() => {
@@ -66,20 +72,117 @@ export default function Interview() {
     return () => clearInterval(interval);
   }, [phase, paused]);
 
-  const speak = (text) => {
-    if ('speechSynthesis' in window) {
+  // Preload speechSynthesis voices. Chrome populates getVoices() asynchronously
+  // via the voiceschanged event — without caching, speak() can fire before any
+  // voice is available and produce no audio.
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    const loadVoices = () => {
+      const v = window.speechSynthesis.getVoices();
+      if (v && v.length) voicesRef.current = v;
+    };
+    loadVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    return () => {
+      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      playGenRef.current++;
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      window.speechSynthesis.speak(u);
+    };
+  }, []);
+
+  // Stop speech when phase or question changes so audio doesn't carry over.
+  useEffect(() => {
+    return () => {
+      playGenRef.current++;
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, [phase, qIndex, adaptiveOffered]);
+
+  const pickVoice = () => {
+    const voices = voicesRef.current;
+    if (!voices || !voices.length) return null;
+    for (const lang of ['en-NG', 'en-GB', 'en-US']) {
+      const exact = voices.find(v => v.lang === lang);
+      if (exact) return exact;
     }
+    return voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || null;
+  };
+
+  const splitIntoChunks = (text) => {
+    if (!text) return [];
+    const sentences = text.match(/[^.!?]+[.!?]*\s*/g) || [text];
+    const chunks = [];
+    let current = '';
+    for (const s of sentences) {
+      if ((current + s).length > 200 && current) {
+        chunks.push(current.trim());
+        current = s;
+      } else {
+        current += s;
+      }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    return chunks.length ? chunks : [text];
+  };
+
+  const stopSpeaking = () => {
+    playGenRef.current++;
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeaking(false);
+  };
+
+  const speak = (text) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setPlaybackError('Voice playback is not available on this device. You can read the text above instead.');
+      return;
+    }
+    setPlaybackError(null);
+    const gen = ++playGenRef.current;
+    window.speechSynthesis.cancel();
+    const chunks = splitIntoChunks(text);
+    const voice = pickVoice();
+    const lang = voice ? voice.lang : 'en-GB';
+    let idx = 0;
+    const playChunk = () => {
+      if (gen !== playGenRef.current) return;
+      if (idx >= chunks.length) { setSpeaking(false); return; }
+      const u = new SpeechSynthesisUtterance(chunks[idx]);
+      if (voice) u.voice = voice;
+      u.lang = lang;
+      u.rate = 0.92;
+      u.pitch = 1;
+      u.volume = 1;
+      u.onstart = () => { if (gen === playGenRef.current) setSpeaking(true); };
+      u.onend = () => { idx++; playChunk(); };
+      u.onerror = (e) => {
+        if (gen !== playGenRef.current) return;
+        setSpeaking(false);
+        if (e && e.error !== 'canceled' && e.error !== 'interrupted') {
+          setPlaybackError('Voice playback was interrupted. Try again or read the text above.');
+        }
+      };
+      try { window.speechSynthesis.speak(u); }
+      catch (_e) { if (gen === playGenRef.current) { setSpeaking(false); setPlaybackError('Voice playback is not available on this device.'); } }
+    };
+    // Small delay avoids the Chrome cancel-then-speak race.
+    setTimeout(playChunk, 60);
   };
 
   const startListening = () => {
     if (!SpeechRecognition) return;
+    stopSpeaking();
+    setMicError(null);
     const rec = new SpeechRecognition();
     rec.continuous = true;
     rec.interimResults = true;
-    rec.lang = 'en-US';
+    // Prefer Nigerian English; Chrome falls back to its default English if
+    // en-NG is unsupported. If the browser explicitly rejects en-NG we retry
+    // with en-GB (see onerror below).
+    rec.lang = recLangRef.current;
     let finalText = answer;
     rec.onresult = (e) => {
       let interim = '';
@@ -90,11 +193,32 @@ export default function Interview() {
       }
       setAnswer(finalText + interim);
     };
-    rec.onerror = () => setListening(false);
+    rec.onerror = (e) => {
+      setListening(false);
+      if (recognitionRef.current === rec) recognitionRef.current = null;
+      if (e.error === 'language-not-supported' && recLangRef.current !== 'en-GB') {
+        recLangRef.current = 'en-GB';
+        setTimeout(() => startListening(), 200);
+        return;
+      }
+      const msgs = {
+        'not-allowed': 'Microphone access was blocked. Allow microphone access in your browser settings, or type your answer instead.',
+        'service-not-allowed': 'Microphone access was blocked. Allow microphone access in your browser settings, or type your answer instead.',
+        'audio-capture': 'No microphone was found. Connect a microphone or type your answer instead.',
+        'network': 'Speech recognition needs an internet connection. Check your connection or type your answer instead.',
+        'no-speech': 'No speech was detected. Try speaking again or type your answer instead.',
+      };
+      setMicError(msgs[e.error] || 'Speech recognition stopped. You can type your answer instead.');
+    };
     rec.onend = () => setListening(false);
-    rec.start();
-    recognitionRef.current = rec;
-    setListening(true);
+    try {
+      rec.start();
+      recognitionRef.current = rec;
+      setListening(true);
+    } catch (_e) {
+      setListening(false);
+      setMicError('Unable to start speech recognition. You can type your answer instead.');
+    }
   };
 
   const stopListening = () => {
@@ -239,7 +363,7 @@ export default function Interview() {
         )}
 
         {phase === 'case' && (
-          <CaseScreen caseData={caseData} onReady={() => { setPhase('question'); }} onSpeak={speak} />
+          <CaseScreen caseData={caseData} onReady={() => { setPhase('question'); }} onSpeak={speak} speaking={speaking} onStop={stopSpeaking} playbackError={playbackError} />
         )}
 
         {phase === 'question' && !adaptiveOffered && (
@@ -251,8 +375,8 @@ export default function Interview() {
               {currentAdaptiveTurn ? currentAdaptiveTurn.question : coreQs[qIndex]}
             </h2>
             <div className="flex gap-2 mb-3">
-              <button onClick={() => speak(currentAdaptiveTurn ? currentAdaptiveTurn.question : coreQs[qIndex])} className="text-xs flex items-center gap-1.5 text-[#2D6A2F] font-semibold border border-[#2D6A2F]/30 rounded-full px-3 py-1.5 hover:bg-[#EBF5EB]">
-                <Volume2 className="w-3.5 h-3.5" /> Read aloud
+              <button onClick={() => speaking ? stopSpeaking() : speak(currentAdaptiveTurn ? currentAdaptiveTurn.question : coreQs[qIndex])} className={`text-xs flex items-center gap-1.5 font-semibold border rounded-full px-3 py-1.5 ${speaking ? 'border-[#2D6A2F] text-white bg-[#2D6A2F]' : 'border-[#2D6A2F]/30 text-[#2D6A2F] hover:bg-[#EBF5EB]'}`}>
+                {speaking ? <><MicOff className="w-3.5 h-3.5" /> Stop</> : <><Volume2 className="w-3.5 h-3.5" /> Read aloud</>}
               </button>
               {SpeechRecognition && (
                 <button onClick={listening ? stopListening : startListening} className={`text-xs flex items-center gap-1.5 font-semibold border rounded-full px-3 py-1.5 ${listening ? 'border-red-300 text-red-600 bg-red-50' : 'border-[#2D6A2F]/30 text-[#2D6A2F] hover:bg-[#EBF5EB]'}`}>
@@ -260,6 +384,8 @@ export default function Interview() {
                 </button>
               )}
             </div>
+            {playbackError && <p className="text-xs text-[#D32F2F] mb-2">{playbackError}</p>}
+            {micError && <p className="text-xs text-[#D32F2F] mb-2">{micError}</p>}
             <textarea value={answer} onChange={e => setAnswer(e.target.value)} placeholder="Type or speak your answer..." rows={6}
               className="w-full border-2 border-[#E2E8E2] rounded-[12px] p-4 text-sm focus:border-[#2D6A2F] focus:outline-none resize-none" />
             <p className="text-xs text-[#7A7A8A] mt-2">Only your written transcript is saved — audio is not stored.</p>
@@ -349,7 +475,7 @@ function ConsentScreen({ caseData, onConsent }) {
   );
 }
 
-function CaseScreen({ caseData, onReady, onSpeak }) {
+function CaseScreen({ caseData, onReady, onSpeak, speaking, onStop, playbackError }) {
   return (
     <div className="max-w-xl mx-auto py-6">
       <p className="text-xs font-semibold text-[#2D6A2F] uppercase mb-1">Case {caseData?.variant_id} · {caseData?.title}</p>
@@ -361,9 +487,10 @@ function CaseScreen({ caseData, onReady, onSpeak }) {
         <p className="text-xs text-amber-900 font-semibold mb-1">Common rules</p>
         <p className="text-xs text-amber-800 leading-relaxed whitespace-pre-line">{caseData?.common_rules}</p>
       </div>
-      <button onClick={() => onSpeak(caseData?.scenario)} className="text-xs flex items-center gap-1.5 text-[#2D6A2F] font-semibold border border-[#2D6A2F]/30 rounded-full px-3 py-1.5 hover:bg-[#EBF5EB] mb-4">
-        <Volume2 className="w-3.5 h-3.5" /> Read scenario aloud
+      <button onClick={() => speaking ? onStop() : onSpeak(caseData?.scenario)} className={`text-xs flex items-center gap-1.5 font-semibold border rounded-full px-3 py-1.5 mb-4 ${speaking ? 'border-[#2D6A2F] text-white bg-[#2D6A2F]' : 'border-[#2D6A2F]/30 text-[#2D6A2F] hover:bg-[#EBF5EB]'}`}>
+        {speaking ? <><MicOff className="w-3.5 h-3.5" /> Stop</> : <><Volume2 className="w-3.5 h-3.5" /> Read scenario aloud</>}
       </button>
+      {playbackError && <p className="text-xs text-[#D32F2F] mb-3">{playbackError}</p>}
       <button onClick={onReady} className="w-full bg-[#3A7D3C] hover:bg-[#4A9A4D] text-white font-bold text-base py-3.5 rounded-full transition-all flex items-center justify-center gap-2">
         I'm ready to answer <ArrowRight className="w-4 h-4" />
       </button>
