@@ -9,6 +9,23 @@ function lagosToUtc(dateStr: string, timeStr: string): string {
   return new Date(`${dateStr}T${timeStr}:00${LAGOS_OFFSET}`).toISOString();
 }
 
+// Iterate YYYY-MM-DD calendar days from dateFrom to dateTo (inclusive) using
+// Date.UTC for both construction and extraction — never new Date('YYYY-MM-DD')
+// or toISOString().slice(0,10), which shift the day via the server's local tz.
+function eachYmd(dateFrom: string, dateTo: string): string[] {
+  const [fy, fm, fd] = dateFrom.split('-').map(Number);
+  const [ey, em, ed] = dateTo.split('-').map(Number);
+  const out: string[] = [];
+  let ms = Date.UTC(fy, fm - 1, fd);
+  const endMs = Date.UTC(ey, em - 1, ed);
+  while (ms <= endMs) {
+    const dt = new Date(ms);
+    out.push(`${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`);
+    ms += 86400000;
+  }
+  return out;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -95,10 +112,7 @@ Deno.serve(async (req) => {
       const slots: any[] = [];
       const startMins = fH * 60 + fM;
       const endMins = tH * 60 + tM;
-      const start = new Date(dateFrom + 'T00:00:00');
-      const end = new Date(dateTo + 'T00:00:00');
-      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        const dateStr = d.toISOString().slice(0, 10);
+      for (const dateStr of eachYmd(dateFrom, dateTo)) {
         for (let mins = startMins; mins + interval <= endMins; mins += interval) {
           const h = String(Math.floor(mins / 60)).padStart(2, '0');
           const m = String(mins % 60).padStart(2, '0');

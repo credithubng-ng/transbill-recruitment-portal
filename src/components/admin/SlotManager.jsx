@@ -19,6 +19,24 @@ function lagosToUtc(dateStr, timeStr) {
   return new Date(`${dateStr}T${timeStr}:00${LAGOS_OFFSET}`).toISOString();
 }
 
+// Iterate YYYY-MM-DD calendar days from dateFrom to dateTo (inclusive).
+// Uses Date.UTC for both construction and extraction so the browser's local
+// timezone never shifts the calendar day. Never use new Date('YYYY-MM-DD') or
+// toISOString().slice(0,10) to derive a civil date — that is the off-by-one root cause.
+function eachYmd(dateFrom, dateTo) {
+  const [fy, fm, fd] = dateFrom.split('-').map(Number);
+  const [ey, em, ed] = dateTo.split('-').map(Number);
+  const out = [];
+  let ms = Date.UTC(fy, fm - 1, fd);
+  const endMs = Date.UTC(ey, em - 1, ed);
+  while (ms <= endMs) {
+    const dt = new Date(ms);
+    out.push(`${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, '0')}-${String(dt.getUTCDate()).padStart(2, '0')}`);
+    ms += 86400000;
+  }
+  return out;
+}
+
 // Generate slot objects for all slots in the bulk config across a date range.
 // All times are interpreted as Africa/Lagos (UTC+1), not browser-local.
 function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, interviewers, location }) {
@@ -27,18 +45,14 @@ function generateBulkSlots({ dateFrom, dateTo, fromTime, toTime, intervalMins, i
   const [tH, tM] = toTime.split(':').map(Number);
   const startMins = fH * 60 + fM;
   const endMins = tH * 60 + tM;
-
-  // Iterate each date in range. Date strings are YYYY-MM-DD; we use T00:00:00
-  // purely to iterate calendar days — the time portion is not used for slots.
-  const start = new Date(dateFrom + 'T00:00:00');
-  const end = new Date(dateTo + 'T00:00:00');
-  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    const dateStr = d.toISOString().slice(0, 10);
+  // No interviewers → one slot per time block with blank interviewer.
+  const interviewerList = interviewers.length > 0 ? interviewers : [''];
+  for (const dateStr of eachYmd(dateFrom, dateTo)) {
     for (let mins = startMins; mins + intervalMins <= endMins; mins += intervalMins) {
       const h = String(Math.floor(mins / 60)).padStart(2, '0');
       const m = String(mins % 60).padStart(2, '0');
       const iso = lagosToUtc(dateStr, `${h}:${m}`);
-      interviewers.forEach(interviewer => {
+      interviewerList.forEach(interviewer => {
         slots.push({ slot_datetime: iso, location, interviewer: interviewer.trim(), is_booked: false });
       });
     }
@@ -66,7 +80,6 @@ function validateBulk(dateFrom, dateTo, fromTime, toTime, intervalMins, intervie
   const [tH, tM] = toTime.split(':').map(Number);
   if (fH * 60 + fM >= tH * 60 + tM) return 'To time must be after From time.';
   if (!intervalMins || intervalMins < 1) return 'Interval must be at least 1 minute.';
-  if (!interviewers.trim()) return 'Please enter at least one interviewer.';
   const firstIso = lagosToUtc(dateFrom, fromTime);
   if (new Date(firstIso) <= new Date()) return 'The first slot would be in the past. Please choose a future From Date or time.';
   return null;
@@ -115,13 +128,12 @@ export default function SlotManager() {
 
   // Live preview for bulk
   useEffect(() => {
-    if (!bulkDateFrom || !bulkDateTo || !bulkFrom || !bulkTo || !bulkInterval || !bulkInterviewers.trim()) {
+    if (!bulkDateFrom || !bulkDateTo || !bulkFrom || !bulkTo || !bulkInterval) {
       setBulkPreview([]);
       return;
     }
     if (bulkDateTo < bulkDateFrom) { setBulkPreview([]); return; }
     const interviewers = bulkInterviewers.split(',').map(s => s.trim()).filter(Boolean);
-    if (!interviewers.length) { setBulkPreview([]); return; }
     const preview = generateBulkSlots({
       dateFrom: bulkDateFrom, dateTo: bulkDateTo, fromTime: bulkFrom, toTime: bulkTo,
       intervalMins: Number(bulkInterval), interviewers, location: bulkLocation
@@ -294,7 +306,7 @@ export default function SlotManager() {
             </div>
           </div>
           <div>
-            <label className="text-[10px] text-[#7A7A8A] font-medium">Interviewers (comma-separated)</label>
+            <label className="text-[10px] text-[#7A7A8A] font-medium">Interviewers (comma-separated, optional)</label>
             <input type="text" value={bulkInterviewers} onChange={e => setBulkInterviewers(e.target.value)}
               placeholder="e.g. Amaka Obi, Tunde Adeyemi, Chidi Nwosu"
               className="w-full mt-0.5 px-3 py-2 rounded-lg border border-[#E2E8E2] text-sm focus:border-[#2D6A2F] outline-none" />
