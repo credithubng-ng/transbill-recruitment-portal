@@ -222,6 +222,11 @@ export default function SlotManager() {
 
   return (
     <div className="space-y-4">
+      <div className="bg-[#FFF3E0] border border-[#F57C00]/30 rounded-[10px] p-3">
+        <p className="text-xs text-[#BF360C] font-medium">
+          <strong>Live Panel Interview Slots.</strong> These slots are for admin-referred live panel interviews only. Structured Digital Interview slots are auto-generated — applicants self-book from the portal.
+        </p>
+      </div>
 
       {/* Mode tabs */}
       <div className="flex gap-2">

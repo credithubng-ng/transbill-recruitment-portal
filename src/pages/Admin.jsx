@@ -49,7 +49,7 @@ export default function Admin() {
   const [sendingReminders, setSendingReminders] = useState(false);
   const [reminderMessage, setReminderMessage] = useState('');
   const [filters, setFilters] = useState({
-    search: '', status: 'all', displayStatus: 'all', lagos: 'all', available: 'all', affiliateRole: 'all', score: 'all', flags: 'all', stage: 'all'
+    search: '', status: 'all', displayStatus: 'all', lagos: 'all', available: 'all', affiliateRole: 'all', score: 'all', flags: 'all', stage: 'all', interviewMode: 'all'
   });
   const queryClient = useQueryClient();
 
@@ -97,6 +97,7 @@ export default function Admin() {
         if (filters.flags === 'duplicate' && !a.duplicate_signature_flag) return false;
       }
       if (filters.stage !== 'all' && a.candidate_stage !== filters.stage) return false;
+      if (filters.interviewMode !== 'all' && (a.interview_mode || 'legacy_unspecified') !== filters.interviewMode) return false;
       if (filters.displayStatus !== 'all') {
         const ds = filters.displayStatus;
         if (ds === 'outcome_pass' && a.interview_outcome !== 'Pass') return false;
@@ -217,7 +218,7 @@ export default function Admin() {
               <Mail className="w-4 h-4" /> {sendingReminders ? 'Sending...' : 'Remind Incomplete'}
             </button>
             <button onClick={() => setShowAiReview(true)} className="bg-[#1565C0] hover:bg-[#0D47A1] text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all">
-              <Bot className="w-4 h-4" /> Selection Interviews
+              <Bot className="w-4 h-4" /> Structured Digital Interviews
             </button>
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule

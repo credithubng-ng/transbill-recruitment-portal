@@ -25,6 +25,16 @@
     "pending_lock": {
       "type": "string",
       "description": "ISO timestamp set when a booking is in-flight; cleared once booked"
+    },
+    "interview_mode": {
+      "type": "string",
+      "enum": [
+        "structured_digital",
+        "live_panel",
+        "legacy_unspecified"
+      ],
+      "default": "live_panel",
+      "description": "structured_digital = auto-generated portal slots. live_panel = admin-created manual panel slots (default for admin-created slots)."
     }
   },
   "required": [

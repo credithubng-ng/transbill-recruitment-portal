@@ -52,10 +52,23 @@ export default function ApplicantFilters({ filters, setFilters }) {
           ['Not Progressed', 'Not Progressed'],
           ['Interview Scheduling', 'Interview Scheduling'],
           ['Interview Scheduled', 'Interview Scheduled'],
+          ['AI Interview Shortlisted', 'Digital – Shortlisted'],
+          ['AI Interview Scheduled', 'Digital – Scheduled'],
+          ['AI Interview Completed', 'Digital – Completed'],
+          ['AI Interview Reviewed', 'Digital – Reviewed'],
+          ['Live Panel Referred', 'Live Panel – Referred'],
+          ['Live Panel Scheduled', 'Live Panel – Scheduled'],
           ['Interview Outcome – Pass', 'Interview Outcome – Pass'],
           ['Interview Outcome – Hold', 'Interview Outcome – Hold'],
           ['Final Hiring Decision', 'Final Hiring Decision'],
           ['Closed – Not Progressed', 'Closed – Not Progressed'],
+        ]} />
+      <FilterSelect label="Interview Mode" value={filters.interviewMode || 'all'} onChange={v => handleChange('interviewMode', v)}
+        options={[
+          ['all', 'All Modes'],
+          ['structured_digital', 'Structured Digital'],
+          ['live_panel', 'Live Panel'],
+          ['legacy_unspecified', 'Legacy / Unspecified'],
         ]} />
     </div>
   );

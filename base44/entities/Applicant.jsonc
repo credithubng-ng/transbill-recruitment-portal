@@ -31,7 +31,7 @@
     },
     "lasrra_id": {
       "type": "string",
-      "description": "Optional 12-character LASRRA/LAG-ID residency identifier, for example LA0F10020751",
+      "description": "Optional 12-character LASRRA/LAG-ID residency identifier",
       "pattern": "^(?:|LA[A-Z0-9]{10})$"
     },
     "lasrra_verified": {
@@ -43,8 +43,7 @@
     },
     "lasrra_physical_card_verified": {
       "type": "boolean",
-      "default": false,
-      "description": "Set true only after staff inspect the applicant's original LASRRA card in person"
+      "default": false
     },
     "data_processing_consent": {
       "type": "boolean",
@@ -85,7 +84,6 @@
     },
     "years_experience": {
       "type": "string",
-      "description": "Years of digital marketing experience",
       "enum": [
         "No formal experience",
         "Less than 1 year",
@@ -96,7 +94,6 @@
     },
     "direct_sales_experience": {
       "type": "string",
-      "description": "Years of direct sales, field sales, agent banking or affiliate recruitment experience",
       "enum": [
         "No formal experience",
         "Less than 1 year",
@@ -192,8 +189,7 @@
       "type": "number"
     },
     "assessment_question_count": {
-      "type": "number",
-      "description": "Number of questions in the applicant's assessment version"
+      "type": "number"
     },
     "assessment_bank_version": {
       "type": "string"
@@ -208,8 +204,7 @@
       ]
     },
     "assessment_category_scores": {
-      "type": "object",
-      "description": "Server-calculated scores for digital knowledge, trainability, affiliate recruitment and performance management"
+      "type": "object"
     },
     "assessment_category_maximums": {
       "type": "object"
@@ -218,84 +213,69 @@
       "type": "array",
       "items": {
         "type": "string"
-      },
-      "description": "Candidate's selected option key (A/B/C/D) per question in order shown"
+      }
     },
     "assessment_question_ids": {
       "type": "array",
       "items": {
         "type": "number"
-      },
-      "description": "IDs of questions shown to this candidate in order"
+      }
     },
     "assessment_option_order": {
-      "type": "object",
-      "description": "Map of questionId to array of option texts in the order shown"
+      "type": "object"
     },
     "assessment_correct_answers": {
-      "type": "object",
-      "description": "Map of questionId to correct answer key (A/B/C/D) as shown to candidate"
+      "type": "object"
     },
     "assessment_completion_time": {
-      "type": "number",
-      "description": "Seconds taken to complete the assessment"
+      "type": "number"
     },
     "assessment_completed": {
       "type": "boolean",
       "default": false
     },
     "assessment_completed_at": {
-      "type": "string",
-      "description": "ISO timestamp when assessment was completed"
+      "type": "string"
     },
     "common_core_score": {
-      "type": "number",
-      "description": "v2: correct count on common-core questions (null for legacy v1 attempts)"
+      "type": "number"
     },
     "common_core_max": {
       "type": "number"
     },
     "digital_validation_score": {
-      "type": "number",
-      "description": "v2: correct count on digital-experience validation questions"
+      "type": "number"
     },
     "digital_validation_max": {
       "type": "number"
     },
     "sales_validation_score": {
-      "type": "number",
-      "description": "v2: correct count on direct-sales validation questions"
+      "type": "number"
     },
     "sales_validation_max": {
       "type": "number"
     },
     "learning_agility_score": {
-      "type": "number",
-      "description": "v2: correct count on learning-agility questions"
+      "type": "number"
     },
     "learning_agility_max": {
       "type": "number"
     },
     "login_otp_hash": {
-      "type": "string",
-      "description": "SHA-256 HMAC of the 6-digit one-time login code issued to resume an incomplete application; stored only as a hash so the plaintext code is never persisted. Cleared after successful verification."
+      "type": "string"
     },
     "login_otp_expires_at": {
-      "type": "string",
-      "description": "ISO 8601 timestamp marking when the one-time login code expires (10 minutes after issue). Cleared after successful verification."
+      "type": "string"
     },
     "login_otp_sent_at": {
-      "type": "string",
-      "description": "ISO 8601 timestamp of the most recent one-time login code dispatch; used to enforce the 60-second resend throttle."
+      "type": "string"
     },
     "login_otp_attempts": {
       "type": "number",
-      "default": 0,
-      "description": "Count of failed verification attempts for the current one-time login code; locks verification at 5 attempts and resets to 0 on successful login."
+      "default": 0
     },
     "last_applicant_login_at": {
-      "type": "string",
-      "description": "ISO 8601 timestamp of the applicant's most recent successful OTP login; updated each time a login code is verified."
+      "type": "string"
     },
     "registration_reminder_sent_at": {
       "type": "string"
@@ -309,12 +289,10 @@
       "default": false
     },
     "assessment_email_sent_at": {
-      "type": "string",
-      "description": "ISO timestamp when outcome email was sent"
+      "type": "string"
     },
     "question_set_signature": {
-      "type": "string",
-      "description": "Sorted question ID signature"
+      "type": "string"
     },
     "status": {
       "type": "string",
@@ -344,8 +322,44 @@
         "AI Interview Shortlisted",
         "AI Interview Scheduled",
         "AI Interview Completed",
-        "AI Interview Reviewed"
+        "AI Interview Reviewed",
+        "Live Panel Referred",
+        "Live Panel Scheduled"
       ]
+    },
+    "interview_mode": {
+      "type": "string",
+      "enum": [
+        "structured_digital",
+        "live_panel",
+        "legacy_unspecified"
+      ],
+      "description": "Current interview mode. structured_digital = AI-first portal interview (default for new shortlists). live_panel = admin-referred manual panel interview. legacy_unspecified = existing records without explicit mode."
+    },
+    "live_panel_referred_at": {
+      "type": "string",
+      "description": "ISO timestamp when admin referred the applicant to live panel"
+    },
+    "live_panel_referred_by": {
+      "type": "string",
+      "description": "Admin email who referred to live panel"
+    },
+    "live_panel_scheduled_at": {
+      "type": "string",
+      "description": "ISO timestamp of the scheduled live panel interview"
+    },
+    "live_panel_location": {
+      "type": "string",
+      "description": "Meeting link or physical location for the live panel interview"
+    },
+    "live_panel_interviewer_names": {
+      "type": "string",
+      "description": "Optional interviewer names for the live panel"
+    },
+    "live_panel_email_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the live panel invitation email has been sent"
     },
     "admin_notes": {
       "type": "string"
@@ -371,20 +385,16 @@
       "default": false
     },
     "ai_interview_variant_id": {
-      "type": "number",
-      "description": "Locked AI interview case variant (1-8) assigned at shortlist time"
+      "type": "number"
     },
     "ai_interview_shortlisted_at": {
-      "type": "string",
-      "description": "ISO timestamp when the applicant was shortlisted for the AI interview"
+      "type": "string"
     },
     "interview_scheduled_at": {
-      "type": "string",
-      "description": "ISO timestamp of the scheduled interview"
+      "type": "string"
     },
     "interview_location": {
-      "type": "string",
-      "description": "Interview location or meeting link"
+      "type": "string"
     },
     "interview_outcome": {
       "type": "string",
@@ -392,12 +402,10 @@
         "Pass",
         "Fail",
         "Hold"
-      ],
-      "description": "Outcome recorded by admin after interview"
+      ]
     },
     "interview_outcome_notes": {
-      "type": "string",
-      "description": "Admin notes on interview outcome"
+      "type": "string"
     },
     "interview_email_sent": {
       "type": "boolean",
@@ -409,12 +417,10 @@
     },
     "progression_letter_sent": {
       "type": "boolean",
-      "default": false,
-      "description": "Whether the Final Selection Stage progression letter has been sent"
+      "default": false
     },
     "progression_letter_sent_at": {
-      "type": "string",
-      "description": "ISO timestamp when the progression letter was sent"
+      "type": "string"
     }
   },
   "required": [

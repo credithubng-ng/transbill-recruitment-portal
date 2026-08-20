@@ -10,6 +10,12 @@ const deriveDisplayStatus = (a) => {
   if (outcome === 'Fail') return { label: 'Interview – Fail', style: 'bg-[#D32F2F] text-white' };
   if (outcome === 'Hold') return { label: 'Interview – Hold', style: 'bg-amber-500 text-white' };
 
+  if (stage === 'Live Panel Scheduled') return { label: 'Live Panel Scheduled', style: 'bg-[#2D6A2F] text-white' };
+  if (stage === 'Live Panel Referred') return { label: 'Live Panel Referred', style: 'bg-[#F57C00] text-white' };
+  if (stage === 'AI Interview Shortlisted') return { label: 'Digital – Shortlisted', style: 'bg-[#1565C0] text-white' };
+  if (stage === 'AI Interview Scheduled') return { label: 'Digital – Scheduled', style: 'bg-[#1565C0] text-white' };
+  if (stage === 'AI Interview Completed') return { label: 'Digital – Completed', style: 'bg-[#1565C0] text-white' };
+  if (stage === 'AI Interview Reviewed') return { label: 'Digital – Reviewed', style: 'bg-[#2D6A2F] text-white' };
   if (stage === 'Interview Scheduled') return { label: 'Interview Booked', style: 'bg-blue-600 text-white' };
   if (stage === 'Interview Scheduling') return { label: 'Booking Pending', style: 'bg-blue-200 text-blue-800' };
   if (stage === 'Final Hiring Decision') return { label: 'Final Decision', style: 'bg-purple-600 text-white' };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { X, AlertTriangle, Clock, Bot } from 'lucide-react';
+import { X, AlertTriangle, Clock, Bot, Users } from 'lucide-react';
 import InterviewSection from './InterviewSection';
 
 const STATUS_OPTIONS = ['Applied', 'Interview Ready', 'Reserve List', 'Not Progressed'];
@@ -71,7 +71,15 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate, readOnly 
       <div className="absolute inset-0 bg-black/30" onClick={onClose} />
       <div className="relative w-full max-w-lg bg-white h-full overflow-y-auto shadow-xl">
         <div className="sticky top-0 bg-white border-b border-[#E2E8E2] px-5 py-4 flex items-center justify-between z-10">
-          <h2 className="font-bold text-lg text-[#1A1A1A]">{applicant.full_name}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="font-bold text-lg text-[#1A1A1A]">{applicant.full_name}</h2>
+            {applicant.interview_mode === 'structured_digital' && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#1565C0] bg-[#E3F2FD] px-2 py-0.5 rounded-full"><Bot className="w-3 h-3" /> Digital</span>
+            )}
+            {applicant.interview_mode === 'live_panel' && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#F57C00] bg-[#FFF3E0] px-2 py-0.5 rounded-full"><Users className="w-3 h-3" /> Live Panel</span>
+            )}
+          </div>
           <button onClick={onClose} className="text-[#7A7A8A] hover:text-[#1A1A1A]"><X className="w-5 h-5" /></button>
         </div>
         <div className="px-5 py-5 space-y-6">
@@ -183,7 +191,7 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate, readOnly 
           <InterviewSection applicant={applicant} onUpdate={onUpdate} readOnly={readOnly} />
 
           {/* AI Interview shortlist */}
-          {applicant.assessment_completed && !['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
+          {applicant.assessment_completed && !['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed', 'Live Panel Referred', 'Live Panel Scheduled'].includes(applicant.candidate_stage) && (
             <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-4">
               <div className="flex items-center gap-1.5 text-[#0D47A1] font-bold text-xs mb-2"><Bot className="w-4 h-4" /> Selection Interview</div>
               <p className="text-xs text-[#555555] mb-3">Shortlist this applicant for the Transbill Digital Selection Interview. The server verifies eligibility, integrity flags and role-fit (≥3 of 6 areas) before assigning a case variant.</p>
@@ -194,9 +202,11 @@ export default function ApplicantPanel({ applicant, onClose, onUpdate, readOnly 
               {shortlistMsg && <p className="text-xs text-[#0D47A1] mt-2 font-medium">{shortlistMsg}</p>}
             </div>
           )}
-          {['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed'].includes(applicant.candidate_stage) && (
+          {['AI Interview Shortlisted', 'AI Interview Scheduled', 'AI Interview Completed', 'AI Interview Reviewed', 'Live Panel Referred', 'Live Panel Scheduled'].includes(applicant.candidate_stage) && (
             <div className="bg-[#E3F2FD] border border-[#1565C0]/30 rounded-[12px] p-3 text-xs text-[#0D47A1] font-medium">
-              Selection interview stage: <strong>{applicant.candidate_stage}</strong>{applicant.ai_interview_variant_id ? ` · Case ${applicant.ai_interview_variant_id}` : ''}
+              Interview stage: <strong>{applicant.candidate_stage}</strong>
+              {applicant.ai_interview_variant_id ? ` · Case ${applicant.ai_interview_variant_id}` : ''}
+              {applicant.interview_mode === 'live_panel' && applicant.live_panel_referred_by ? ` · Referred by ${applicant.live_panel_referred_by}` : ''}
             </div>
           )}
 

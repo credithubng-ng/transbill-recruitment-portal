@@ -4,7 +4,7 @@
   "properties": {
     "applicant_id": {
       "type": "string",
-      "description": "Applicant this AI interview booking belongs to"
+      "description": "Applicant this booking belongs to"
     },
     "variant_id": {
       "type": "number",
@@ -42,6 +42,24 @@
     "reschedule_count": {
       "type": "number",
       "default": 0
+    },
+    "interview_mode": {
+      "type": "string",
+      "enum": [
+        "structured_digital",
+        "live_panel",
+        "legacy_unspecified"
+      ],
+      "default": "structured_digital",
+      "description": "structured_digital = AI-first portal interview. live_panel = admin-referred manual panel interview."
+    },
+    "meeting_link": {
+      "type": "string",
+      "description": "Google Meet or physical location link \u2014 live_panel only. Never populated for structured_digital."
+    },
+    "interviewer_names": {
+      "type": "string",
+      "description": "Optional interviewer names \u2014 live_panel only."
     }
   },
   "required": [

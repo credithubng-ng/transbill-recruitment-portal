@@ -26,6 +26,8 @@ const STAGE_CONFIG = {
   'AI Interview Scheduled': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: Clock, label: 'Selection Interview Scheduled' },
   'AI Interview Completed': { color: 'text-[#1565C0]', bg: 'bg-[#E3F2FD]', icon: Clock, label: 'Selection Interview – Awaiting Review' },
   'AI Interview Reviewed': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'Selection Interview Reviewed' },
+  'Live Panel Referred': { color: 'text-[#F57C00]', bg: 'bg-[#FFF3E0]', icon: AlertCircle, label: 'Referred to Live Panel Interview' },
+  'Live Panel Scheduled': { color: 'text-[#2D6A2F]', bg: 'bg-[#EBF5EB]', icon: CheckCircle2, label: 'Live Panel Interview Scheduled' },
 };
 
 const STEPS = [
@@ -38,7 +40,7 @@ const STEPS = [
 function getActiveStep(stage, status, assessmentCompleted) {
   if (!stage && !status) return 0;
   if (['Closed – Not Progressed', 'Final Hiring Decision', 'Interview Outcome – Pass', 'Interview Outcome – Hold'].includes(stage)) return 3;
-  if (['Interview Scheduling', 'Interview Scheduled'].includes(stage)) return 2;
+  if (['Interview Scheduling', 'Interview Scheduled', 'Live Panel Referred', 'Live Panel Scheduled'].includes(stage)) return 2;
   if (['Assessment Started', 'Assessment Completed', 'Email Sent', 'Interview Ready', 'Reserve List', 'Not Progressed'].includes(stage)) return 1;
   // Fallback: if assessment is completed but stage is unrecognised (e.g. legacy value), still show step 1
   if (assessmentCompleted) return 1;
@@ -353,6 +355,39 @@ function ApplicantStatusDashboard() {
                   {applicant.candidate_stage === 'AI Interview Completed' ? 'Your selection interview is under human review.' : 'Your selection interview has been reviewed.'}
                 </p>
                 <p className="text-[#555555] text-xs mt-1">A human reviewer makes the final decision. You'll be contacted about the outcome.</p>
+              </div>
+            )}
+
+            {/* Live Panel – referred (awaiting admin to schedule) */}
+            {applicant.candidate_stage === 'Live Panel Referred' && (
+              <div className="bg-[#FFF3E0] rounded-[14px] border border-[#F57C00]/30 p-6 text-center">
+                <p className="font-bold text-[#BF360C] text-sm mb-1">You've been referred to a Live Panel Interview</p>
+                <p className="text-[#555555] text-xs">Following your digital selection interview, the recruitment team has referred you for a live panel interview. You'll receive an invitation email with the date, time, and joining details once the panel is scheduled.</p>
+              </div>
+            )}
+
+            {/* Live Panel – scheduled (show meeting link/location) */}
+            {applicant.candidate_stage === 'Live Panel Scheduled' && applicant.live_panel_scheduled_at && (
+              <div className="bg-[#EBF5EB] rounded-[14px] border border-[#2D6A2F]/20 p-6">
+                <p className="text-xs font-semibold text-[#2D6A2F] uppercase tracking-wide mb-3">Live Panel Interview Scheduled</p>
+                <Row label="Date & Time" value={new Date(applicant.live_panel_scheduled_at).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' })} />
+                {applicant.live_panel_interviewer_names && (
+                  <Row label="Panel" value={applicant.live_panel_interviewer_names} />
+                )}
+                {applicant.live_panel_location && (
+                  applicant.live_panel_location.startsWith('http') ? (
+                    <div className="flex gap-2 items-center mt-2">
+                      <span className="text-xs font-medium text-[#7A7A8A] min-w-[120px]">Join link:</span>
+                      <a href={applicant.live_panel_location} target="_blank" rel="noopener noreferrer"
+                        className="text-xs font-semibold text-white bg-[#2D6A2F] hover:bg-[#4A9A4D] px-4 py-1.5 rounded-full transition-all inline-flex items-center gap-1.5">
+                        Join Live Panel Interview
+                      </a>
+                    </div>
+                  ) : (
+                    <Row label="Location" value={applicant.live_panel_location} />
+                  )
+                )}
+                <p className="text-xs text-[#7A7A8A] mt-3">This is a live, human-led panel interview. Please ensure you are available at the scheduled time.</p>
               </div>
             )}
 

@@ -143,7 +143,71 @@ Deno.serve(async (req) => {
       }
     }
 
-    return Response.json({ success: true, candidateRemindersSent, interviewerRemindersSent });
+    // --- STRUCTURED DIGITAL INTERVIEW REMINDERS (24-hour) ---
+    // Send portal-based reminders for structured_digital bookings — no Meet link.
+    const digitalBookings = await base44.asServiceRole.entities.InterviewBooking.filter({
+      status: 'booked', interview_mode: 'structured_digital',
+    }, '-created_date', 500);
+
+    let digitalRemindersSent = 0;
+
+    for (const booking of digitalBookings) {
+      if (!booking.slot_datetime) continue;
+      const interviewTime = new Date(booking.slot_datetime);
+      if (interviewTime < in24hStart || interviewTime >= in24hEnd) continue;
+      if (booking.reminder_sent) continue; // idempotent
+
+      const applicants = await base44.asServiceRole.entities.Applicant.filter({ id: booking.applicant_id }, '-created_date', 1);
+      const applicant = applicants?.[0];
+      if (!applicant?.email) continue;
+
+      const watDateTime = formatWATDateTime(booking.slot_datetime);
+      const portalLink = `https://jobs.transbill.ng/status?view=interview&booking=${booking.id}&id=${applicant.id}`;
+
+      const body = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#1A1A1A;">
+  <div style="background:#1565C0;padding:24px;border-radius:12px 12px 0 0;text-align:center;">
+    <h1 style="color:white;margin:0;font-size:20px;">Selection Interview Tomorrow</h1>
+  </div>
+  <div style="background:#F8FAF8;padding:28px;border-radius:0 0 12px 12px;">
+    <p style="font-size:16px;">Hello <strong>${applicant.full_name?.split(' ')[0] || 'Candidate'}</strong>,</p>
+    <p>This is a reminder that your <strong>Transbill Digital Selection Interview</strong> is <strong>tomorrow</strong>.</p>
+
+    <div style="background:white;border:1.5px solid #E2E8E2;border-radius:10px;padding:20px;margin:20px 0;">
+      <p style="margin:6px 0;"><strong>📅 Date &amp; Time:</strong> ${watDateTime} (Lagos time)</p>
+      <p style="margin:6px 0;"><strong>🎙️ Format:</strong> Conducted on the Transbill portal — 15–20 minutes, using your microphone/audio</p>
+    </div>
+
+    <div style="text-align:center;margin:24px 0;">
+      <p style="font-size:14px;color:#555555;margin-bottom:12px;">At the appointment time, sign in and open your application status page to start the interview.</p>
+      <p style="font-size:13px;color:#7A7A8A;">No Google Meet link is needed — the interview runs entirely on the portal.</p>
+    </div>
+
+    <div style="background:#EBF5EB;border-radius:10px;padding:16px;">
+      <p style="font-weight:bold;margin:0 0 8px;color:#2D6A2F;">Preparation tips:</p>
+      <ul style="margin:0;padding-left:20px;line-height:2;color:#2D6A2F;">
+        <li>Test your microphone beforehand — you will speak your answers</li>
+        <li>Use a quiet environment with minimal background noise</li>
+        <li>Ensure a stable internet connection</li>
+        <li>Have your case study notes ready</li>
+        <li>Join from a device with a working browser</li>
+      </ul>
+    </div>
+
+    <p style="margin-top:20px;font-size:13px;color:#555555;">Need to reschedule? Visit your <a href="https://jobs.transbill.ng/status">status page</a>.</p>
+    <p style="font-size:13px;color:#7A7A8A;">Regards,<br><strong>Transbill Programme Team</strong></p>
+  </div>
+</div>`;
+
+      await base44.asServiceRole.integrations.Core.SendEmail({
+        to: applicant.email,
+        subject: `Reminder: Your Transbill Selection Interview Tomorrow`,
+        body,
+      }).catch(e => console.error('Digital reminder failed:', e.message));
+      digitalRemindersSent++;
+    }
+
+    return Response.json({ success: true, candidateRemindersSent, interviewerRemindersSent, digitalRemindersSent });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

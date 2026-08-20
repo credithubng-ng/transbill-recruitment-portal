@@ -34,6 +34,8 @@ Deno.serve(async (req) => {
       await base44.asServiceRole.entities.InterviewBooking.update(ownExisting[0].id, { status: 'cancelled' });
     }
 
+    // Guardrail: structured_digital mode never accepts or stores a meeting link.
+    // The interview is conducted on the Transbill portal — no Google Meet.
     const variantId = applicant.ai_interview_variant_id || 1;
     const booking = await base44.asServiceRole.entities.InterviewBooking.create({
       applicant_id: applicantId,
@@ -42,6 +44,9 @@ Deno.serve(async (req) => {
       timezone: 'Africa/Lagos',
       status: 'booked',
       reschedule_count: ownExisting.length ? 1 : 0,
+      interview_mode: 'structured_digital',
+      meeting_link: '',   // never populated for structured_digital
+      interviewer_names: '',
     });
     await base44.asServiceRole.entities.Applicant.updateMany({ id: applicantId }, { $set: { candidate_stage: 'AI Interview Scheduled' } });
 

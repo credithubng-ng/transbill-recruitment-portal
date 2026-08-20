@@ -69,11 +69,15 @@ Deno.serve(async (req) => {
       const dup = existing.find((s: any) => (s.interviewer || '') === safeInterviewer);
       if (dup) return Response.json({ error: 'A slot already exists for this date, time, and interviewer.' }, { status: 409 });
 
+      // Admin-created slots are live_panel by default (digital slots are auto-generated).
+      const slotMode = typeof body.interview_mode === 'string' && ['structured_digital', 'live_panel'].includes(body.interview_mode)
+        ? body.interview_mode : 'live_panel';
       const created = await base44.asServiceRole.entities.InterviewSlot.create({
         slot_datetime: iso,
         location: safeLocation,
         interviewer: safeInterviewer,
         is_booked: false,
+        interview_mode: slotMode,
       });
       return Response.json({ success: true, slot: created });
     }
@@ -118,7 +122,7 @@ Deno.serve(async (req) => {
           const m = String(mins % 60).padStart(2, '0');
           const iso = lagosToUtc(dateStr, `${h}:${m}`);
           interviewerList.forEach((interviewer) => {
-            slots.push({ slot_datetime: iso, location: safeLocation, interviewer, is_booked: false });
+            slots.push({ slot_datetime: iso, location: safeLocation, interviewer, is_booked: false, interview_mode: 'live_panel' });
           });
         }
       }

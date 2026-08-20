@@ -327,6 +327,13 @@ function DetailPanel({ data, onClose, reviewDecision, setReviewDecision, reviewN
                     {reviewing ? 'Recording...' : 'Record Decision'}
                   </button>
                   <p className="text-xs text-[#7A7A8A]">Approving queues an outcome letter for explicit Send — the AI cannot email the candidate. Integrity flags force human escalation, never automatic rejection.</p>
+
+                  {/* Refer to Live Panel — separate from review decisions */}
+                  <div className="border-t border-[#E2E8E2] pt-3 mt-3">
+                    <p className="text-xs font-semibold text-[#7A7A8A] uppercase mb-2">Live Panel Referral</p>
+                    <p className="text-xs text-[#555555] mb-2">After reviewing the digital interview, refer this candidate to a live panel interview. This unlocks the live panel scheduling flow in the applicant's admin panel.</p>
+                    <ReferToLivePanelButton result_id={row?.result_id} applicant_id={applicant?.id} onReferred={() => { setTimeout(() => onClose(), 1500); }} />
+                  </div>
                 </div>
               )}
             </Section>
@@ -358,6 +365,41 @@ function FlagList({ label, items, color }) {
       <ul className="list-disc list-inside text-xs text-[#555555] space-y-0.5">
         {items.map((it, i) => <li key={i}>{it}</li>)}
       </ul>
+    </div>
+  );
+}
+
+function ReferToLivePanelButton({ result_id, applicant_id, onReferred }) {
+  const [referring, setReferring] = useState(false);
+  const [msg, setMsg] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleRefer = async () => {
+    if (!confirm('Refer this candidate to a Live Panel Interview? This will unlock the live panel scheduling flow.')) return;
+    setReferring(true);
+    setError(null);
+    setMsg(null);
+    try {
+      const token = sessionStorage.getItem('transbill_admin_token');
+      const res = await base44.functions.invoke('referToLivePanel', { token, applicant_id });
+      if (res.data?.error) throw new Error(res.data.error);
+      setMsg(res.data.already_referred ? 'Already referred to live panel.' : 'Referred to live panel. Schedule from the applicant\'s admin panel.');
+      onReferred();
+    } catch (e) {
+      setError(e?.response?.data?.error || e?.message || 'Unable to refer to live panel.');
+    } finally {
+      setReferring(false);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={handleRefer} disabled={referring}
+        className="w-full bg-[#F57C00] hover:bg-[#E65100] disabled:opacity-50 text-white font-bold text-sm py-2.5 rounded-full transition-all">
+        {referring ? 'Referring...' : 'Refer to Live Panel Interview'}
+      </button>
+      {msg && <p className="text-xs text-[#2D6A2F] mt-2 font-medium">{msg}</p>}
+      {error && <p className="text-xs text-[#D32F2F] mt-2 font-medium">{error}</p>}
     </div>
   );
 }

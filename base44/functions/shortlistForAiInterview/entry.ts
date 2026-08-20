@@ -63,6 +63,7 @@ Deno.serve(async (req) => {
       ai_interview_variant_id: variantId,
       ai_interview_shortlisted_at: new Date().toISOString(),
       candidate_stage: 'AI Interview Shortlisted',
+      interview_mode: 'structured_digital',
     } });
 
     return Response.json({

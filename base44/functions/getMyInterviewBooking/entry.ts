@@ -18,17 +18,23 @@ Deno.serve(async (req) => {
     const now = Date.now();
     const canStart = now >= slotTime - 15 * 60 * 1000 && now <= slotTime + 30 * 60 * 1000;
 
+    // Guardrail: never expose meeting_link for structured_digital bookings.
+    // The interview is conducted on the Transbill portal — no Google Meet link.
+    const mode = booking.interview_mode || 'structured_digital';
     return Response.json({
       booking: {
         booking_id: booking.id,
         slot_datetime: booking.slot_datetime,
         label: new Date(booking.slot_datetime).toLocaleString('en-GB', { timeZone: 'Africa/Lagos', dateStyle: 'full', timeStyle: 'short' }),
         variant_id: booking.variant_id,
+        interview_mode: mode,
         case_title: safeCase?.case_title || `Case ${booking.variant_id}`,
         case_scenario: safeCase?.case_scenario || null,
         case_common_rules: safeCase?.case_common_rules || null,
         case_slides: safeCase?.case_slides || [],
         can_start: canStart,
+        // meeting_link is intentionally omitted — structured_digital never has one.
+        meeting_link: mode === 'live_panel' ? (booking.meeting_link || '') : '',
       },
     });
   } catch (error) {
