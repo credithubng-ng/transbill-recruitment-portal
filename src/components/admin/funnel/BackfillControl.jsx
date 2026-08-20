@@ -43,17 +43,17 @@ export default function BackfillControl({ onBackfillComplete }) {
   };
 
   return (
-    <div className="bg-[#13203B] rounded-xl border border-[#F59E0B]/30 p-4">
-      <h3 className="text-sm font-bold text-white mb-1 flex items-center gap-2">
-        <History className="w-4 h-4 text-[#F59E0B]" /> Historical Backfill (Owner Only)
+    <div className="bg-white border border-[#CA8A04]/30 rounded-lg p-5">
+      <h3 className="text-sm font-bold text-[#0A2540] mb-1 flex items-center gap-2">
+        <History className="w-4 h-4 text-[#CA8A04]" /> Historical backfill (Owner Only)
       </h3>
-      <p className="text-[11px] text-[#94A3B8] mb-3">
+      <p className="text-[11px] text-[#6B7280] mb-3">
         Backfills stages 2–7 from existing authoritative timestamps. Landing-page visits cannot be reconstructed.
       </p>
 
-      <div className="flex items-start gap-2 bg-[#F59E0B]/10 rounded-lg border border-[#F59E0B]/30 p-3 mb-3">
-        <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0 mt-0.5" />
-        <p className="text-[11px] text-[#FCD34D] leading-relaxed">
+      <div className="flex items-start gap-2 bg-[#FFF7ED] rounded-lg border border-[#CA8A04]/20 p-3 mb-3">
+        <AlertTriangle className="w-4 h-4 text-[#CA8A04] flex-shrink-0 mt-0.5" />
+        <p className="text-[11px] text-[#92400E] leading-relaxed">
           Do not execute until the app is published. Running the backfill creates permanent historical events.
         </p>
       </div>
@@ -61,27 +61,27 @@ export default function BackfillControl({ onBackfillComplete }) {
       <button
         onClick={runPreview}
         disabled={loading}
-        className="w-full bg-[#0B1120] border border-[#1E3A5F] text-[#06B6D4] hover:text-white font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+        className="w-full bg-white border border-[#E5E7EB] text-[#0A2540] hover:bg-[#F9FAFB] font-semibold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
       >
         {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Previewing...</> : <><History className="w-4 h-4" /> Preview Backfill (Dry Run)</>}
       </button>
 
       {preview && (
         <div className="mt-3 space-y-2">
-          <p className="text-xs font-semibold text-white">Projected Events by Stage:</p>
+          <p className="text-xs font-semibold text-[#0A2540]">Projected events by stage:</p>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(preview.projected || {}).map(([stage, count]) => (
-              <div key={stage} className="bg-[#0B1120] rounded-lg border border-[#1E3A5F] px-3 py-2">
-                <p className="text-[10px] text-[#64748B] uppercase">{stage.replace(/_/g, ' ')}</p>
-                <p className="text-white font-bold text-sm">{count}</p>
+              <div key={stage} className="bg-[#F9FAFB] rounded-lg border border-[#E5E7EB] px-3 py-2">
+                <p className="text-[10px] text-[#9CA3AF] uppercase">{stage.replace(/_/g, ' ')}</p>
+                <p className="text-[#0A2540] font-bold text-sm">{count}</p>
               </div>
             ))}
           </div>
-          <p className="text-xs text-[#94A3B8] text-center">Total projected: <span className="font-bold text-white">{preview.totalProjected}</span></p>
+          <p className="text-xs text-[#6B7280] text-center">Total projected: <span className="font-bold text-[#0A2540]">{preview.totalProjected}</span></p>
           <button
             onClick={execute}
             disabled={executing}
-            className="w-full bg-[#F59E0B] hover:bg-[#D97706] text-[#0B1120] font-bold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-[#CA8A04] hover:bg-[#B45309] text-white font-bold text-sm py-2.5 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {executing ? <><Loader2 className="w-4 h-4 animate-spin" /> Executing...</> : 'Execute Backfill (Requires Confirmation)'}
           </button>
@@ -89,13 +89,13 @@ export default function BackfillControl({ onBackfillComplete }) {
       )}
 
       {result && (
-        <div className="mt-3 bg-[#10B981]/10 rounded-lg border border-[#10B981]/30 p-3 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
-          <p className="text-xs text-[#10B981]">Backfill complete. {result.totalCreated} events created.</p>
+        <div className="mt-3 bg-[#ECFDF5] rounded-lg border border-[#0D9488]/30 p-3 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-[#0D9488]" />
+          <p className="text-xs text-[#0D9488]">Backfill complete. {result.totalCreated} events created.</p>
         </div>
       )}
 
-      {error && <p className="mt-2 text-xs text-[#F87171]">{error}</p>}
+      {error && <p className="mt-2 text-xs text-[#DC2626]">{error}</p>}
     </div>
   );
 }

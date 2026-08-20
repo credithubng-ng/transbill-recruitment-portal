@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import AdminLogin from './AdminLogin';
 import ApplicantPanel from '@/components/admin/ApplicantPanel';
-import FunnelHeader from '@/components/admin/funnel/FunnelHeader';
+import FunnelSidebar from '@/components/admin/funnel/FunnelSidebar';
 import FunnelFilters from '@/components/admin/funnel/FunnelFilters';
 import FunnelKPICards from '@/components/admin/funnel/FunnelKPICards';
 import FunnelChart from '@/components/admin/funnel/FunnelChart';
@@ -13,8 +14,10 @@ import FunnelDataQuality from '@/components/admin/funnel/FunnelDataQuality';
 import FunnelDefinitions from '@/components/admin/funnel/FunnelDefinitions';
 import FunnelDrilldown from '@/components/admin/funnel/FunnelDrilldown';
 import BackfillControl from '@/components/admin/funnel/BackfillControl';
+import { RefreshCw, ExternalLink } from 'lucide-react';
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [authenticated, setAuthenticated] = useState(false);
   const [verifying, setVerifying] = useState(true);
   const [adminInfo, setAdminInfo] = useState(null);
@@ -31,7 +34,7 @@ export default function AdminDashboard() {
 
   const queryClient = useQueryClient();
 
-  // ── Auth verification (same pattern as Admin.jsx) ──
+  // ── Auth verification ──
   useEffect(() => {
     const token = sessionStorage.getItem('transbill_admin_token');
     if (!token) { setVerifying(false); return; }
@@ -141,8 +144,8 @@ export default function AdminDashboard() {
 
   // ── Render states ──
   if (verifying) return (
-    <div className="fixed inset-0 flex items-center justify-center bg-[#0B1120]">
-      <div className="w-8 h-8 border-4 border-[#1E3A5F] border-t-[#06B6D4] rounded-full animate-spin" />
+    <div className="fixed inset-0 flex items-center justify-center bg-[#F4F6F9]">
+      <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#0A2540] rounded-full animate-spin" />
     </div>
   );
 
@@ -154,81 +157,105 @@ export default function AdminDashboard() {
   const definitions = data?.definitions || null;
 
   return (
-    <div className="min-h-screen bg-[#0B1120]">
-      <FunnelHeader
-        lastRefreshed={data?.lastRefreshed}
-        onRefresh={refetch}
+    <div className="min-h-screen bg-[#F4F6F9]">
+      <FunnelSidebar
         adminInfo={adminInfo}
         onLogout={handleLogout}
+        activePage="funnel"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5 space-y-4">
-        <div>
-          <h1 className="font-extrabold text-xl sm:text-2xl text-white tracking-tight">Recruitment Funnel Dashboard</h1>
-          <p className="text-xs text-[#64748B] mt-0.5">All times shown in Africa/Lagos (UTC+1)</p>
-        </div>
-
-        <FunnelFilters
-          preset={preset}
-          setPreset={setPreset}
-          customFrom={customFrom}
-          setCustomFrom={setCustomFrom}
-          customTo={customTo}
-          setCustomTo={setCustomTo}
-          mode={mode}
-          setMode={setMode}
-          dateError={dateError}
-        />
-
-        {dateError && (
-          <div className="bg-[#F87171]/10 border border-[#F87171]/30 text-[#F87171] rounded-lg px-4 py-3 text-sm font-medium">
-            {dateError}
+      {/* Main content area — offset by sidebar on desktop */}
+      <div className="lg:pl-[230px]">
+        <main className="px-4 sm:px-6 lg:px-10 py-6 max-w-[1200px] mx-auto">
+          {/* Compact header */}
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div>
+              <p className="text-[10px] font-bold text-[#9CA3AF] uppercase tracking-wider mb-1">Transbill Solutions Limited</p>
+              <h1 className="font-extrabold text-2xl sm:text-3xl text-[#0A2540] tracking-tight">Application funnel</h1>
+              <p className="text-xs text-[#9CA3AF] mt-1">All times shown in Africa/Lagos (UTC+1)</p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={() => navigate('/')}
+                className="text-xs font-semibold text-[#0A2540] hover:text-[#0891B2] flex items-center gap-1.5 transition-colors"
+              >
+                View landing page <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={refetch}
+                className="text-[#6B7280] hover:text-[#0A2540] p-2 rounded-lg hover:bg-[#E5E7EB]/50 transition-colors"
+                aria-label="Refresh dashboard"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        )}
 
-        {isError && error?.message !== 'Unauthorized' && (
-          <div className="bg-[#F87171]/10 border border-[#F87171]/30 text-[#F87171] rounded-lg px-4 py-3 text-sm font-medium">
-            Unable to load dashboard data. {error?.message || 'Please refresh or check your connection.'}
+          {/* Compact filter bar */}
+          <div className="mb-5">
+            <FunnelFilters
+              preset={preset}
+              setPreset={setPreset}
+              customFrom={customFrom}
+              setCustomFrom={setCustomFrom}
+              customTo={customTo}
+              setCustomTo={setCustomTo}
+              mode={mode}
+              setMode={setMode}
+              dateError={dateError}
+            />
           </div>
-        )}
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-4 border-[#1E3A5F] border-t-[#06B6D4] rounded-full animate-spin" />
-          </div>
-        ) : !isError && data ? (
-          <>
-            {/* KPI Cards */}
-            <FunnelKPICards aggregates={aggregates} onStageClick={openDrilldown} />
+          {dateError && (
+            <div className="bg-[#FEF2F2] border border-[#DC2626]/30 text-[#DC2626] rounded-lg px-4 py-3 text-sm font-medium mb-4">
+              {dateError}
+            </div>
+          )}
 
-            {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {isError && error?.message !== 'Unauthorized' && (
+            <div className="bg-[#FEF2F2] border border-[#DC2626]/30 text-[#DC2626] rounded-lg px-4 py-3 text-sm font-medium mb-4">
+              Unable to load dashboard data. {error?.message || 'Please refresh or check your connection.'}
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="w-8 h-8 border-4 border-[#E5E7EB] border-t-[#0A2540] rounded-full animate-spin" />
+            </div>
+          ) : !isError && data ? (
+            <div className="space-y-5">
+              {/* KPI Cards — 4+3 on desktop, 2 on tablet, 1 on mobile */}
+              <FunnelKPICards aggregates={aggregates} onStageClick={openDrilldown} />
+
+              {/* Conversion overview (horizontal progress bars) */}
               <FunnelChart aggregates={aggregates} onSegmentClick={openDrilldown} />
+
+              {/* Trend chart */}
               <FunnelTrendChart timeSeries={timeSeries} />
-            </div>
 
-            {/* Conversion Table */}
-            <FunnelConversionTable aggregates={aggregates} onRowClick={openDrilldown} />
+              {/* Conversion table */}
+              <FunnelConversionTable aggregates={aggregates} onRowClick={openDrilldown} />
 
-            {/* Data Quality + Definitions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <FunnelDataQuality dataQuality={dataQuality} />
-              <FunnelDefinitions definitions={definitions} />
-            </div>
-
-            {/* Backfill (owner only) */}
-            {adminInfo?.role === 'owner' && (
-              <BackfillControl onBackfillComplete={() => queryClient.invalidateQueries({ queryKey: ['funnelDashboard'] })} />
-            )}
-
-            {/* Empty state */}
-            {aggregates.every(a => a.count === 0) && (
-              <div className="bg-[#13203B] rounded-xl border border-[#1E3A5F] p-8 text-center">
-                <p className="text-sm text-[#94A3B8]">No funnel events in the selected period. Try a wider date range or run the historical backfill (owner only).</p>
+              {/* Data Quality + Definitions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <FunnelDataQuality dataQuality={dataQuality} />
+                <FunnelDefinitions definitions={definitions} />
               </div>
-            )}
-          </>
-        ) : null}
+
+              {/* Backfill (owner only) */}
+              {adminInfo?.role === 'owner' && (
+                <BackfillControl onBackfillComplete={() => queryClient.invalidateQueries({ queryKey: ['funnelDashboard'] })} />
+              )}
+
+              {/* Empty state */}
+              {aggregates.every(a => a.count === 0) && (
+                <div className="bg-white rounded-lg border border-[#E5E7EB] p-8 text-center">
+                  <p className="text-sm text-[#9CA3AF]">No funnel events in the selected period. Try a wider date range or run the historical backfill (owner only).</p>
+                </div>
+              )}
+            </div>
+          ) : null}
+        </main>
       </div>
 
       {/* Drill-down drawer */}
