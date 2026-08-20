@@ -16,15 +16,10 @@ Deno.serve(async (req) => {
     const applicant = await base44.asServiceRole.entities.Applicant.get(applicant_id);
     if (!applicant) return Response.json({ error: 'Applicant not found' }, { status: 404 });
 
-    // Must have a completed or reviewed structured digital interview
-    const digitalStages = ['AI Interview Completed', 'AI Interview Reviewed'];
-    if (!digitalStages.includes(applicant.candidate_stage)) {
-      return Response.json({
-        error: 'Applicant must have a completed or reviewed Structured Digital Interview before a live panel referral.',
-      }, { status: 400 });
-    }
-
-    // Idempotent: if already referred, just return success
+    // Idempotent: if already referred, just return success (check BEFORE stage
+    // gate — after the first referral the stage moves to 'Live Panel Referred'
+    // which is not in the digital-stages list, so checking idempotency after the
+    // stage gate would cause a false 400 on a duplicate referral request).
     if (applicant.interview_mode === 'live_panel' && applicant.live_panel_referred_at) {
       return Response.json({
         success: true,
