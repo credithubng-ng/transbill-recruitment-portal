@@ -20,12 +20,21 @@ Deno.serve(async (req) => {
     // ── Fetch all funnel events (up to 50k) ──
     const allEvents = await base44.asServiceRole.entities.FunnelEvent.list('-occurred_at', 50000);
 
+    // ── For "all" preset, narrow the start to the earliest event date ──
+    let effectiveStartLagos = startLagos;
+    let effectiveStartUtc = startUtc;
+    if (preset === 'all' && allEvents.length > 0) {
+      const earliest = allEvents.map(e => new Date(e.occurred_at).getTime()).sort((a, b) => a - b)[0];
+      effectiveStartLagos = utcToLagosDate(new Date(earliest).toISOString());
+      effectiveStartUtc = new Date(`${effectiveStartLagos}T00:00:00+01:00`).toISOString();
+    }
+
     // ── Fetch all applicants for drill-down joins ──
     const allApplicants = await base44.asServiceRole.entities.Applicant.list('-created_date', 10000);
     const applicantMap = new Map(allApplicants.map(a => [a.id, a]));
 
     // ── Date-range filter helper ──
-    const startTime = new Date(startUtc).getTime();
+    const startTime = new Date(effectiveStartUtc).getTime();
     const endTime = new Date(endUtc).getTime();
     const inRange = (e: any) => {
       const t = new Date(e.occurred_at).getTime();
@@ -114,9 +123,9 @@ Deno.serve(async (req) => {
       timeSeriesMap[lagosDate][stage] = (timeSeriesMap[lagosDate][stage] || 0) + 1;
     }
 
-    // Build complete date range
+    // Build complete date range (from effective start to end)
     const timeSeries: Array<Record<string, any>> = [];
-    const cursor = new Date(startLagos + 'T00:00:00Z');
+    const cursor = new Date(effectiveStartLagos + 'T00:00:00Z');
     const endCursor = new Date(endLagos + 'T00:00:00Z');
     while (cursor <= endCursor) {
       const dateStr = cursor.toISOString().slice(0, 10);
@@ -219,7 +228,7 @@ Deno.serve(async (req) => {
 
     return Response.json({
       mode: aggMode,
-      dateRange: { startLagos, endLagos },
+      dateRange: { startLagos: effectiveStartLagos, endLagos },
       lastRefreshed: now,
       aggregates,
       timeSeries,
