@@ -12,7 +12,8 @@ import ScheduleView from './ScheduleView';
 import AiInterviewReview from '../components/admin/AiInterviewReview';
 import AdminUsersPanel from '../components/admin/AdminUsersPanel';
 import InterviewOutcomeDrilldown from '../components/admin/InterviewOutcomeDrilldown';
-import { Download, LogOut, Settings, CalendarDays, Mail, Bot, Users } from 'lucide-react';
+import { Download, LogOut, Settings, CalendarDays, Mail, Bot, Users, BarChart3 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export default function Admin() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -220,6 +221,9 @@ export default function Admin() {
             <button onClick={() => setShowAiReview(true)} className="bg-[#1565C0] hover:bg-[#0D47A1] text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all">
               <Bot className="w-4 h-4" /> Structured Digital Interviews
             </button>
+            <Link to="/AdminDashboard" className="bg-[#0B1120] hover:bg-[#1E3A5F] text-white font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all">
+              <BarChart3 className="w-4 h-4" /> Funnel Dashboard
+            </Link>
             <button onClick={() => setShowSchedule(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <CalendarDays className="w-4 h-4" /> Schedule
             </button>

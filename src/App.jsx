@@ -16,6 +16,7 @@ import BookAiInterview from '@/pages/BookAiInterview';
 import Interview from '@/pages/Interview';
 import ScheduleView from '@/pages/ScheduleView';
 import Login from '@/pages/Login';
+import AdminDashboard from '@/pages/AdminDashboard';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -42,6 +43,8 @@ const AuthenticatedApp = () => {
       <Route path="/apply" element={<Apply />} />
       <Route path="/assessment" element={<Assessment />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/AdminDashboard" element={<AdminDashboard />} />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/status" element={<ApplicantStatus />} />
       <Route path="/book-interview" element={<BookInterview />} />
       <Route path="/book-ai-interview" element={<BookAiInterview />} />
