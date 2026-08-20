@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 const APP_DOMAIN = Deno.env.get('APP_DOMAIN') || 'https://jobs.transbill.ng';
 
@@ -302,6 +303,17 @@ Deno.serve(async (req) => {
     } catch (_sheetErr) {
       // Sheet write failed silently — applicant record still created
     }
+
+    // Emit application_started funnel event (idempotent — dedupes by applicant_id)
+    try {
+      await emitFunnelEvent(base44, {
+        event_type: 'application_started',
+        applicant_id: applicant.id,
+        visitor_id: body.visitor_id || undefined,
+        source: body.referral_source || undefined,
+        occurred_at: new Date().toISOString(),
+      });
+    } catch (_e) { /* analytics best-effort */ }
 
     return Response.json({
       id: applicant.id,

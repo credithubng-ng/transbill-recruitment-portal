@@ -1,6 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 import { BANK_VERSION, QUESTION_BY_ID, selectAssessmentQuestions } from './screeningQuestionBank.ts';
 import { getApplicantFromSession, getApplicationDeadline } from './applicantSession.ts';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 const encoder = new TextEncoder();
 const toBase64Url = (value: string) => btoa(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -54,6 +55,15 @@ Deno.serve(async (req) => {
         })),
       };
     });
+    // Emit assessment_started funnel event (idempotent — dedupes by applicant_id)
+    try {
+      await emitFunnelEvent(base44, {
+        event_type: 'assessment_started',
+        applicant_id: applicantId,
+        occurred_at: new Date().toISOString(),
+      });
+    } catch (_e) { /* analytics best-effort */ }
+
     return Response.json({ attemptToken: `${payload}.${signature}`, questions, bankVersion: BANK_VERSION, durationSeconds: 1800 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

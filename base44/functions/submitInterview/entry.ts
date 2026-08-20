@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { verifyApplicantSession } from '../../shared/interviewSession.ts';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 const WEIGHTS = {
   role_market_understanding: 0.15,
@@ -154,6 +155,15 @@ STRICT RULES:
       result_id: result.id,
     });
     await base44.asServiceRole.entities.Applicant.updateMany({ id: applicantId }, { $set: { candidate_stage: 'AI Interview Completed' } });
+
+    // Emit interview_completed funnel event (idempotent — dedupes by applicant_id)
+    try {
+      await emitFunnelEvent(base44, {
+        event_type: 'interview_completed',
+        applicant_id: applicantId,
+        occurred_at: now,
+      });
+    } catch (_e) { /* analytics best-effort */ }
 
     // Applicant sees only a generic confirmation — no scores, rubric, or recommendation exposed.
     return Response.json({ success: true, status: 'completed' });

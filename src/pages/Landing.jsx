@@ -8,10 +8,12 @@ import BenefitsSection from '../components/landing/BenefitsSection';
 import CTASection from '../components/landing/CTASection';
 import FlierSection from '../components/landing/FlierSection';
 import Footer from '../components/landing/Footer';
+import FunnelTracker from '../components/FunnelTracker';
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white">
+      <FunnelTracker />
       <Navbar />
       <HeroSection />
       <WhySection />

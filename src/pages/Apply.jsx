@@ -89,9 +89,11 @@ export default function Apply() {
     }
     setSubmitting(true);
     try {
+      const visitor_id = localStorage.getItem('transbill_visitor_id') || '';
       const res = await base44.functions.invoke('submitApplication', {
         ...form,
-        email: form.email.trim().toLowerCase()
+        email: form.email.trim().toLowerCase(),
+        visitor_id,
       });
       if (res.data?.error === 'duplicate') {
         setErrors({ email: 'Our records show this email address has already been used to apply. Each candidate may only apply once.' });

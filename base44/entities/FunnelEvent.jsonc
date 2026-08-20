@@ -1,0 +1,75 @@
+{
+  "name": "FunnelEvent",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "landing_page_visit",
+        "application_started",
+        "assessment_started",
+        "interview_ready",
+        "interview_booked",
+        "interview_completed",
+        "training_invited"
+      ],
+      "description": "Canonical funnel stage event type"
+    },
+    "occurred_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp when the event occurred (authoritative transition time)"
+    },
+    "visitor_id": {
+      "type": "string",
+      "description": "Random first-party visitor ID (not fingerprint). Links landing visit to application."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Browser session ID for landing-visit deduplication"
+    },
+    "application_id": {
+      "type": "string",
+      "description": "Applicant entity ID (alias for applicant_id, kept for semantic clarity)"
+    },
+    "applicant_id": {
+      "type": "string",
+      "description": "Applicant entity ID when known"
+    },
+    "source": {
+      "type": "string",
+      "description": "UTM source or referral source"
+    },
+    "medium": {
+      "type": "string",
+      "description": "UTM medium"
+    },
+    "campaign": {
+      "type": "string",
+      "description": "UTM campaign"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Non-sensitive analytics metadata only. PII is scrubbed server-side before storage."
+    },
+    "dedupe_key": {
+      "type": "string",
+      "description": "Deterministic unique key preventing duplicate events for the same person/stage"
+    },
+    "is_backfilled": {
+      "type": "boolean",
+      "default": false,
+      "description": "True if this event was backfilled from historical data rather than emitted live"
+    }
+  },
+  "required": [
+    "event_type",
+    "occurred_at",
+    "dedupe_key"
+  ],
+  "rls": {
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false
+  }
+}

@@ -1,4 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 function buildLetterHtml(name) {
   return `<div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; color: #1A1A1A;">
@@ -72,6 +73,17 @@ Deno.serve(async (req) => {
           progression_letter_sent: true,
           progression_letter_sent_at: now
         });
+
+        // Emit training_invited funnel event (idempotent — dedupes by applicant_id)
+        // Only after the training invitation was successfully issued.
+        try {
+          await emitFunnelEvent(base44, {
+            event_type: 'training_invited',
+            applicant_id: applicant.id,
+            occurred_at: now,
+          });
+        } catch (_e) { /* analytics best-effort */ }
+
         sent++;
       } catch (e) {
         failed++;

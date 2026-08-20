@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { getApplicantFromSession, sendBrevoEmail, candidateSafeCaseFields } from '../../shared/interviewSession.ts';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 Deno.serve(async (req) => {
   try {
@@ -69,6 +70,16 @@ Deno.serve(async (req) => {
         body: `Hello ${firstName},\n\nYour Transbill Digital Selection Interview is booked for:\n${local} (Lagos time).\n\nAt the appointment time, sign in and open your application status to start the interview. This is a structured, digitally facilitated interview lasting 15–20 minutes. Your responses will be recorded as a transcript and reviewed by Transbill's recruitment team. Final decisions are made by authorised Transbill staff.\n\n${caseSection}If you need a human-led alternative or have accessibility/connectivity concerns, you can reschedule from your status page.\n\nTransbill Programme Team`,
       });
     } catch (_e) { /* email best-effort */ }
+
+    // Emit interview_booked funnel event (idempotent — dedupes by applicant_id)
+    // Only for confirmed structured_digital bookings (this function only handles those).
+    try {
+      await emitFunnelEvent(base44, {
+        event_type: 'interview_booked',
+        applicant_id: applicantId,
+        occurred_at: new Date().toISOString(),
+      });
+    } catch (_e) { /* analytics best-effort */ }
 
     return Response.json({ success: true, booking_id: booking.id, slot_datetime, ...(safeCase || {}) });
   } catch (error) {

@@ -1,5 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import { verifyAdmin } from '../../shared/interviewSession.ts';
+import { emitFunnelEvent } from '../../shared/funnelAnalytics.ts';
 
 // Role-fit potential across 6 areas. Low-experience applicants may still qualify through
 // learning potential and numerical judgement.
@@ -65,6 +66,15 @@ Deno.serve(async (req) => {
       candidate_stage: 'AI Interview Shortlisted',
       interview_mode: 'structured_digital',
     } });
+
+    // Emit interview_ready funnel event (idempotent — dedupes by applicant_id)
+    try {
+      await emitFunnelEvent(base44, {
+        event_type: 'interview_ready',
+        applicant_id: applicant_id,
+        occurred_at: new Date().toISOString(),
+      });
+    } catch (_e) { /* analytics best-effort */ }
 
     return Response.json({
       success: true,
