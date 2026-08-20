@@ -15,9 +15,10 @@
       "enum": [
         "owner",
         "admin",
-        "read_only"
+        "read_only",
+        "digital_marketer"
       ],
-      "default": "read_only"
+      "default": "digital_marketer"
     },
     "active": {
       "type": "boolean",
@@ -32,6 +33,10 @@
     },
     "last_login_at": {
       "type": "string"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Optional owner-set notes about this access record"
     },
     "otp_hash": {
       "type": "string",

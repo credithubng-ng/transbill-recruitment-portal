@@ -1,7 +1,7 @@
 import React from 'react';
 import { STAGE_COLORS, STAGE_LABELS } from './funnelColors';
 
-export default function FunnelChart({ aggregates, onSegmentClick }) {
+export default function FunnelChart({ aggregates, onSegmentClick, disableDrilldown }) {
   const maxCount = Math.max(...aggregates.map(a => a.count), 1);
 
   return (
@@ -11,12 +11,13 @@ export default function FunnelChart({ aggregates, onSegmentClick }) {
         {aggregates.map(a => {
           const color = STAGE_COLORS[a.stage];
           const widthPct = Math.max((a.count / maxCount) * 100, 2);
+          const Tag = disableDrilldown ? 'div' : 'button';
           return (
-            <button
+            <Tag
               key={a.stage}
-              onClick={() => onSegmentClick(a.stage)}
-              className="w-full text-left group"
-              aria-label={`${a.label}: ${a.count}, click for drill-down`}
+              onClick={disableDrilldown ? undefined : () => onSegmentClick(a.stage)}
+              className={`w-full text-left ${disableDrilldown ? '' : 'group cursor-pointer'}`}
+              aria-label={disableDrilldown ? `${a.label}: ${a.count}` : `${a.label}: ${a.count}, click for drill-down`}
             >
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-medium text-[#1F2937] truncate">{a.label}</span>
@@ -24,15 +25,15 @@ export default function FunnelChart({ aggregates, onSegmentClick }) {
               </div>
               <div className="h-2.5 bg-[#F4F6F9] rounded-full overflow-hidden">
                 <div
-                  className="h-full rounded-full transition-all duration-500 group-hover:opacity-80"
+                  className="h-full rounded-full transition-all duration-500"
                   style={{ width: `${widthPct}%`, backgroundColor: color }}
                 />
               </div>
-            </button>
+            </Tag>
           );
         })}
       </div>
-      <p className="text-[10px] text-[#9CA3AF] mt-4 text-center">Click any stage to view the drill-down</p>
+      {!disableDrilldown && <p className="text-[10px] text-[#9CA3AF] mt-4 text-center">Click any stage to view the drill-down</p>}
     </div>
   );
 }

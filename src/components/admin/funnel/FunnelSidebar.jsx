@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import TransbillLogo from '@/components/TransbillLogo';
-import { BarChart3, Users, CalendarDays, ClipboardCheck, ShieldCheck, LogOut, Menu, X } from 'lucide-react';
+import { BarChart3, Users, CalendarDays, ClipboardCheck, ShieldCheck, LogOut, Menu, X, ExternalLink } from 'lucide-react';
 
-const NAV_ITEMS = [
+const ALL_NAV_ITEMS = [
   { key: 'funnel',      label: 'Funnel metrics',      icon: BarChart3,      path: '/AdminDashboard' },
   { key: 'applicants', label: 'Applicant Management', icon: Users,          path: '/admin' },
   { key: 'schedule',   label: 'Interview Schedule',   icon: CalendarDays,   path: '/schedule' },
   { key: 'outcomes',   label: 'Interview Outcomes',   icon: ClipboardCheck, path: '/admin' },
-  { key: 'access',     label: 'Admin Access',         icon: ShieldCheck,    path: '/admin' },
+  { key: 'access',     label: 'Admin Access',         icon: ShieldCheck,    path: '/admin-access' },
+];
+
+// digital_marketer sees only Funnel Metrics + View Landing Page
+const DM_NAV_ITEMS = [
+  { key: 'funnel', label: 'Funnel metrics', icon: BarChart3, path: '/AdminDashboard' },
 ];
 
 export default function FunnelSidebar({ adminInfo, onLogout, activePage = 'funnel' }) {
@@ -16,7 +21,9 @@ export default function FunnelSidebar({ adminInfo, onLogout, activePage = 'funne
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close drawer on route change
+  const isDigitalMarketer = adminInfo?.role === 'digital_marketer';
+  const navItems = isDigitalMarketer ? DM_NAV_ITEMS : ALL_NAV_ITEMS;
+
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
   const go = (path) => { navigate(path); };
@@ -34,7 +41,7 @@ export default function FunnelSidebar({ adminInfo, onLogout, activePage = 'funne
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map(item => {
+        {navItems.map(item => {
           const Icon = item.icon;
           const active = item.key === activePage;
           return (
@@ -51,6 +58,14 @@ export default function FunnelSidebar({ adminInfo, onLogout, activePage = 'funne
             </button>
           );
         })}
+        {/* View Landing Page — visible to all roles */}
+        <button
+          onClick={() => navigate('/')}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-[#94A3B8] hover:text-white hover:bg-[#0F2D4F]/50 transition-all"
+        >
+          <ExternalLink className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate">View Landing Page</span>
+        </button>
       </nav>
 
       {/* User footer */}

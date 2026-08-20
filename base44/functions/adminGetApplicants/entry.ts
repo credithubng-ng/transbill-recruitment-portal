@@ -9,6 +9,9 @@ Deno.serve(async (req) => {
     if (!admin) {
       return Response.json({ error: 'Unauthorized: invalid or expired session' }, { status: 401 });
     }
+    if (admin.role === 'digital_marketer') {
+      return Response.json({ error: 'Access denied: applicant data is restricted.' }, { status: 403 });
+    }
 
     const base44 = createClientFromRequest(req);
     const applicants = await base44.asServiceRole.entities.Applicant.list('-created_date', 10000);

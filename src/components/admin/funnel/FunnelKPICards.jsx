@@ -2,17 +2,18 @@ import React from 'react';
 import { STAGE_COLORS } from './funnelColors';
 import { ChevronRight } from 'lucide-react';
 
-export default function FunnelKPICards({ aggregates, onStageClick }) {
+export default function FunnelKPICards({ aggregates, onStageClick, disableDrilldown }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {aggregates.map((a) => {
         const color = STAGE_COLORS[a.stage];
+        const Tag = disableDrilldown ? 'div' : 'button';
         return (
-          <button
+          <Tag
             key={a.stage}
-            onClick={() => onStageClick(a.stage)}
-            className="bg-white border border-[#E5E7EB] rounded-lg p-4 text-left hover:border-[#0A2540]/30 hover:shadow-sm transition-all group"
-            aria-label={`${a.label}: ${a.count}, click for drill-down`}
+            onClick={disableDrilldown ? undefined : () => onStageClick(a.stage)}
+            className={`bg-white border border-[#E5E7EB] rounded-lg p-4 text-left transition-all ${disableDrilldown ? '' : 'hover:border-[#0A2540]/30 hover:shadow-sm group cursor-pointer'}`}
+            aria-label={disableDrilldown ? `${a.label}: ${a.count}` : `${a.label}: ${a.count}, click for drill-down`}
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-1.5">
@@ -37,8 +38,8 @@ export default function FunnelKPICards({ aggregates, onStageClick }) {
                 <p className="text-[10px] text-[#DC2626]">↓ {a.dropOff} ({a.dropOffRate}%)</p>
               )}
             </div>
-            <ChevronRight className="w-3 h-3 text-[#9CA3AF] group-hover:text-[#0A2540] mt-1 transition-colors" />
-          </button>
+            {!disableDrilldown && <ChevronRight className="w-3 h-3 text-[#9CA3AF] group-hover:text-[#0A2540] mt-1 transition-colors" />}
+          </Tag>
         );
       })}
     </div>

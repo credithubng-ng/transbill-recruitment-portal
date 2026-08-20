@@ -6,6 +6,7 @@
       "type": "string",
       "enum": [
         "add",
+        "edit",
         "deactivate",
         "activate",
         "role_change"
@@ -16,6 +17,22 @@
     },
     "target_role": {
       "type": "string"
+    },
+    "old_role": {
+      "type": "string",
+      "description": "Previous role before a role change"
+    },
+    "new_role": {
+      "type": "string",
+      "description": "New role after a role change"
+    },
+    "old_status": {
+      "type": "string",
+      "description": "Previous active status (active/inactive) before a change"
+    },
+    "new_status": {
+      "type": "string",
+      "description": "New active status (active/inactive) after a change"
     },
     "performed_by": {
       "type": "string",

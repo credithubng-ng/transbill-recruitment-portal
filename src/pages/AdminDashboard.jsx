@@ -14,6 +14,7 @@ import FunnelDataQuality from '@/components/admin/funnel/FunnelDataQuality';
 import FunnelDefinitions from '@/components/admin/funnel/FunnelDefinitions';
 import FunnelDrilldown from '@/components/admin/funnel/FunnelDrilldown';
 import BackfillControl from '@/components/admin/funnel/BackfillControl';
+import CampaignBreakdown from '@/components/admin/funnel/CampaignBreakdown';
 import { RefreshCw, ExternalLink } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -117,7 +118,10 @@ export default function AdminDashboard() {
     setAdminInfo(null);
   };
 
+  const isDigitalMarketer = adminInfo?.role === 'digital_marketer';
+
   const openDrilldown = (stage) => {
+    if (isDigitalMarketer) return; // aggregate-only — no drill-down for digital marketer
     setDrilldownStage(stage);
     setDrilldownPage(0);
   };
@@ -225,16 +229,21 @@ export default function AdminDashboard() {
           ) : !isError && data ? (
             <div className="space-y-5">
               {/* KPI Cards — 4+3 on desktop, 2 on tablet, 1 on mobile */}
-              <FunnelKPICards aggregates={aggregates} onStageClick={openDrilldown} />
+              <FunnelKPICards aggregates={aggregates} onStageClick={openDrilldown} disableDrilldown={isDigitalMarketer} />
 
               {/* Conversion overview (horizontal progress bars) */}
-              <FunnelChart aggregates={aggregates} onSegmentClick={openDrilldown} />
+              <FunnelChart aggregates={aggregates} onSegmentClick={openDrilldown} disableDrilldown={isDigitalMarketer} />
 
               {/* Trend chart */}
               <FunnelTrendChart timeSeries={timeSeries} />
 
               {/* Conversion table */}
-              <FunnelConversionTable aggregates={aggregates} onRowClick={openDrilldown} />
+              <FunnelConversionTable aggregates={aggregates} onRowClick={openDrilldown} disableDrilldown={isDigitalMarketer} />
+
+              {/* Campaign / source breakdown (aggregate, PII-free — visible to all roles) */}
+              {data?.campaignBreakdown && (
+                <CampaignBreakdown breakdown={data.campaignBreakdown} />
+              )}
 
               {/* Data Quality + Definitions */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -242,7 +251,7 @@ export default function AdminDashboard() {
                 <FunnelDefinitions definitions={definitions} />
               </div>
 
-              {/* Backfill (owner only) */}
+              {/* Backfill (owner only — hidden from digital_marketer) */}
               {adminInfo?.role === 'owner' && (
                 <BackfillControl onBackfillComplete={() => queryClient.invalidateQueries({ queryKey: ['funnelDashboard'] })} />
               )}
@@ -270,8 +279,8 @@ export default function AdminDashboard() {
         />
       )}
 
-      {/* Applicant panel */}
-      {selectedApplicant && (
+      {/* Applicant panel — hidden from digital_marketer */}
+      {selectedApplicant && !isDigitalMarketer && (
         <ApplicantPanel
           applicant={selectedApplicant}
           onClose={() => setSelectedApplicant(null)}

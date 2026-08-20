@@ -228,9 +228,9 @@ export default function Admin() {
               <CalendarDays className="w-4 h-4" /> Schedule
             </button>
             {adminInfo?.role === 'owner' && (
-              <button onClick={() => setShowAdminUsers(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
-                <Users className="w-4 h-4" /> Admin Users
-              </button>
+              <Link to="/admin-access" className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
+                <Users className="w-4 h-4" /> Admin Access
+              </Link>
             )}
             <button onClick={() => setShowSettings(true)} className="border border-[#E2E8E2] text-[#7A7A8A] hover:text-[#1A1A1A] font-semibold text-sm px-4 py-2.5 rounded-full flex items-center gap-2 transition-all bg-white">
               <Settings className="w-4 h-4" /> Settings

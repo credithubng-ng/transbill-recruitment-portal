@@ -7,6 +7,9 @@ Deno.serve(async (req) => {
     const { token } = await req.json();
     const admin = await verifyAdmin(token);
     if (!admin) return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    if (admin.role === 'digital_marketer') {
+      return Response.json({ error: 'Access denied: interview data is restricted.' }, { status: 403 });
+    }
 
     const results = await base44.asServiceRole.entities.InterviewResult.list('-created_date', 500);
     const sessions = await base44.asServiceRole.entities.InterviewSession.list('-created_date', 500);

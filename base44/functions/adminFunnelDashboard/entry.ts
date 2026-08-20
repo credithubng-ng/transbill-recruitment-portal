@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
 
     const admin = await verifyAdmin(token);
     if (!admin) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    // owner, admin, read_only may all view the dashboard.
+    const isDigitalMarketer = admin.role === 'digital_marketer';
+    // digital_marketer may view aggregate dashboard only — no drilldown, no applicant data.
 
     const { startUtc, endUtc, startLagos, endLagos } = getLagosDateRange(preset || '30days', custom_from, custom_to);
     const aggMode = mode === 'events' ? 'events' : 'cohort';
@@ -171,9 +172,38 @@ Deno.serve(async (req) => {
         : 'Landing-page tracking has not yet recorded any visits.',
     };
 
+    // ── Campaign / source / UTM breakdown (aggregate, PII-free) ──
+    const landingEventsAll = allEvents.filter(e => e.event_type === 'landing_page_visit');
+    const eventsForBreakdown = inRange
+      ? landingEventsAll.filter(e => {
+          const t = new Date(e.occurred_at).getTime();
+          return t >= startTime && t <= endTime;
+        })
+      : landingEventsAll;
+
+    const countBy = (field: string) => {
+      const map: Record<string, number> = {};
+      for (const e of eventsForBreakdown) {
+        const val = (e as any)[field];
+        if (!val) continue;
+        map[val] = (map[val] || 0) + 1;
+      }
+      return Object.entries(map)
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10);
+    };
+
+    const campaignBreakdown = {
+      sources: countBy('source'),
+      mediums: countBy('medium'),
+      campaigns: countBy('campaign'),
+    };
+
     // ── Drill-down (paginated) ──
+    // digital_marketer is never permitted to receive drill-down records.
     let drilldown: any = null;
-    if (drilldown_stage) {
+    if (drilldown_stage && !isDigitalMarketer) {
       const page = Math.max(0, Number(drilldown_page) || 0);
       const limit = Math.min(200, Math.max(10, Number(drilldown_limit) || 50));
       const personIds = stagePersonIds[drilldown_stage] || new Set<string>();
@@ -235,6 +265,7 @@ Deno.serve(async (req) => {
       dataQuality,
       definitions: STAGE_DEFINITIONS,
       drilldown,
+      campaignBreakdown,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

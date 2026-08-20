@@ -1,7 +1,7 @@
 import React from 'react';
 import { STAGE_COLORS } from './funnelColors';
 
-export default function FunnelConversionTable({ aggregates, onRowClick }) {
+export default function FunnelConversionTable({ aggregates, onRowClick, disableDrilldown }) {
   return (
     <div className="bg-white border border-[#E5E7EB] rounded-lg overflow-hidden">
       <h3 className="text-sm font-bold text-[#0A2540] px-5 pt-4 pb-2">Conversion performance</h3>
@@ -21,8 +21,8 @@ export default function FunnelConversionTable({ aggregates, onRowClick }) {
             {aggregates.map(a => (
               <tr
                 key={a.stage}
-                onClick={() => onRowClick(a.stage)}
-                className="border-b border-[#F4F6F9] hover:bg-[#F9FAFB] cursor-pointer transition-colors"
+                onClick={disableDrilldown ? undefined : () => onRowClick(a.stage)}
+                className={`border-b border-[#F4F6F9] transition-colors ${disableDrilldown ? '' : 'hover:bg-[#F9FAFB] cursor-pointer'}`}
               >
                 <td className="px-5 py-2.5">
                   <div className="flex items-center gap-2">
